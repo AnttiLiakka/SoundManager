@@ -6,6 +6,8 @@ MainComponent::MainComponent()
     // Make sure you set the size of the component after
     // you add any child components.
 
+    
+
 
     m_formatManager.registerBasicFormats();
 
@@ -83,4 +85,33 @@ void MainComponent::resized()
     auto transpControl = bounds.removeFromBottom(50);
 
     m_playStop.setBounds(transpControl);
+    m_table.setBounds(bounds);
 }
+
+//Gets called everytime a file is dragged and dropped on to the table
+bool DragAndDropTable::isInterestedInFileDrag(const juce::StringArray& files)
+{
+    //Go through every file to see whether it is an wav or aiff file
+    for (auto file : files)
+    {
+        if (file.contains(".wav") || file.contains(".aiff"))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+//Is called when a files are dropped and we are interested in them
+void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y)
+{
+    for (auto file : files)
+    {
+        if (isInterestedInFileDrag(files))
+        {
+            //load file
+        }
+    }
+}
+
