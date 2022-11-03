@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio Version 17
+
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundManager - App", "SoundManager_App.vcxproj", "{143016FC-B086-6D3C-5CC0-80B89036F639}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{143016FC-B086-6D3C-5CC0-80B89036F639}.Debug|x64.ActiveCfg = Debug|x64
+		{143016FC-B086-6D3C-5CC0-80B89036F639}.Debug|x64.Build.0 = Debug|x64
+		{143016FC-B086-6D3C-5CC0-80B89036F639}.Release|x64.ActiveCfg = Release|x64
+		{143016FC-B086-6D3C-5CC0-80B89036F639}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
