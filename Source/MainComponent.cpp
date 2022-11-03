@@ -5,6 +5,15 @@ MainComponent::MainComponent()
 {
     // Make sure you set the size of the component after
     // you add any child components.
+
+
+    m_formatManager.registerBasicFormats();
+
+    m_playStop.setButtonText(TRANS("Play"));
+    m_playStop.setEnabled(false);
+
+    addAndMakeVisible(m_playStop);
+
     setSize (800, 600);
 
     // Some platforms require permissions to open input channels so request that here
@@ -69,7 +78,9 @@ void MainComponent::paint (juce::Graphics& g)
 
 void MainComponent::resized()
 {
-    // This is called when the MainContentComponent is resized.
-    // If you add any child components, this is where you should
-    // update their positions.
+    auto bounds = getLocalBounds();
+
+    auto transpControl = bounds.removeFromBottom(50);
+
+    m_playStop.setBounds(transpControl);
 }

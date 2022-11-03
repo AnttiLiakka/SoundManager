@@ -73,6 +73,7 @@
 		AE3D4D2624DBEBE758EAEA6F /* CoreAudioKit.framework */ /* CoreAudioKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioKit.framework; path = System/Library/Frameworks/CoreAudioKit.framework; sourceTree = SDKROOT; };
 		C6DE27E7967D31E82ED4A9F1 /* include_juce_audio_devices.mm */ /* include_juce_audio_devices.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_devices.mm; path = ../../JuceLibraryCode/include_juce_audio_devices.mm; sourceTree = SOURCE_ROOT; };
 		C883364C3BB81B306314608F /* QuartzCore.framework */ /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		C8C451D0BACD4C3BAC8C0B0B /* DragAndDropTable.h */ /* DragAndDropTable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DragAndDropTable.h; path = ../../Source/DragAndDropTable.h; sourceTree = SOURCE_ROOT; };
 		DF4714F265A625902394306F /* include_juce_events.mm */ /* include_juce_events.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_events.mm; path = ../../JuceLibraryCode/include_juce_events.mm; sourceTree = SOURCE_ROOT; };
 		E319ECEE399F42A1014B93C4 /* JuceHeader.h */ /* JuceHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = JuceHeader.h; path = ../../JuceLibraryCode/JuceHeader.h; sourceTree = SOURCE_ROOT; };
 		E4089103F91263108EBE65A6 /* AudioToolbox.framework */ /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -107,6 +108,7 @@
 		11701249D1E49875029BCF82 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				C8C451D0BACD4C3BAC8C0B0B,
 				EB4E016873DB71024A7D5F2A,
 				51397B312E5454BEBF83CFD8,
 				241529D682726B6A71355988,

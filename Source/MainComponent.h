@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "DragAndDropTable.h"
 
 //==============================================================================
 /*
@@ -26,6 +27,11 @@ public:
 private:
     //==============================================================================
     // Your private member variables go here...
+
+    DragAndDropTable m_table;
+    juce::AudioFormatManager m_formatManager;
+    juce::AudioBuffer<float> m_sampleBuffer;
+    juce::TextButton m_playStop;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
