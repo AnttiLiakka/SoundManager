@@ -11,7 +11,7 @@
 #pragma once
 #include <JuceHeader.h>
 
-class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropContainer, public juce::FileDragAndDropTarget
+class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropContainer, public juce::FileDragAndDropTarget, public juce::AudioFormatManager
 {
 public:
     DragAndDropTable() : TableListBox("table", nullptr), DragAndDropContainer(), FileDragAndDropTarget()
@@ -19,8 +19,12 @@ public:
        
 
     }
+
     bool isInterestedInFileDrag(const juce::StringArray& files) override;
+
     void filesDropped(const juce::StringArray& files, int x, int y) override;
+
+    void loadDroppedFile(const juce::String& path);
 
 
     ~DragAndDropTable()
@@ -28,7 +32,11 @@ public:
 
     }
 
+   
+
 private:
+
+    
 
 
 };

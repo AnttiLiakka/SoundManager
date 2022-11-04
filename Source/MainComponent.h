@@ -24,12 +24,17 @@ public:
     void paint (juce::Graphics& g) override;
     void resized() override;
 
+    
+
+    
+
 private:
     //==============================================================================
     // Your private member variables go here...
 
+  
     DragAndDropTable m_table;
-    juce::AudioFormatManager m_formatManager;
+    
     juce::AudioBuffer<float> m_sampleBuffer;
     juce::TextButton m_playStop;
 

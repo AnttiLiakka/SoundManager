@@ -9,12 +9,13 @@ MainComponent::MainComponent()
     
 
 
-    m_formatManager.registerBasicFormats();
+    m_table.registerBasicFormats();
 
     m_playStop.setButtonText(TRANS("Play"));
     m_playStop.setEnabled(false);
 
     addAndMakeVisible(m_playStop);
+    addAndMakeVisible(m_table);
 
     setSize (800, 600);
 
@@ -108,10 +109,24 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
 {
     for (auto file : files)
     {
-        if (isInterestedInFileDrag(files))
+        if (isInterestedInFileDrag(file))
         {
             //load file
+            loadDroppedFile(file);
+           
         }
     }
 }
+
+//Returns the file path for dropped file
+void DragAndDropTable::loadDroppedFile(const juce::String& path)
+{
+    auto file = std::make_unique<juce::File>(path);
+   // createReaderFor(*file);
+    DBG("file dropped");
+}
+
+
+
+
 
