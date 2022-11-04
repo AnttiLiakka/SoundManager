@@ -28,14 +28,20 @@ public:
     void dragExport();
     void mouseDown(const juce::MouseEvent& event) override;
 
-    bool m_mouseClicked{ false };
+    void showFile(juce::File& file);
+
+    //Do I really need this?
+    void resized() override;
+
+    
 
     
 
 private:
 
-   
+    juce::TextButton m_fileInfo;
     juce::File m_selectedFile;    
+    juce::Component m_file;
 
 
 };

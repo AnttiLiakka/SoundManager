@@ -9,7 +9,7 @@ MainComponent::MainComponent()
     
 
     m_playStop.setButtonText(TRANS("Play"));
-    m_playStop.setEnabled(false);
+    m_playStop.setEnabled(false);   
 
     addAndMakeVisible(m_playStop);
     addAndMakeVisible(m_table);
@@ -86,6 +86,11 @@ void MainComponent::resized()
     m_table.setBounds(bounds);
 }
 
+void DragAndDropTable::resized()
+{
+    m_fileInfo.setBounds(getLocalBounds().removeFromBottom(50));
+}
+
 
 
 //Gets called everytime a file is dragged and dropped on to the table
@@ -126,12 +131,12 @@ void DragAndDropTable::loadDroppedFile(const juce::String& path)
 {
     auto file = juce::File(path);
    // createReaderFor(*file);
-    DBG("file dropped");    
+    DBG("file dropped");
+    showFile(file);
 }
 
 void DragAndDropTable::mouseDown(const juce::MouseEvent& event)
-{
-    DBG("Mouseclick");
+{    
     dragExport();
 }
 
@@ -139,8 +144,15 @@ void DragAndDropTable::dragExport()
 {
     if (!m_selectedFile.exists()) return;
 
-    startDragging("targetSource", this);
+    startDragging("targetSource", &m_fileInfo);
 
+}
+
+void DragAndDropTable::showFile(juce::File& file)
+{
+    m_fileInfo.setButtonText(file.getFileName());
+    addAndMakeVisible(m_fileInfo);
+    m_fileInfo.setEnabled(false);
 }
 
 
