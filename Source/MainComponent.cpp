@@ -4,12 +4,9 @@
 MainComponent::MainComponent()
 {
     // Make sure you set the size of the component after
-    // you add any child components.
+    // you add any child components.    
 
     
-
-
-    m_table.registerBasicFormats();
 
     m_playStop.setButtonText(TRANS("Play"));
     m_playStop.setEnabled(false);
@@ -89,6 +86,8 @@ void MainComponent::resized()
     m_table.setBounds(bounds);
 }
 
+
+
 //Gets called everytime a file is dragged and dropped on to the table
 bool DragAndDropTable::isInterestedInFileDrag(const juce::StringArray& files)
 {
@@ -113,6 +112,10 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
         {
             //load file
             loadDroppedFile(file);
+
+            //store its information
+            m_selectedFile = file;
+           
            
         }
     }
@@ -121,10 +124,27 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
 //Returns the file path for dropped file
 void DragAndDropTable::loadDroppedFile(const juce::String& path)
 {
-    auto file = std::make_unique<juce::File>(path);
+    auto file = juce::File(path);
    // createReaderFor(*file);
-    DBG("file dropped");
+    DBG("file dropped");    
 }
+
+void DragAndDropTable::mouseDown(const juce::MouseEvent& event)
+{
+    DBG("Mouseclick");
+    dragExport();
+}
+
+void DragAndDropTable::dragExport()
+{
+    if (!m_selectedFile.exists()) return;
+
+    startDragging("targetSource", this);
+
+}
+
+
+
 
 
 

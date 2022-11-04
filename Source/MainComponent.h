@@ -10,6 +10,7 @@
 */
 class MainComponent  : public juce::AudioAppComponent
 {
+    friend class DragAndDropTable;
 public:
     //==============================================================================
     MainComponent();
