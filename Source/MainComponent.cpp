@@ -93,9 +93,10 @@ void DragAndDropTable::resized()
 
 
 
-//Gets called everytime a file is dragged and dropped on to the table
+//Gets called everytime a file is dragged over the table
 bool DragAndDropTable::isInterestedInFileDrag(const juce::StringArray& files)
-{
+{    
+    
     //Go through every file to see whether it is an wav or aiff file
     for (auto file : files)
     {
@@ -142,9 +143,10 @@ void DragAndDropTable::mouseDown(const juce::MouseEvent& event)
 
 void DragAndDropTable::dragExport()
 {
-    if (!m_selectedFile.exists()) return;
+    if (!m_selectedFile.exists()) return;   
+    performExternalDragDropOfFiles(m_selectedFile.getFullPathName(), false);
 
-    startDragging("targetSource", &m_fileInfo);
+    
 
 }
 

@@ -43,5 +43,4 @@ private:
     juce::File m_selectedFile;    
     juce::Component m_file;
 
-
 };
