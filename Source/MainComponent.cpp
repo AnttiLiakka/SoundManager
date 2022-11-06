@@ -6,13 +6,22 @@ MainComponent::MainComponent() : m_table(*this)
     // Make sure you set the size of the component after
     // you add any child components.    
 
-    
+    m_formatManager.registerBasicFormats();
 
     m_playStop.setButtonText(TRANS("Play"));
     m_playStop.setEnabled(false);   
 
     addAndMakeVisible(m_playStop);
     addAndMakeVisible(m_table);
+    
+    m_playStop.onClick = [&](){
+      m_playSoundFile = !m_playSoundFile;
+        if(m_playSoundFile) {
+            m_playStop.setButtonText(TRANS("Pause"));
+        } else {
+            m_playStop.setButtonText(TRANS("Play"));
+        }
+    };
 
     setSize (800, 600);
 
@@ -57,6 +66,23 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
     // Right now we are not producing any data, in which case we need to clear the buffer
     // (to prevent the output of random noise)
     bufferToFill.clearActiveBufferRegion();
+    
+    if(!m_playSoundFile) return;
+    
+    auto numSamples = bufferToFill.numSamples;
+    float* leftChannel = bufferToFill.buffer->getWritePointer(0);
+    float* rightChannel = bufferToFill.buffer->getWritePointer(1);
+    
+    for(int n = 0 ; n < numSamples; ++n)
+    {
+        leftChannel[n] = m_sampleBuffer.getSample(0, m_playPosition);
+        rightChannel[n] = m_sampleBuffer.getSample(1, m_playPosition);
+        
+        
+        ++m_playPosition;
+        if(m_playPosition >= m_sampleBuffer.getNumSamples())m_playPosition = 0;
+        
+    }
 }
 
 void MainComponent::releaseResources()
@@ -92,6 +118,16 @@ void DragAndDropTable::resized()
 }
 
 
+/*
+ 
+ 
+ 
+ THIS SECTION IS FOR DRAG AND DROP IMPORT
+ 
+ 
+ 
+ */
+
 
 //Gets called everytime a file is dragged over the table
 bool DragAndDropTable::isInterestedInFileDrag(const juce::StringArray& files)
@@ -109,31 +145,61 @@ bool DragAndDropTable::isInterestedInFileDrag(const juce::StringArray& files)
     return false;
 }
 
-//Is called when a files are dropped and we are interested in them
+//This is called when a files are dropped and we are interested in them
 void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y)
 {
     for (auto file : files)
     {
         if (isInterestedInFileDrag(file))
         {
-            //load file
-            loadDroppedFile(file);
-
-            //store its information
-            m_selectedFile = file;
-           
-           
+            auto testingFile = juce::File(file);
+            
+            try {
+                if(testingFile.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
+                if(!testingFile.hasFileExtension("wav")   )throw TRANS("Please select a Wav file");
+                if(!testingFile.existsAsFile())throw TRANS("That file doesn't exist!!");
+                
+                //load file
+                loadDroppedFile(file);
+                
+                //store its information
+                m_selectedFile = file;
+                
+                
+            } catch (juce::String message){
+                juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,TRANS("Loading Sound Error") , message);
+            }
         }
     }
 }
 
-//Returns the file path for dropped file
+
 void DragAndDropTable::loadDroppedFile(const juce::String& path)
 {
     auto file = juce::File(path);
+    auto fileReader = m_mainApp.m_formatManager.createReaderFor(file);
+   
+    
+    m_mainApp.m_sampleBuffer.setSize(fileReader->numChannels,fileReader->lengthInSamples);
+    
+    fileReader->read(&m_mainApp.m_sampleBuffer, 0, fileReader->lengthInSamples, 0, true, true);
+    
+    m_mainApp.m_playStop.setEnabled(true);
+    
+    delete fileReader;
    // createReaderFor(*file);
     DBG("file dropped");
     showFile(file);
+    
+    /*
+     
+     
+     
+     THIS SECTION IS FOR DRAG AND DROP EXPORT
+     
+     
+     
+     */
 }
 
 void DragAndDropTable::mouseDown(const juce::MouseEvent& event)

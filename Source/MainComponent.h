@@ -37,7 +37,11 @@ private:
     DragAndDropTable m_table;
     
     juce::AudioBuffer<float> m_sampleBuffer;
+    juce::AudioFormatManager m_formatManager;
     juce::TextButton m_playStop;
+    
+    bool m_playSoundFile = false;
+    int m_playPosition = 0;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
