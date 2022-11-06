@@ -1,7 +1,7 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent()
+MainComponent::MainComponent() : m_table(*this)
 {
     // Make sure you set the size of the component after
     // you add any child components.    
@@ -139,6 +139,7 @@ void DragAndDropTable::loadDroppedFile(const juce::String& path)
 void DragAndDropTable::mouseDown(const juce::MouseEvent& event)
 {    
     dragExport();
+    
 }
 
 void DragAndDropTable::dragExport()

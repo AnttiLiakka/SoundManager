@@ -10,11 +10,14 @@
 
 #pragma once
 #include <JuceHeader.h>
+#include "MainComponent.h"
 
 class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropContainer, public juce::FileDragAndDropTarget
 {
+    friend class MainComponent;
 public:
-    DragAndDropTable() : TableListBox("table", nullptr), DragAndDropContainer()                        
+    DragAndDropTable(class MainComponent& mainApp) : TableListBox("table", nullptr), DragAndDropContainer(),
+        m_mainApp(mainApp)
     {
         
 
@@ -32,13 +35,11 @@ public:
 
     //Do I really need this?
     void resized() override;
-
     
-
-    
-
 private:
 
+    class MainComponent& m_mainApp;
+    
     juce::TextButton m_fileInfo;
     juce::File m_selectedFile;    
     juce::Component m_file;
