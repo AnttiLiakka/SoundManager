@@ -25,9 +25,6 @@ public:
     void paint (juce::Graphics& g) override;
     void resized() override;
 
-    
-
-    
 
 private:
     //==============================================================================
@@ -42,7 +39,6 @@ private:
     
     bool m_playSoundFile = false;
     int m_playPosition = 0;
-
-
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

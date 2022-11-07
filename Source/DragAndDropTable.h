@@ -12,11 +12,11 @@
 #include <JuceHeader.h>
 #include "MainComponent.h"
 
-class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropContainer, public juce::FileDragAndDropTarget
+class DragAndDropTable : public juce::TableListBox, public juce::TableListBoxModel, public juce::DragAndDropContainer, public juce::FileDragAndDropTarget
 {
     friend class MainComponent;
 public:
-    DragAndDropTable(class MainComponent& mainApp) : TableListBox("table", nullptr), DragAndDropContainer(),
+    DragAndDropTable(class MainComponent& mainApp) : TableListBox("table", this), DragAndDropContainer(),
         m_mainApp(mainApp)
     {
         
@@ -36,6 +36,12 @@ public:
     //Do I really need this?
     void resized() override;
     
+    //TableListBoxModel virtual functions
+    int getNumRows() override;
+    void paintRowBackground(juce::Graphics &p, int rowNumber, int width, int height, bool rowIsSelected) override;
+    void paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) override;
+    
+    
 private:
 
     class MainComponent& m_mainApp;
@@ -45,6 +51,4 @@ private:
     juce::TextButton m_fileInfo;
     juce::File m_selectedFile;    
     juce::Component m_file;
-    
-
 };

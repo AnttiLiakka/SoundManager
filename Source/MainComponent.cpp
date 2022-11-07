@@ -4,24 +4,27 @@
 MainComponent::MainComponent() : m_table(*this)
 {
     // Make sure you set the size of the component after
-    // you add any child components.    
+    // you add any child components
 
     m_formatManager.registerBasicFormats();
-
+  
     m_playStop.setButtonText(TRANS("Play"));
-    m_playStop.setEnabled(false);   
+    m_playStop.setEnabled(false);
 
     addAndMakeVisible(m_playStop);
     addAndMakeVisible(m_table);
     
-    m_playStop.onClick = [&](){
-      m_playSoundFile = !m_playSoundFile;
+    m_playStop.onClick = [&]()
+    {
+        m_playSoundFile = !m_playSoundFile;
         if(m_playSoundFile) {
             m_playStop.setButtonText(TRANS("Pause"));
         } else {
             m_playStop.setButtonText(TRANS("Play"));
         }
     };
+    
+
 
     setSize (800, 600);
 
@@ -36,8 +39,7 @@ MainComponent::MainComponent() : m_table(*this)
     {
         // Specify the number of input and output channels that we want to open
         setAudioChannels (2, 2);
-    }
-    
+    }    
 }
 
 MainComponent::~MainComponent()
@@ -106,7 +108,7 @@ void MainComponent::paint (juce::Graphics& g)
 void MainComponent::resized()
 {
     auto bounds = getLocalBounds();
-
+    //auto headerBar = bounds.removeFromTop(30);
     auto transpControl = bounds.removeFromBottom(50);
 
     m_playStop.setBounds(transpControl);
@@ -232,7 +234,33 @@ void DragAndDropTable::showFile(juce::File& file)
 }
 
 
+/*
+ 
+ 
+ 
+ THIS SECTION IS FOR THE TABLE
+ 
+ 
+ 
+ 
+ 
+ */
 
+int DragAndDropTable::getNumRows()
+{
+ 
+    return 0;
+}
+
+void DragAndDropTable::paintRowBackground(juce::Graphics &g, int rowNumber, int width, int height, bool rowIsSelected)
+{
+    return;
+}
+
+void DragAndDropTable::paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
+{
+    return;
+}
 
 
 
