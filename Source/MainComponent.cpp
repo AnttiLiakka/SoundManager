@@ -37,6 +37,7 @@ MainComponent::MainComponent() : m_table(*this)
         // Specify the number of input and output channels that we want to open
         setAudioChannels (2, 2);
     }
+    
 }
 
 MainComponent::~MainComponent()
@@ -132,7 +133,7 @@ void DragAndDropTable::resized()
 //Gets called everytime a file is dragged over the table
 bool DragAndDropTable::isInterestedInFileDrag(const juce::StringArray& files)
 {    
-    
+    if(!m_acceptingfiles) return false;
     //Go through every file to see whether it is an wav or aiff file
     for (auto file : files)
     {
@@ -152,12 +153,14 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
     {
         if (isInterestedInFileDrag(file))
         {
+           
             auto testingFile = juce::File(file);
             
             try {
                 if(testingFile.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
                 if(!testingFile.hasFileExtension("wav")   )throw TRANS("Please select a Wav file");
                 if(!testingFile.existsAsFile())throw TRANS("That file doesn't exist!!");
+                
                 
                 //load file
                 loadDroppedFile(file);
@@ -176,8 +179,10 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
 
 void DragAndDropTable::loadDroppedFile(const juce::String& path)
 {
+    
     auto file = juce::File(path);
     auto fileReader = m_mainApp.m_formatManager.createReaderFor(file);
+  
    
     
     m_mainApp.m_sampleBuffer.setSize(fileReader->numChannels,fileReader->lengthInSamples);
@@ -203,18 +208,20 @@ void DragAndDropTable::loadDroppedFile(const juce::String& path)
 }
 
 void DragAndDropTable::mouseDown(const juce::MouseEvent& event)
-{    
+{
+    m_acceptingfiles = false;
     dragExport();
-    
+}
+
+void DragAndDropTable:: mouseUp (const juce::MouseEvent &event)
+{
+    m_acceptingfiles = true;
 }
 
 void DragAndDropTable::dragExport()
 {
     if (!m_selectedFile.exists()) return;   
     performExternalDragDropOfFiles(m_selectedFile.getFullPathName(), false);
-
-    
-
 }
 
 void DragAndDropTable::showFile(juce::File& file)

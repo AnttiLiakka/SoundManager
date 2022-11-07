@@ -30,7 +30,7 @@ public:
     //For drag and drop export
     void dragExport();
     void mouseDown(const juce::MouseEvent& event) override;
-
+    void mouseUp (const juce::MouseEvent &event) override;
     void showFile(juce::File& file);
 
     //Do I really need this?
@@ -40,8 +40,11 @@ private:
 
     class MainComponent& m_mainApp;
     
+    bool m_acceptingfiles = true;
+    
     juce::TextButton m_fileInfo;
     juce::File m_selectedFile;    
     juce::Component m_file;
+    
 
 };
