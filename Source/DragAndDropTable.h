@@ -33,13 +33,17 @@ public:
     void mouseUp (const juce::MouseEvent &event) override;
     void showFile(juce::File& file);
 
-    //Do I really need this?
+    //Do I really need these?
     void resized() override;
+    void paint (juce::Graphics& g) override;
     
-    //TableListBoxModel virtual functions
+    //TableListBoxModel =0 virtual functions
     int getNumRows() override;
     void paintRowBackground(juce::Graphics &p, int rowNumber, int width, int height, bool rowIsSelected) override;
     void paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) override;
+    
+    //Other TableListBox functions
+    void cellClicked(int rowNumber, int columnId, const juce::MouseEvent&) override;
     
     
 private:
@@ -51,4 +55,10 @@ private:
     juce::TextButton m_fileInfo;
     juce::File m_selectedFile;    
     juce::Component m_file;
+    
+    juce::String m_text = ("test");
+    
+    int m_columnId = 1, m_numRows = 5;
+    
+    juce::Font font = (19.0f);
 };

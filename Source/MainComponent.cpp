@@ -10,7 +10,13 @@ MainComponent::MainComponent() : m_table(*this)
   
     m_playStop.setButtonText(TRANS("Play"));
     m_playStop.setEnabled(false);
-
+    
+    m_table.setColour(juce::ListBox::outlineColourId, juce::Colours::yellow);
+    m_table.setOutlineThickness(1);
+    m_table.getHeader().setSortColumnId(1, true);
+    m_table.setMultipleSelectionEnabled(true);
+    m_table.getHeader().addColumn(juce::String(TRANS("File name")), m_table.m_columnId, 200);
+    
     addAndMakeVisible(m_playStop);
     addAndMakeVisible(m_table);
     
@@ -103,13 +109,20 @@ void MainComponent::paint (juce::Graphics& g)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
     // You can add your drawing code here!
+ 
+}
+
+void DragAndDropTable::paint (juce::Graphics& g)
+{
+    paintRowBackground(g, 1, 20, 20, true);
+    paintCell(g, 1, m_columnId, getHeader().getColumnWidth(m_columnId), 100, true);
 }
 
 void MainComponent::resized()
 {
     auto bounds = getLocalBounds();
     //auto headerBar = bounds.removeFromTop(30);
-    auto transpControl = bounds.removeFromBottom(50);
+    auto transpControl = bounds.removeFromBottom(35);
 
     m_playStop.setBounds(transpControl);
     m_table.setBounds(bounds);
@@ -194,9 +207,13 @@ void DragAndDropTable::loadDroppedFile(const juce::String& path)
     m_mainApp.m_playStop.setEnabled(true);
     
     delete fileReader;
-   // createReaderFor(*file);
     DBG("file dropped");
+    m_text = file.getFileName();
+    updateContent();
+    DBG(m_text);
+    
     showFile(file);
+    
     
     /*
      
@@ -228,9 +245,10 @@ void DragAndDropTable::dragExport()
 
 void DragAndDropTable::showFile(juce::File& file)
 {
-    m_fileInfo.setButtonText(file.getFileName());
-    addAndMakeVisible(m_fileInfo);
-    m_fileInfo.setEnabled(false);
+   // m_fileInfo.setButtonText(file.getFileName());
+    //addAndMakeVisible(m_fileInfo);
+    //m_fileInfo.setEnabled(false);
+    updateContent();
 }
 
 
@@ -248,18 +266,29 @@ void DragAndDropTable::showFile(juce::File& file)
 
 int DragAndDropTable::getNumRows()
 {
- 
-    return 0;
+    
+    return m_numRows;
 }
 
 void DragAndDropTable::paintRowBackground(juce::Graphics &g, int rowNumber, int width, int height, bool rowIsSelected)
 {
-    return;
+    g.fillAll (juce::Colours::grey);
 }
 
 void DragAndDropTable::paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
 {
-    return;
+    if(columnId == 1){
+    g.setFont(font);
+    g.setColour(juce::Colours::white);
+    g.drawText(m_text, 2, 0, width - 4, height, juce::Justification::centredLeft);
+    g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
+    }
+    
+}
+
+void DragAndDropTable::cellClicked(int rowNumber, int columnId, const juce::MouseEvent&)
+{
+    DBG("ITS WORKING");
 }
 
 
