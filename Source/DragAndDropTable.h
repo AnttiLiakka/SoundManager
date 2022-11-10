@@ -12,11 +12,11 @@
 #include <JuceHeader.h>
 #include "MainComponent.h"
 
-class DragAndDropTable : public juce::TableListBox, public juce::TableListBoxModel, public juce::DragAndDropContainer, public juce::FileDragAndDropTarget
+class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropContainer, public juce::FileDragAndDropTarget
 {
     friend class MainComponent;
 public:
-    DragAndDropTable(class MainComponent& mainApp) : TableListBox("table", this), DragAndDropContainer(),
+    DragAndDropTable(class MainComponent& mainApp) : TableListBox("table", nullptr), DragAndDropContainer(),
         m_mainApp(mainApp)
     {
         
@@ -28,24 +28,8 @@ public:
     void loadDroppedFile(const juce::String& path);
 
     //For drag and drop export
-    void dragExport();
-    void mouseDown(const juce::MouseEvent& event) override;
-    void mouseUp (const juce::MouseEvent &event) override;
-    void showFile(juce::File& file);
-
-    //Do I really need these?
-    void resized() override;
-    void paint (juce::Graphics& g) override;
-    
-    //TableListBoxModel =0 virtual functions
-    int getNumRows() override;
-    void paintRowBackground(juce::Graphics &p, int rowNumber, int width, int height, bool rowIsSelected) override;
-    void paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) override;
-    
-    //Other TableListBox functions
-    void cellClicked(int rowNumber, int columnId, const juce::MouseEvent&) override;
-    
-    
+    void dragExport();   
+    void showFile(juce::File& file);       
 private:
 
     class MainComponent& m_mainApp;
@@ -56,9 +40,5 @@ private:
     juce::File m_selectedFile;    
     juce::Component m_file;
     
-    juce::String m_text = ("test");
-    
-    int m_columnId = 1, m_numRows = 5;
-    
-    juce::Font font = (19.0f);
+    juce::Array<juce::File> m_fileArray;
 };

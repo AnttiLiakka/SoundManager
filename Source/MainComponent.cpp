@@ -10,12 +10,13 @@ MainComponent::MainComponent() : m_table(*this)
   
     m_playStop.setButtonText(TRANS("Play"));
     m_playStop.setEnabled(false);
-    
+
+    m_table.setModel(this);
     m_table.setColour(juce::ListBox::outlineColourId, juce::Colours::yellow);
     m_table.setOutlineThickness(1);
     m_table.getHeader().setSortColumnId(1, true);
     m_table.setMultipleSelectionEnabled(true);
-    m_table.getHeader().addColumn(juce::String(TRANS("File name")), m_table.m_columnId, 200);
+    m_table.getHeader().addColumn(juce::String(TRANS("File name")), m_columnId, 200);
     
     addAndMakeVisible(m_playStop);
     addAndMakeVisible(m_table);
@@ -112,11 +113,6 @@ void MainComponent::paint (juce::Graphics& g)
  
 }
 
-void DragAndDropTable::paint (juce::Graphics& g)
-{
-    paintRowBackground(g, 1, 20, 20, true);
-    paintCell(g, 1, m_columnId, getHeader().getColumnWidth(m_columnId), 100, true);
-}
 
 void MainComponent::resized()
 {
@@ -127,12 +123,6 @@ void MainComponent::resized()
     m_playStop.setBounds(transpControl);
     m_table.setBounds(bounds);
 }
-
-void DragAndDropTable::resized()
-{
-    m_fileInfo.setBounds(getLocalBounds().removeFromBottom(50));
-}
-
 
 /*
  
@@ -147,7 +137,7 @@ void DragAndDropTable::resized()
 
 //Gets called everytime a file is dragged over the table
 bool DragAndDropTable::isInterestedInFileDrag(const juce::StringArray& files)
-{    
+{        
     if(!m_acceptingfiles) return false;
     //Go through every file to see whether it is an wav or aiff file
     for (auto file : files)
@@ -178,11 +168,7 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                 
                 
                 //load file
-                loadDroppedFile(file);
-                
-                //store its information
-                m_selectedFile = file;
-                
+                loadDroppedFile(file);               
                 
             } catch (juce::String message){
                 juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,TRANS("Loading Sound Error") , message);
@@ -198,7 +184,7 @@ void DragAndDropTable::loadDroppedFile(const juce::String& path)
     auto file = juce::File(path);
     auto fileReader = m_mainApp.m_formatManager.createReaderFor(file);
   
-   
+    //Need to check whether the file is valid by using the reader before putting it on the table
     
     m_mainApp.m_sampleBuffer.setSize(fileReader->numChannels,fileReader->lengthInSamples);
     
@@ -207,11 +193,7 @@ void DragAndDropTable::loadDroppedFile(const juce::String& path)
     m_mainApp.m_playStop.setEnabled(true);
     
     delete fileReader;
-    DBG("file dropped");
-    m_text = file.getFileName();
-    updateContent();
-    DBG(m_text);
-    
+    DBG("file dropped");    
     showFile(file);
     
     
@@ -226,31 +208,21 @@ void DragAndDropTable::loadDroppedFile(const juce::String& path)
      */
 }
 
-void DragAndDropTable::mouseDown(const juce::MouseEvent& event)
-{
-    m_acceptingfiles = false;
-    dragExport();
-}
 
-void DragAndDropTable:: mouseUp (const juce::MouseEvent &event)
-{
-    m_acceptingfiles = true;
-}
 
 void DragAndDropTable::dragExport()
 {
-    if (!m_selectedFile.exists()) return;   
+    if (!m_selectedFile.exists()) return;
+    m_acceptingfiles = false;
     performExternalDragDropOfFiles(m_selectedFile.getFullPathName(), false);
 }
 
 void DragAndDropTable::showFile(juce::File& file)
 {
-   // m_fileInfo.setButtonText(file.getFileName());
-    //addAndMakeVisible(m_fileInfo);
-    //m_fileInfo.setEnabled(false);
+    m_fileArray.add(file);
+    ++m_mainApp.m_numRows;
     updateContent();
 }
-
 
 /*
  
@@ -264,31 +236,40 @@ void DragAndDropTable::showFile(juce::File& file)
  
  */
 
-int DragAndDropTable::getNumRows()
+int MainComponent::getNumRows()
 {
     
     return m_numRows;
 }
 
-void DragAndDropTable::paintRowBackground(juce::Graphics &g, int rowNumber, int width, int height, bool rowIsSelected)
+void MainComponent::paintRowBackground(juce::Graphics &g, int rowNumber, int width, int height, bool rowIsSelected)
 {
-    g.fillAll (juce::Colours::grey);
+    auto alternateColour = getLookAndFeel().findColour(juce::ListBox::backgroundColourId)
+        .interpolatedWith(getLookAndFeel().findColour(juce::ListBox::textColourId), 0.03f);
+    if (rowIsSelected)
+        g.fillAll(juce::Colours::lightblue);
+    else if (rowNumber % 2)
+        g.fillAll(alternateColour);
 }
 
-void DragAndDropTable::paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
+void MainComponent::paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
 {
     if(columnId == 1){
-    g.setFont(font);
+    g.setFont(m_font);
     g.setColour(juce::Colours::white);
-    g.drawText(m_text, 2, 0, width - 4, height, juce::Justification::centredLeft);
+    g.drawText(m_table.m_fileArray[rowNumber].getFileName(), 2, 0, width - 4, height, juce::Justification::centredLeft);
     g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
     }
     
 }
 
-void DragAndDropTable::cellClicked(int rowNumber, int columnId, const juce::MouseEvent&)
-{
-    DBG("ITS WORKING");
+void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEvent&)
+{    
+    juce::File file = m_table.m_fileArray[rowNumber];
+    m_table.m_selectedFile = file;
+    m_table.dragExport(); 
+
+
 }
 
 
