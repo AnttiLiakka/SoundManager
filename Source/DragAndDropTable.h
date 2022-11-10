@@ -29,7 +29,8 @@ public:
 
     //For drag and drop export
     void dragExport();   
-    void showFile(juce::File& file);       
+    void showFile(juce::File& file, double length);
+    void setAcceptTrue();
 private:
 
     class MainComponent& m_mainApp;
@@ -41,4 +42,9 @@ private:
     juce::Component m_file;
     
     juce::Array<juce::File> m_fileArray;
+    juce::Array<double> m_lengthArray;
+    
+    //For table
+    int m_numRows = 0;
+    juce::Font m_font = (15.0f);
 };

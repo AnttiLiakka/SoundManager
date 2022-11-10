@@ -16,7 +16,8 @@ MainComponent::MainComponent() : m_table(*this)
     m_table.setOutlineThickness(1);
     m_table.getHeader().setSortColumnId(1, true);
     m_table.setMultipleSelectionEnabled(true);
-    m_table.getHeader().addColumn(juce::String(TRANS("File name")), m_columnId, 200);
+    m_table.getHeader().addColumn(juce::String(TRANS("File name")), 1, 200);
+    m_table.getHeader().addColumn(juce::String(TRANS("Duration")), 2, 70);
     
     addAndMakeVisible(m_playStop);
     addAndMakeVisible(m_table);
@@ -171,7 +172,7 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                 loadDroppedFile(file);               
                 
             } catch (juce::String message){
-                juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,TRANS("Loading Sound Error") , message);
+                juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,TRANS("Error Loading the File") , message);
             }
         }
     }
@@ -185,18 +186,35 @@ void DragAndDropTable::loadDroppedFile(const juce::String& path)
     auto fileReader = m_mainApp.m_formatManager.createReaderFor(file);
   
     //Need to check whether the file is valid by using the reader before putting it on the table
-    
+   /* if(fileReader->numChannels == 0)
+    {
+        juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,TRANS("Error Loading the File"), file.getFileName());
+        delete fileReader;
+        return;
+    }
+    */
     m_mainApp.m_sampleBuffer.setSize(fileReader->numChannels,fileReader->lengthInSamples);
     
     fileReader->read(&m_mainApp.m_sampleBuffer, 0, fileReader->lengthInSamples, 0, true, true);
+    
+    double fileLength = fileReader->lengthInSamples / fileReader->sampleRate;
     
     m_mainApp.m_playStop.setEnabled(true);
     
     delete fileReader;
     DBG("file dropped");    
-    showFile(file);
+    showFile(file, fileLength);
     
-    
+}
+
+void DragAndDropTable::showFile(juce::File& file, double length)
+{
+    m_fileArray.add(file);
+    m_lengthArray.add(length);
+    ++m_numRows;
+    updateContent();
+}
+
     /*
      
      
@@ -206,22 +224,23 @@ void DragAndDropTable::loadDroppedFile(const juce::String& path)
      
      
      */
-}
+
 
 
 
 void DragAndDropTable::dragExport()
 {
     if (!m_selectedFile.exists()) return;
-    m_acceptingfiles = false;
-    performExternalDragDropOfFiles(m_selectedFile.getFullPathName(), false);
+    /*  performExternalDragDropOfFiles(m_selectedFile.getFullPathName(), false, nullptr, nullptr);  std::function<void()> dragFinished = [&](){
+        setAcceptTrue();
+    };
+    ); */
 }
 
-void DragAndDropTable::showFile(juce::File& file)
+void DragAndDropTable::setAcceptTrue()
 {
-    m_fileArray.add(file);
-    ++m_mainApp.m_numRows;
-    updateContent();
+    m_acceptingfiles = true;
+    DBG("Accepting Files");
 }
 
 /*
@@ -239,7 +258,7 @@ void DragAndDropTable::showFile(juce::File& file)
 int MainComponent::getNumRows()
 {
     
-    return m_numRows;
+    return m_table.m_numRows;
 }
 
 void MainComponent::paintRowBackground(juce::Graphics &g, int rowNumber, int width, int height, bool rowIsSelected)
@@ -255,10 +274,16 @@ void MainComponent::paintRowBackground(juce::Graphics &g, int rowNumber, int wid
 void MainComponent::paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
 {
     if(columnId == 1){
-    g.setFont(m_font);
+    g.setFont(m_table.m_font);
     g.setColour(juce::Colours::white);
     g.drawText(m_table.m_fileArray[rowNumber].getFileName(), 2, 0, width - 4, height, juce::Justification::centredLeft);
     g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
+    } else if (columnId == 2)
+    {
+        g.setFont(m_table.m_font);
+        g.setColour(juce::Colours::white);
+        g.drawText(juce::String(m_table.m_lengthArray[rowNumber]), 2, 0, width - 4, height, juce::Justification::centredLeft);
+        g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
     }
     
 }
@@ -267,7 +292,7 @@ void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEv
 {    
     juce::File file = m_table.m_fileArray[rowNumber];
     m_table.m_selectedFile = file;
-    m_table.dragExport(); 
+   // m_table.dragExport();
 
 
 }

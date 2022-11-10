@@ -50,8 +50,7 @@ private:
     int m_playPosition = 0;
 
     //For TableModel
-    int m_numRows = 0, m_columnId = 1;
-    juce::Font m_font = (19.0f);
+    
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
