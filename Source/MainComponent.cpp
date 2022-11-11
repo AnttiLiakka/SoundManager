@@ -12,7 +12,6 @@ MainComponent::MainComponent() : m_table(*this)
     m_playStop.setEnabled(false);
 
     m_table.setModel(this);
-    m_table.setColour(juce::ListBox::outlineColourId, juce::Colours::yellow);
     m_table.setOutlineThickness(1);
     m_table.getHeader().setSortColumnId(1, true);
     m_table.setMultipleSelectionEnabled(true);
@@ -108,7 +107,7 @@ void MainComponent::releaseResources()
 void MainComponent::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    g.fillAll (juce::Colours::darkgrey);
 
     // You can add your drawing code here!
  
@@ -160,52 +159,28 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
         if (isInterestedInFileDrag(file))
         {
            
-            auto testingFile = juce::File(file);
+            auto fileToTest = juce::File(file);
             
             try {
-                if(testingFile.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
-                if(!testingFile.hasFileExtension("wav")   )throw TRANS("Please select a Wav file");
-                if(!testingFile.existsAsFile())throw TRANS("That file doesn't exist!!");
+                if(fileToTest.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
+                if(!fileToTest.hasFileExtension("wav")   )throw TRANS("Please select a Wav file");
+                if(!fileToTest.existsAsFile())throw TRANS("That file doesn't exist!!");
                 
+                auto fileReader = m_mainApp.m_formatManager.createReaderFor(fileToTest);
+                if(fileReader == nullptr) throw TRANS("Error Loading the File");
                 
+                double fileLength = fileReader->lengthInSamples / fileReader->sampleRate;
+                delete fileReader;
                 //load file
-                loadDroppedFile(file);               
+                showFile(fileToTest, fileLength);
                 
             } catch (juce::String message){
-                juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,TRANS("Error Loading the File") , message);
+                juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,fileToTest.getFileName() , message);
             }
         }
     }
 }
 
-
-void DragAndDropTable::loadDroppedFile(const juce::String& path)
-{
-    
-    auto file = juce::File(path);
-    auto fileReader = m_mainApp.m_formatManager.createReaderFor(file);
-  
-    //Need to check whether the file is valid by using the reader before putting it on the table
-   /* if(fileReader->numChannels == 0)
-    {
-        juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,TRANS("Error Loading the File"), file.getFileName());
-        delete fileReader;
-        return;
-    }
-    */
-    m_mainApp.m_sampleBuffer.setSize(fileReader->numChannels,fileReader->lengthInSamples);
-    
-    fileReader->read(&m_mainApp.m_sampleBuffer, 0, fileReader->lengthInSamples, 0, true, true);
-    
-    double fileLength = fileReader->lengthInSamples / fileReader->sampleRate;
-    
-    m_mainApp.m_playStop.setEnabled(true);
-    
-    delete fileReader;
-    DBG("file dropped");    
-    showFile(file, fileLength);
-    
-}
 
 void DragAndDropTable::showFile(juce::File& file, double length)
 {
@@ -213,6 +188,21 @@ void DragAndDropTable::showFile(juce::File& file, double length)
     m_lengthArray.add(length);
     ++m_numRows;
     updateContent();
+}
+
+void MainComponent::prepFileToPlay(int rowNumber)
+{
+    
+    auto fileReader = m_formatManager.createReaderFor(m_table.m_fileArray[rowNumber]);
+    
+    m_sampleBuffer.setSize(fileReader->numChannels, fileReader->lengthInSamples);
+    
+    fileReader->read(&m_sampleBuffer, 0, fileReader->lengthInSamples, 0, true, true);
+    
+    m_playStop.setEnabled(true);
+    
+    delete fileReader;
+    
 }
 
     /*
@@ -230,17 +220,15 @@ void DragAndDropTable::showFile(juce::File& file, double length)
 
 void DragAndDropTable::dragExport()
 {
+    m_acceptingfiles = false;
     if (!m_selectedFile.exists()) return;
-    /*  performExternalDragDropOfFiles(m_selectedFile.getFullPathName(), false, nullptr, nullptr);  std::function<void()> dragFinished = [&](){
-        setAcceptTrue();
-    };
-    ); */
-}
-
-void DragAndDropTable::setAcceptTrue()
-{
-    m_acceptingfiles = true;
-    DBG("Accepting Files");
+    DBG("Dragging");
+    performExternalDragDropOfFiles(m_selectedFile.getFullPathName(), false, nullptr, [this](){
+        m_acceptingfiles = true;
+        DBG("Drag Finished");
+    }
+    );
+    
 }
 
 /*
@@ -263,12 +251,10 @@ int MainComponent::getNumRows()
 
 void MainComponent::paintRowBackground(juce::Graphics &g, int rowNumber, int width, int height, bool rowIsSelected)
 {
-    auto alternateColour = getLookAndFeel().findColour(juce::ListBox::backgroundColourId)
-        .interpolatedWith(getLookAndFeel().findColour(juce::ListBox::textColourId), 0.03f);
     if (rowIsSelected)
-        g.fillAll(juce::Colours::lightblue);
-    else if (rowNumber % 2)
-        g.fillAll(alternateColour);
+        g.fillAll(juce::Colours::darkred);
+    else
+        g.fillAll(juce::Colours::darkgrey);
 }
 
 void MainComponent::paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
@@ -292,9 +278,12 @@ void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEv
 {    
     juce::File file = m_table.m_fileArray[rowNumber];
     m_table.m_selectedFile = file;
-   // m_table.dragExport();
+    m_table.dragExport();
+}
 
-
+void MainComponent::selectedRowsChanged(int lastRowSelected)
+{
+    prepFileToPlay(lastRowSelected);
 }
 
 

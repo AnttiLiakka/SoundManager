@@ -25,12 +25,11 @@ public:
     //For drag and drop import
     bool isInterestedInFileDrag(const juce::StringArray& files) override;
     void filesDropped(const juce::StringArray& files, int x, int y) override;
-    void loadDroppedFile(const juce::String& path);
 
     //For drag and drop export
     void dragExport();   
     void showFile(juce::File& file, double length);
-    void setAcceptTrue();
+    
 private:
 
     class MainComponent& m_mainApp;
