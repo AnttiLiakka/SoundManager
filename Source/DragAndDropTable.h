@@ -15,6 +15,26 @@
 class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropContainer, public juce::FileDragAndDropTarget
 {
     friend class MainComponent;
+    
+    struct FileInfo
+    {
+        juce::File file;
+        double lengthInSeconds;
+        double sampleRate;
+        
+        FileInfo(juce::File _file,double _lengthInSeconds,double _sampleRate):
+            file(_file),
+            lengthInSeconds(_lengthInSeconds),
+            sampleRate(_sampleRate)
+        {
+            
+        }
+        FileInfo()
+        {
+        }
+    };
+    
+    
 public:
     DragAndDropTable(class MainComponent& mainApp) : TableListBox("table", nullptr), DragAndDropContainer(),
         m_mainApp(mainApp)
@@ -28,7 +48,7 @@ public:
 
     //For drag and drop export
     void dragExport();   
-    void showFile(juce::File& file, double length);
+    void showFile(juce::File& file, double length,double sampleRate);
     
 private:
 
@@ -37,10 +57,11 @@ private:
     bool m_acceptingfiles = true;
     
     juce::TextButton m_fileInfo;
-    juce::File m_selectedFile;    
+    juce::File m_selectedFile;
+    juce::File m_previouslySelectedFile;
     juce::Component m_file;
     
-    juce::Array<juce::File> m_fileArray;
+    juce::Array<FileInfo> m_fileArray;
     juce::Array<double> m_lengthArray;
     
     //For table
