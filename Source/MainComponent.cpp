@@ -15,8 +15,11 @@ MainComponent::MainComponent() : m_table(*this)
     m_table.setOutlineThickness(1);
     m_table.getHeader().setSortColumnId(1, true);
     m_table.setMultipleSelectionEnabled(true);
-    m_table.getHeader().addColumn(juce::String(TRANS("File name")), 1, 200);
-    m_table.getHeader().addColumn(juce::String(TRANS("Duration")), 2, 70);
+    m_table.getHeader().addColumn(juce::String(TRANS("File Name")), 1, 200);
+    m_table.getHeader().addColumn(juce::String(TRANS("Duration(Seconds)")), 2, 100);
+    m_table.getHeader().addColumn(juce::String(TRANS("Sample Rate")), 3, 100);
+    m_table.getHeader().addColumn(juce::String(TRANS("Channels")), 4, 70);
+    m_table.getHeader().addColumn(juce::String(TRANS("Description")), 5, 250);
     
     addAndMakeVisible(m_playStop);
     addAndMakeVisible(m_table);
@@ -169,8 +172,11 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                 auto fileReader = m_mainApp.m_formatManager.createReaderFor(fileToTest);
                 if(fileReader == nullptr) throw TRANS("Error Loading the File");
                 auto sampleRate =fileReader->sampleRate;
-                double fileLength = fileReader->lengthInSamples / sampleRate;                //load file
-                showFile(fileToTest, fileLength,sampleRate);
+                double fileLength = fileReader->lengthInSamples / sampleRate;
+                int numChannels = fileReader->numChannels;
+                
+                
+                showFile(fileToTest, fileLength,sampleRate, numChannels);
                 delete fileReader;
 
                 
@@ -182,10 +188,9 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
 }
 
 
-void DragAndDropTable::showFile(juce::File& file, double length, double sampleRate)
+void DragAndDropTable::showFile(juce::File& file, double length, double sampleRate, int numChannels)
 {
-    m_fileArray.add(FileInfo(file,length,sampleRate));
-    m_lengthArray.add(length);
+    m_fileArray.add(FileInfo(file,length,sampleRate, numChannels));
     ++m_numRows;
     updateContent();
 }
@@ -269,16 +274,25 @@ void MainComponent::paintRowBackground(juce::Graphics &g, int rowNumber, int wid
 
 void MainComponent::paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
 {
-    if(columnId == 1){
     g.setFont(m_table.m_font);
+    if(columnId == 1){
     g.setColour(juce::Colours::white);
     g.drawText(m_table.m_fileArray[rowNumber].file.getFileName(), 2, 0, width - 4, height, juce::Justification::centredLeft);
     g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
     } else if (columnId == 2)
     {
-        g.setFont(m_table.m_font);
         g.setColour(juce::Colours::white);
-        g.drawText(juce::String(m_table.m_fileArray[rowNumber].lengthInSeconds), 2, 0, width - 4, height, juce::Justification::centredLeft);
+        g.drawText(juce::String(m_table.m_fileArray[rowNumber].lengthInSeconds), 2, 0, width - 4, height, juce::Justification::centred);
+        g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
+    } else if (columnId == 3)
+    {
+        g.setColour(juce::Colours::white);
+        g.drawText(juce::String(m_table.m_fileArray[rowNumber].sampleRate), 2, 0, width - 4, height, juce::Justification::centred);
+        g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
+    } else if (columnId == 4)
+    {
+        g.setColour(juce::Colours::white);
+        g.drawText(juce::String(m_table.m_fileArray[rowNumber].numChannels), 2, 0, width - 4, height, juce::Justification::centred);
         g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
     }
     
@@ -296,7 +310,14 @@ void MainComponent::selectedRowsChanged(int lastRowSelected)
     prepFileToPlay(lastRowSelected);
 }
 
-
+juce::Component* MainComponent::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component *existingComponentToUpdate)
+{
+    if (columnId == 5)
+    {
+        ;
+    }
+    return nullptr;
+}
 
 
 

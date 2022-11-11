@@ -21,11 +21,15 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
         juce::File file;
         double lengthInSeconds;
         double sampleRate;
+        int numChannels;
+        juce::String description;
         
-        FileInfo(juce::File _file,double _lengthInSeconds,double _sampleRate):
+        FileInfo(juce::File _file,double _lengthInSeconds,double _sampleRate, int _numChannels):
             file(_file),
             lengthInSeconds(_lengthInSeconds),
-            sampleRate(_sampleRate)
+            sampleRate(_sampleRate),
+            numChannels(_numChannels),
+            description()
         {
             
         }
@@ -48,7 +52,7 @@ public:
 
     //For drag and drop export
     void dragExport();   
-    void showFile(juce::File& file, double length,double sampleRate);
+    void showFile(juce::File& file, double length,double sampleRate, int numChannels);
     
 private:
 
@@ -62,9 +66,9 @@ private:
     juce::Component m_file;
     
     juce::Array<FileInfo> m_fileArray;
-    juce::Array<double> m_lengthArray;
     
     //For table
     int m_numRows = 0;
     juce::Font m_font = (15.0f);
+    juce::Label m_description;
 };

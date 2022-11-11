@@ -36,6 +36,7 @@ public:
     //Other TableListBoxModel functions
     void cellClicked(int rowNumber, int columnId, const juce::MouseEvent&) override;
     void selectedRowsChanged(int lastRowSelected) override;
+    juce::Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component *existingComponentToUpdate) override;
 
 
 private:
