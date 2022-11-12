@@ -29,7 +29,7 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
             lengthInSeconds(_lengthInSeconds),
             sampleRate(_sampleRate),
             numChannels(_numChannels),
-            description()
+            description(juce::String("Replace pls -"))
         {
             
         }
@@ -54,6 +54,9 @@ public:
     void dragExport();   
     void showFile(juce::File& file, double length,double sampleRate, int numChannels);
     
+    //for table
+    void updateDescription(juce::String newString, int rowNum);
+    
 private:
 
     class MainComponent& m_mainApp;
@@ -70,5 +73,4 @@ private:
     //For table
     int m_numRows = 0;
     juce::Font m_font = (15.0f);
-    juce::Label m_description;
 };

@@ -8,7 +8,7 @@
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent  : public juce::AudioAppComponent, juce::TableListBoxModel
+class MainComponent  : public juce::AudioAppComponent, juce::TableListBoxModel, juce::ChangeBroadcaster
 {
     friend class DragAndDropTable;
 public:

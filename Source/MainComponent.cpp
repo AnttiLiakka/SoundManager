@@ -200,11 +200,11 @@ void MainComponent::prepFileToPlay(int rowNumber)
     if(rowNumber >= 0 && rowNumber < m_table.m_fileArray.size()){
         auto fileReader = m_formatManager.createReaderFor(m_table.m_fileArray[rowNumber].file);
     
-        m_sampleBuffer.setSize(2, fileReader->lengthInSamples);
+        m_sampleBuffer.setSize(2, static_cast<int>(fileReader->lengthInSamples));
     
         auto useRightChannel = fileReader->numChannels > 1;
         
-        fileReader->read(&m_sampleBuffer, 0, fileReader->lengthInSamples, 0, true, useRightChannel);
+        fileReader->read(&m_sampleBuffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, useRightChannel);
     
         m_playStop.setEnabled(true);
     
@@ -303,6 +303,7 @@ void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEv
     juce::File file = m_table.m_fileArray[rowNumber].file;
     m_table.m_selectedFile = file;
     m_table.dragExport();
+    DBG(m_table.m_fileArray[rowNumber].description);
 }
 
 void MainComponent::selectedRowsChanged(int lastRowSelected)
@@ -314,10 +315,31 @@ juce::Component* MainComponent::refreshComponentForCell(int rowNumber, int colum
 {
     if (columnId == 5)
     {
-        ;
+        juce::Label * label = static_cast<juce::Label *>(existingComponentToUpdate);
+        if (label == nullptr)
+        {
+            label = new juce::Label { "Description" };
+        }
+        label->setEditable(false, true, false);
+        if (label->getText() == m_table.m_fileArray[rowNumber].description)
+        {
+            DBG("It is the same");
+            return existingComponentToUpdate;
+        }
+        m_table.updateDescription(label->getText(), rowNumber);
+        label->setText(m_table.m_fileArray[rowNumber].description, juce::NotificationType::dontSendNotification);
+        existingComponentToUpdate = label;
     }
-    return nullptr;
+    return existingComponentToUpdate;
 }
+
+void DragAndDropTable::updateDescription(juce::String newString, int rowNum)
+{
+    juce::String description = newString;
+    m_fileArray[rowNum].description = juce::String(description);
+    DBG("Old String - "<< m_fileArray[rowNum].description << "New String - " <<description);
+}
+
 
 
 
