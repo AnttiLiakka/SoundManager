@@ -41,7 +41,7 @@ public:
     
     //PopupMenu functions
     void cellPopupAction(int selection, int rowNumber);
-
+    
 
 private:
     //==============================================================================

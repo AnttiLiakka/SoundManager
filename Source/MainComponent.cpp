@@ -165,13 +165,13 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
             
             try {
                 if(fileToTest.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
-                if(!fileToTest.hasFileExtension("wav")   )throw TRANS("Please select a Wav file");
+                if(!fileToTest.hasFileExtension("wav;aiff")   )throw TRANS("Please select wav or aiff file");
                 if(!fileToTest.existsAsFile())throw TRANS("That file doesn't exist!!");
                 
                 auto fileReader = m_mainApp.m_formatManager.createReaderFor(fileToTest);
                 if(fileReader == nullptr) throw TRANS("Error Loading the File");
                 auto sampleRate =fileReader->sampleRate;
-                double fileLength = fileReader->lengthInSamples / sampleRate;
+                double fileLength = std::round( fileReader->lengthInSamples / sampleRate);
                 int numChannels = fileReader->numChannels;
                 juce::String filePath = fileToTest.getFullPathName();
                 
@@ -316,6 +316,7 @@ void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEv
         cellMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
                            {
                                 cellPopupAction(selection, rowNumber);
+                                m_table.deselectAllRows();
                            }
         );
         
@@ -411,16 +412,15 @@ void MainComponent::cellPopupAction(int selection, int rowNumber)
    }
    else if(selection == 3)
    {
-       m_table.m_fileArray[rowNumber].addCategory("Ambiance");
-       
+       m_table.m_fileArray[rowNumber].addCategory(juce::String("Ambiance"));
    }
    else if(selection == 4)
    {
-       m_table.m_fileArray[rowNumber].addCategory("Impact");
+       m_table.m_fileArray[rowNumber].addCategory(juce::String("Impact"));
    }
    else if(selection == 5)
    {
-       m_table.m_fileArray[rowNumber].addCategory("GunShot");
+       m_table.m_fileArray[rowNumber].addCategory(juce::String("GunShot"));
    }
 }
 

@@ -48,8 +48,7 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
             if(!categoryExists(newCategory))
             {
                 DBG("Adding Category: " + newCategory);
-                categories.push_back(newCategory);
-                DBG("File now has " + juce::String(categories.size()) + " Categories");
+                categories.push_back(juce::String(newCategory));
             }
         }
         
