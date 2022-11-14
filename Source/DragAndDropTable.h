@@ -23,13 +23,58 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
         double sampleRate;
         int numChannels;
         juce::String description;
+        juce::String filePath;
+        std::vector<juce::String> categories;
         
-        FileInfo(juce::File _file,double _lengthInSeconds,double _sampleRate, int _numChannels):
+        void printCategories()
+        {
+            for(int i = 0 ; i < categories.size();++i)
+            {
+                DBG("Category: " + categories[i]);
+            }
+        }
+        
+        bool categoryExists(juce::String newCategory)
+        {
+            for(int i = 0 ; i < categories.size();++i)
+            {
+                if(  categories[i].equalsIgnoreCase(newCategory)   ) return true;
+            }
+            return false;
+        }
+        void addCategory(juce::String newCategory)
+        {
+            if(!categoryExists(newCategory))
+            {
+                categories.push_back(newCategory);
+            }
+        }
+        
+        
+        void changeDescription(juce::String newDescription)
+        {
+            description = newDescription;
+            // DBG("Desc: " + description);
+            //DBG("New Desc: " + newDescription);
+            printInfo();
+        }
+        
+        void printInfo()
+        {
+            DBG("Length: " + juce::String(lengthInSeconds));
+            DBG("SampleRate: " + juce::String(sampleRate));
+            DBG("Channels: " + juce::String(numChannels));
+            DBG("Description: " + description);
+            DBG("File path: " + filePath);
+        }
+        
+        FileInfo(juce::File _file,double _lengthInSeconds,double _sampleRate, int _numChannels, juce::String _filePath):
             file(_file),
             lengthInSeconds(_lengthInSeconds),
             sampleRate(_sampleRate),
             numChannels(_numChannels),
-            description(juce::String("Replace pls -"))
+            description("replace"),
+            filePath(_filePath)
         {
             
         }
@@ -52,10 +97,12 @@ public:
 
     //For drag and drop export
     void dragExport();   
-    void showFile(juce::File& file, double length,double sampleRate, int numChannels);
+    void showFile(juce::File& file, double length,double sampleRate, int numChannels, juce::String filePath);
     
     //for table
     void updateDescription(juce::String newString, int rowNum);
+    
+    void printFileArray();
     
 private:
 
@@ -63,12 +110,11 @@ private:
     
     bool m_acceptingfiles = true;
     
-    juce::TextButton m_fileInfo;
     juce::File m_selectedFile;
     juce::File m_previouslySelectedFile;
     juce::Component m_file;
     
-    juce::Array<FileInfo> m_fileArray;
+    std::vector<FileInfo> m_fileArray;
     
     //For table
     int m_numRows = 0;

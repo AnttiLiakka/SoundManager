@@ -55,6 +55,7 @@ MainComponent::MainComponent() : m_table(*this)
 MainComponent::~MainComponent()
 {
     // This shuts down the audio device and clears the audio source.
+    m_table.setModel(nullptr);
     shutdownAudio();
 }
 
@@ -174,9 +175,10 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                 auto sampleRate =fileReader->sampleRate;
                 double fileLength = fileReader->lengthInSamples / sampleRate;
                 int numChannels = fileReader->numChannels;
+                juce::String filePath = fileToTest.getFullPathName();
                 
                 
-                showFile(fileToTest, fileLength,sampleRate, numChannels);
+                showFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
                 delete fileReader;
 
                 
@@ -188,9 +190,9 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
 }
 
 
-void DragAndDropTable::showFile(juce::File& file, double length, double sampleRate, int numChannels)
+void DragAndDropTable::showFile(juce::File& file, double length, double sampleRate, int numChannels, juce::String filePath)
 {
-    m_fileArray.add(FileInfo(file,length,sampleRate, numChannels));
+    m_fileArray.push_back(FileInfo(file,length,sampleRate, numChannels, filePath));
     ++m_numRows;
     updateContent();
 }
@@ -229,21 +231,13 @@ void DragAndDropTable::dragExport()
 {
     m_acceptingfiles = false;
     if (!m_selectedFile.exists()) return;
-    DBG("Dragging");
-    
-   // if(m_selectedFile == m_previouslySelectedFile)return;
+
     
     performExternalDragDropOfFiles(m_selectedFile.getFullPathName(), false, this, [this](){
         m_acceptingfiles = true;
         deselectAllRows();
-      //  m_previouslySelectedFile = m_selectedFile;
-//        juce::Timer::callAfterDelay(100,[this](){
-//            m_previouslySelectedFile = juce::File();
-//        });
-//        DBG("Drag Finished");
     }
     );
-    
 }
 
 /*
@@ -298,12 +292,29 @@ void MainComponent::paintCell(juce::Graphics &g, int rowNumber, int columnId, in
     
 }
 
-void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEvent&)
-{    
-    juce::File file = m_table.m_fileArray[rowNumber].file;
-    m_table.m_selectedFile = file;
-    m_table.dragExport();
-    DBG(m_table.m_fileArray[rowNumber].description);
+void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
+{
+    if(mouseEvent.mods.isRightButtonDown())
+    {
+        juce::PopupMenu menu;
+        menu.addItem(1,"Hello");
+         
+        menu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
+                           {
+            
+                            }
+        );
+        
+    }else{
+    
+    
+        juce::File file = m_table.m_fileArray[rowNumber].file;
+        m_table.m_selectedFile = file;
+    
+        m_table.dragExport();
+    
+    }
+    
 }
 
 void MainComponent::selectedRowsChanged(int lastRowSelected)
@@ -318,16 +329,20 @@ juce::Component* MainComponent::refreshComponentForCell(int rowNumber, int colum
         juce::Label * label = static_cast<juce::Label *>(existingComponentToUpdate);
         if (label == nullptr)
         {
-            label = new juce::Label { "Description" };
+            label = new juce::Label;
+            label->onTextChange = [&,label ]()
+            {
+                jassert(label != nullptr);
+                
+                juce::String newDescription = label->getText();
+                m_table.updateDescription(newDescription, rowNumber);
+                m_table.printFileArray();
+            };
+            
         }
         label->setEditable(false, true, false);
-        if (label->getText() == m_table.m_fileArray[rowNumber].description)
-        {
-            DBG("It is the same");
-            return existingComponentToUpdate;
-        }
-        m_table.updateDescription(label->getText(), rowNumber);
-        label->setText(m_table.m_fileArray[rowNumber].description, juce::NotificationType::dontSendNotification);
+      //  juce::String newDescription = label->getText();
+      //  m_table.updateDescription(newDescription, rowNumber);
         existingComponentToUpdate = label;
     }
     return existingComponentToUpdate;
@@ -335,9 +350,23 @@ juce::Component* MainComponent::refreshComponentForCell(int rowNumber, int colum
 
 void DragAndDropTable::updateDescription(juce::String newString, int rowNum)
 {
-    juce::String description = newString;
-    m_fileArray[rowNum].description = juce::String(description);
-    DBG("Old String - "<< m_fileArray[rowNum].description << "New String - " <<description);
+    //DBG(newString);
+    
+    m_fileArray[rowNum].changeDescription(newString);
+   // DBG(m_fileArray[rowNum].description);
+    
+}
+
+void DragAndDropTable::printFileArray()
+{
+    int arrayLength = m_fileArray.size();
+    DBG("*******************************");
+    DBG("Number of Elements: " + juce::String(arrayLength));
+    for(int i = 0; i < arrayLength; ++i)
+ {
+     m_fileArray[i].printInfo();
+ }
+    DBG("*******************************");
 }
 
 

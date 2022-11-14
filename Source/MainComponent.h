@@ -8,7 +8,7 @@
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent  : public juce::AudioAppComponent, juce::TableListBoxModel, juce::ChangeBroadcaster
+class MainComponent  : public juce::AudioAppComponent, juce::TableListBoxModel
 {
     friend class DragAndDropTable;
 public:
@@ -34,7 +34,7 @@ public:
 
 
     //Other TableListBoxModel functions
-    void cellClicked(int rowNumber, int columnId, const juce::MouseEvent&) override;
+    void cellClicked(int rowNumber, int columnId, const juce::MouseEvent& mouseEvent) override;
     void selectedRowsChanged(int lastRowSelected) override;
     juce::Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component *existingComponentToUpdate) override;
 
