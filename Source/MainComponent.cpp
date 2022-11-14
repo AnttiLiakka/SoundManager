@@ -13,8 +13,6 @@ MainComponent::MainComponent() : m_table(*this)
 
     m_table.setModel(this);
     m_table.setOutlineThickness(1);
-    m_table.getHeader().setSortColumnId(1, true);
-    m_table.setMultipleSelectionEnabled(true);
     m_table.getHeader().addColumn(juce::String(TRANS("File Name")), 1, 200);
     m_table.getHeader().addColumn(juce::String(TRANS("Duration(Seconds)")), 2, 100);
     m_table.getHeader().addColumn(juce::String(TRANS("Sample Rate")), 3, 100);
@@ -121,8 +119,8 @@ void MainComponent::paint (juce::Graphics& g)
 void MainComponent::resized()
 {
     auto bounds = getLocalBounds();
-    //auto headerBar = bounds.removeFromTop(30);
     auto transpControl = bounds.removeFromBottom(35);
+   // auto categories = bounds.removeFromLeft(getWidth() / 6);
 
     m_playStop.setBounds(transpControl);
     m_table.setBounds(bounds);
@@ -229,15 +227,18 @@ void MainComponent::prepFileToPlay(int rowNumber)
 
 void DragAndDropTable::dragExport()
 {
+    if (!m_selectedFile.exists())
+    {
+        m_isDragging = false;
+        return;
+    }
     m_acceptingfiles = false;
-    if (!m_selectedFile.exists()) return;
-
-    
     performExternalDragDropOfFiles(m_selectedFile.getFullPathName(), false, this, [this](){
         m_acceptingfiles = true;
         deselectAllRows();
     }
     );
+    juce::Timer::callAfterDelay(500, [&](){m_isDragging = false;});
 }
 
 /*
@@ -296,25 +297,44 @@ void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEv
 {
     if(mouseEvent.mods.isRightButtonDown())
     {
-        juce::PopupMenu menu;
-        menu.addItem(1,"Hello");
+        juce::PopupMenu cellMenu;
+        juce::PopupMenu cateMenu;
+    
+        
+        cellMenu.addItem(1,TRANS("Delete Item"));
+        cellMenu.addSeparator();
+        
+        
+        cateMenu.addItem(2, TRANS("Print Categories"));
+        cateMenu.addSeparator();
+        cateMenu.addItem(3, TRANS("Ambiance"));
+        cateMenu.addItem(4, TRANS("Impact"));
+        cateMenu.addItem(5, TRANS("GunShot"));
+        
+        cellMenu.addSubMenu(TRANS("Add to Category"), cateMenu);
          
-        menu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
+        cellMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
                            {
-            
-                            }
+                                cellPopupAction(selection, rowNumber);
+                           }
         );
         
-    }else{
-    
-    
+    }else if (mouseEvent.mods.isCommandDown())
+    {
+        if(m_table.m_isDragging) return;
+        m_table.m_isDragging = true;
         juce::File file = m_table.m_fileArray[rowNumber].file;
         m_table.m_selectedFile = file;
-    
         m_table.dragExport();
+        m_table.deselectAllRows();
     
     }
     
+}
+
+void DragAndDropTable::backgroundClicked (const juce::MouseEvent&)
+{
+    deselectAllRows();
 }
 
 void MainComponent::selectedRowsChanged(int lastRowSelected)
@@ -341,8 +361,6 @@ juce::Component* MainComponent::refreshComponentForCell(int rowNumber, int colum
             
         }
         label->setEditable(false, true, false);
-      //  juce::String newDescription = label->getText();
-      //  m_table.updateDescription(newDescription, rowNumber);
         existingComponentToUpdate = label;
     }
     return existingComponentToUpdate;
@@ -350,16 +368,12 @@ juce::Component* MainComponent::refreshComponentForCell(int rowNumber, int colum
 
 void DragAndDropTable::updateDescription(juce::String newString, int rowNum)
 {
-    //DBG(newString);
-    
     m_fileArray[rowNum].changeDescription(newString);
-   // DBG(m_fileArray[rowNum].description);
-    
 }
 
 void DragAndDropTable::printFileArray()
 {
-    int arrayLength = m_fileArray.size();
+    int arrayLength =  static_cast<int>(m_fileArray.size());
     DBG("*******************************");
     DBG("Number of Elements: " + juce::String(arrayLength));
     for(int i = 0; i < arrayLength; ++i)
@@ -369,6 +383,46 @@ void DragAndDropTable::printFileArray()
     DBG("*******************************");
 }
 
+/*
+ 
+ 
+ 
+ THIS SECTION IS FOR THE Menus
+ 
+ 
+ 
+ 
+ */
+
+void MainComponent::cellPopupAction(int selection, int rowNumber)
+{
+    // 1 = Delete
+    // 2 = New Category
+    // 3 = Ambiance
+    // 4 = Impact
+    // 5 = Gunshot
+   if(selection == 1)
+   {
+       DBG("Delete This Row!");
+       m_table.updateContent();
+   } else if(selection == 2)
+   {
+       m_table.m_fileArray[rowNumber].printCategories();
+   }
+   else if(selection == 3)
+   {
+       m_table.m_fileArray[rowNumber].addCategory("Ambiance");
+       
+   }
+   else if(selection == 4)
+   {
+       m_table.m_fileArray[rowNumber].addCategory("Impact");
+   }
+   else if(selection == 5)
+   {
+       m_table.m_fileArray[rowNumber].addCategory("GunShot");
+   }
+}
 
 
 

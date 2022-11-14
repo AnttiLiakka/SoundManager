@@ -37,6 +37,10 @@ public:
     void cellClicked(int rowNumber, int columnId, const juce::MouseEvent& mouseEvent) override;
     void selectedRowsChanged(int lastRowSelected) override;
     juce::Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component *existingComponentToUpdate) override;
+    
+    
+    //PopupMenu functions
+    void cellPopupAction(int selection, int rowNumber);
 
 
 private:
@@ -52,8 +56,6 @@ private:
     
     bool m_playSoundFile = false;
     int m_playPosition = 0;
-
-    //For TableModel
     
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)

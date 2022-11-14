@@ -28,6 +28,7 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
         
         void printCategories()
         {
+            DBG("Number of Categories: " + juce::String(categories.size()));
             for(int i = 0 ; i < categories.size();++i)
             {
                 DBG("Category: " + categories[i]);
@@ -46,7 +47,9 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
         {
             if(!categoryExists(newCategory))
             {
+                DBG("Adding Category: " + newCategory);
                 categories.push_back(newCategory);
+                DBG("File now has " + juce::String(categories.size()) + " Categories");
             }
         }
         
@@ -54,9 +57,6 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
         void changeDescription(juce::String newDescription)
         {
             description = newDescription;
-            // DBG("Desc: " + description);
-            //DBG("New Desc: " + newDescription);
-            printInfo();
         }
         
         void printInfo()
@@ -73,7 +73,7 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
             lengthInSeconds(_lengthInSeconds),
             sampleRate(_sampleRate),
             numChannels(_numChannels),
-            description("replace"),
+            description(),
             filePath(_filePath)
         {
             
@@ -100,6 +100,7 @@ public:
     void showFile(juce::File& file, double length,double sampleRate, int numChannels, juce::String filePath);
     
     //for table
+    void backgroundClicked (const juce::MouseEvent&) override;
     void updateDescription(juce::String newString, int rowNum);
     
     void printFileArray();
@@ -109,6 +110,7 @@ private:
     class MainComponent& m_mainApp;
     
     bool m_acceptingfiles = true;
+    bool m_isDragging = false;
     
     juce::File m_selectedFile;
     juce::File m_previouslySelectedFile;
