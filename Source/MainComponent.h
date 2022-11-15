@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "DragAndDropTable.h"
+#include "CategoryListModel.h"
 
 //==============================================================================
 /*
@@ -11,6 +12,7 @@
 class MainComponent  : public juce::AudioAppComponent, juce::TableListBoxModel
 {
     friend class DragAndDropTable;
+    friend class CategoryListModel;
 public:
     //==============================================================================
     MainComponent();
@@ -40,7 +42,7 @@ public:
     
     
     //PopupMenu functions
-    void cellPopupAction(int selection, int rowNumber);
+    void cellPopupAction(int selection, int rowNumber, int numMenuOptions);
     
 
 private:
@@ -50,6 +52,16 @@ private:
   
     DragAndDropTable m_table;
     
+    juce::ListBox m_categories;
+    
+    CategoryListModel m_categoryModel;
+    
+    //Potential search bar for categories
+    std::unique_ptr<juce::TextEditor> m_categoryHeader;
+    
+    
+    
+    
     juce::AudioBuffer<float> m_sampleBuffer;
     juce::AudioFormatManager m_formatManager;
     juce::TextButton m_playStop;
@@ -57,6 +69,10 @@ private:
     bool m_playSoundFile = false;
     int m_playPosition = 0;
     
+    int m_lastSelectedRow;
+    
+    //For cellMenu
+
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

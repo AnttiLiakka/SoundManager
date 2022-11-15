@@ -53,6 +53,7 @@
 		5014E4B1F4E0093E8BFA96AE /* juce_audio_utils */ /* juce_audio_utils */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_utils; path = /Users/anna/Documents/Juce/JUCE/modules/juce_audio_utils; sourceTree = "<absolute>"; };
 		51397B312E5454BEBF83CFD8 /* MainComponent.h */ /* MainComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MainComponent.h; path = ../../Source/MainComponent.h; sourceTree = SOURCE_ROOT; };
 		55B864DAFA6A4F59899D2B83 /* juce_audio_formats */ /* juce_audio_formats */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_formats; path = /Users/anna/Documents/Juce/JUCE/modules/juce_audio_formats; sourceTree = "<absolute>"; };
+		56D65C1E367F5AE4D0EB98E7 /* CategoryListModel.h */ /* CategoryListModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CategoryListModel.h; path = ../../Source/CategoryListModel.h; sourceTree = SOURCE_ROOT; };
 		57D3821F7E80FF2EE4A685F8 /* juce_events */ /* juce_events */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_events; path = /Users/anna/Documents/Juce/JUCE/modules/juce_events; sourceTree = "<absolute>"; };
 		5CE34F974EBBDEF5E1BAE090 /* juce_data_structures */ /* juce_data_structures */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_data_structures; path = /Users/anna/Documents/Juce/JUCE/modules/juce_data_structures; sourceTree = "<absolute>"; };
 		642150DAA3D1E7C182CBC2E9 /* Accelerate.framework */ /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
@@ -108,6 +109,7 @@
 		11701249D1E49875029BCF82 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				56D65C1E367F5AE4D0EB98E7,
 				C8C451D0BACD4C3BAC8C0B0B,
 				EB4E016873DB71024A7D5F2A,
 				51397B312E5454BEBF83CFD8,

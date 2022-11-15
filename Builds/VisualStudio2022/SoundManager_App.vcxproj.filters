@@ -2856,6 +2856,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\CategoryListModel.h">
+      <Filter>SoundManager\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\DragAndDropTable.h">
       <Filter>SoundManager\Source</Filter>
     </ClInclude>

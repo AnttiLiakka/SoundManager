@@ -1,7 +1,9 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent() : m_table(*this)
+MainComponent::MainComponent() : m_table(*this),
+                                 m_categories("categories", nullptr),
+                                 m_categoryModel(*this)
 {
     // Make sure you set the size of the component after
     // you add any child components
@@ -10,7 +12,7 @@ MainComponent::MainComponent() : m_table(*this)
   
     m_playStop.setButtonText(TRANS("Play"));
     m_playStop.setEnabled(false);
-
+    
     m_table.setModel(this);
     m_table.setOutlineThickness(1);
     m_table.getHeader().addColumn(juce::String(TRANS("File Name")), 1, 200);
@@ -19,8 +21,11 @@ MainComponent::MainComponent() : m_table(*this)
     m_table.getHeader().addColumn(juce::String(TRANS("Channels")), 4, 70);
     m_table.getHeader().addColumn(juce::String(TRANS("Description")), 5, 250);
     
+    m_categories.setModel(&m_categoryModel);
+    
     addAndMakeVisible(m_playStop);
     addAndMakeVisible(m_table);
+    addAndMakeVisible(m_categories);
     
     m_playStop.onClick = [&]()
     {
@@ -32,7 +37,11 @@ MainComponent::MainComponent() : m_table(*this)
         }
     };
     
-
+    m_categoryModel.addCategoryToList(TRANS("Ambiance"));
+    m_categoryModel.addCategoryToList(TRANS("Impact"));
+    m_categoryModel.addCategoryToList(TRANS("Gunshot"));
+    m_categoryModel.addCategoryToList(TRANS("Footsteps"));
+    m_categoryModel.addCategoryToList(TRANS("Weather"));
 
     setSize (800, 600);
 
@@ -54,6 +63,7 @@ MainComponent::~MainComponent()
 {
     // This shuts down the audio device and clears the audio source.
     m_table.setModel(nullptr);
+    m_categories.setModel(nullptr);
     shutdownAudio();
 }
 
@@ -120,8 +130,9 @@ void MainComponent::resized()
 {
     auto bounds = getLocalBounds();
     auto transpControl = bounds.removeFromBottom(35);
-   // auto categories = bounds.removeFromLeft(getWidth() / 6);
-
+    auto category = bounds.removeFromLeft(100);
+        
+    m_categories.setBounds(category);
     m_playStop.setBounds(transpControl);
     m_table.setBounds(bounds);
 }
@@ -264,7 +275,7 @@ void MainComponent::paintRowBackground(juce::Graphics &g, int rowNumber, int wid
     if (rowIsSelected)
         g.fillAll(juce::Colours::darkred);
     else
-        g.fillAll(juce::Colours::darkgrey);
+        g.fillAll(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
 }
 
 void MainComponent::paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
@@ -295,28 +306,33 @@ void MainComponent::paintCell(juce::Graphics &g, int rowNumber, int columnId, in
 
 void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
 {
+    m_lastSelectedRow = rowNumber;
+    
     if(mouseEvent.mods.isRightButtonDown())
     {
-        juce::PopupMenu cellMenu;
-        juce::PopupMenu cateMenu;
-    
+        juce::PopupMenu m_cellMenu;
+        juce::PopupMenu m_cateMenu;
         
-        cellMenu.addItem(1,TRANS("Delete Item"));
-        cellMenu.addSeparator();
+        m_cellMenu.addItem(1,TRANS("Delete Item"));
+        m_cellMenu.addSeparator();
         
         
-        cateMenu.addItem(2, TRANS("Print Categories"));
-        cateMenu.addSeparator();
-        cateMenu.addItem(3, TRANS("Ambiance"));
-        cateMenu.addItem(4, TRANS("Impact"));
-        cateMenu.addItem(5, TRANS("GunShot"));
+        m_cateMenu.addItem(2, TRANS("Print Categories"));
+        m_cateMenu.addSeparator();
         
-        cellMenu.addSubMenu(TRANS("Add to Category"), cateMenu);
-         
-        cellMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
+        for (int i = 0; i < m_categoryModel.numCategories(); ++i)
+        {
+            auto title = m_categoryModel.m_uniqueCategories[i];
+            m_cateMenu.addItem(i + 3, TRANS(title));
+        }
+        
+        m_cellMenu.addSubMenu(TRANS("Add to Category"), m_cateMenu);
+        
+        int cateMenuSize= m_cateMenu.getNumItems();
+        
+        m_cellMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
                            {
-                                cellPopupAction(selection, rowNumber);
-                                m_table.deselectAllRows();
+                                cellPopupAction(selection, m_lastSelectedRow, cateMenuSize);
                            }
         );
         
@@ -324,7 +340,7 @@ void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEv
     {
         if(m_table.m_isDragging) return;
         m_table.m_isDragging = true;
-        juce::File file = m_table.m_fileArray[rowNumber].file;
+        juce::File file = m_table.m_fileArray[m_lastSelectedRow].file;
         m_table.m_selectedFile = file;
         m_table.dragExport();
         m_table.deselectAllRows();
@@ -340,7 +356,8 @@ void DragAndDropTable::backgroundClicked (const juce::MouseEvent&)
 
 void MainComponent::selectedRowsChanged(int lastRowSelected)
 {
-    prepFileToPlay(lastRowSelected);
+    m_lastSelectedRow = lastRowSelected;
+    prepFileToPlay(m_lastSelectedRow);
 }
 
 juce::Component* MainComponent::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component *existingComponentToUpdate)
@@ -388,14 +405,14 @@ void DragAndDropTable::printFileArray()
  
  
  
- THIS SECTION IS FOR THE Menus
+ THIS SECTION IS FOR THE MENUS
  
  
  
  
  */
 
-void MainComponent::cellPopupAction(int selection, int rowNumber)
+void MainComponent::cellPopupAction(int selection, int rowNumber, int numMenuOptions)
 {
     // 1 = Delete
     // 2 = New Category
@@ -406,23 +423,79 @@ void MainComponent::cellPopupAction(int selection, int rowNumber)
    {
        DBG("Delete This Row!");
        m_table.updateContent();
-   } else if(selection == 2)
+   }
+   else if(selection == 2)
    {
        m_table.m_fileArray[rowNumber].printCategories();
    }
-   else if(selection == 3)
+   else
    {
-       m_table.m_fileArray[rowNumber].addCategory(juce::String("Ambiance"));
+       for (int i = 0; i < numMenuOptions; ++i )
+       {
+           if(selection == i + 3)
+           {
+              m_table.m_fileArray[rowNumber].addCategory(m_categoryModel.m_uniqueCategories[i]);
+               return;
+           }
+       }
+       
    }
-   else if(selection == 4)
-   {
-       m_table.m_fileArray[rowNumber].addCategory(juce::String("Impact"));
-   }
-   else if(selection == 5)
-   {
-       m_table.m_fileArray[rowNumber].addCategory(juce::String("GunShot"));
-   }
+       
+    
+}
+        
+
+
+
+
+/*
+ 
+ 
+ 
+ THIS SECTION IS FOR THE CATEGORIES
+ 
+ 
+ 
+ 
+ */
+
+
+int CategoryListModel::getNumRows()
+{
+    int numCategories = static_cast<int>(m_uniqueCategories.size());
+    return numCategories;
 }
 
+void CategoryListModel::paintListBoxItem(int rowNumber, juce::Graphics &g, int width, int height, bool rowIsSelected)
+{
+ 
+    if (rowIsSelected)
+        g.fillAll(juce::Colours::darkred);
+    else
+        g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
+    
+    g.setColour(juce::Colours::white);
+    g.drawText(m_uniqueCategories[rowNumber], 2, 0, width - 4, height, juce::Justification::centredLeft);
+    g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
+}
 
+void CategoryListModel::addCategoryToList(juce::String name)
+{
+    if (categoryExists(name)) return;
+    m_uniqueCategories.push_back(name);
+    m_mainApp.m_categories.updateContent();
+}
 
+bool CategoryListModel::categoryExists(juce::String category)
+{
+    for(int i = 0 ; i < m_uniqueCategories.size();++i)
+    {
+        if(  m_uniqueCategories[i].equalsIgnoreCase(category)   ) return true;
+    }
+    return false;
+}
+
+int CategoryListModel::numCategories()
+{
+    return static_cast<int>(m_uniqueCategories.size());
+}

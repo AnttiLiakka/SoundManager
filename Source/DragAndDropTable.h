@@ -11,10 +11,12 @@
 #pragma once
 #include <JuceHeader.h>
 #include "MainComponent.h"
+#include "CategoryListModel.h"
 
 class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropContainer, public juce::FileDragAndDropTarget
 {
     friend class MainComponent;
+    friend class CategoryListModel;
     
     struct FileInfo
     {
@@ -52,7 +54,6 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
             }
         }
         
-        
         void changeDescription(juce::String newDescription)
         {
             description = newDescription;
@@ -84,8 +85,10 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
     
     
 public:
-    DragAndDropTable(class MainComponent& mainApp) : TableListBox("table", nullptr), DragAndDropContainer(),
-        m_mainApp(mainApp)
+    DragAndDropTable(class MainComponent& mainApp) :
+                     TableListBox("table", nullptr),
+                     DragAndDropContainer(),
+                     m_mainApp(mainApp)
     {
         
 
@@ -102,6 +105,7 @@ public:
     void backgroundClicked (const juce::MouseEvent&) override;
     void updateDescription(juce::String newString, int rowNum);
     
+    //For fileArray
     void printFileArray();
     
 private:
@@ -111,9 +115,8 @@ private:
     bool m_acceptingfiles = true;
     bool m_isDragging = false;
     
+    //File to be exported if dragExport() is called
     juce::File m_selectedFile;
-    juce::File m_previouslySelectedFile;
-    juce::Component m_file;
     
     std::vector<FileInfo> m_fileArray;
     
