@@ -15,6 +15,7 @@ MainComponent::MainComponent() : m_table(*this),
     
     m_table.setModel(this);
     m_table.setOutlineThickness(1);
+    m_table.setMultipleSelectionEnabled(false);
     m_table.getHeader().addColumn(juce::String(TRANS("File Name")), 1, 200);
     m_table.getHeader().addColumn(juce::String(TRANS("Duration(Seconds)")), 2, 100);
     m_table.getHeader().addColumn(juce::String(TRANS("Sample Rate")), 3, 100);
@@ -128,6 +129,7 @@ void MainComponent::paint (juce::Graphics& g)
 
 void MainComponent::resized()
 {
+    
     auto bounds = getLocalBounds();
     auto transpControl = bounds.removeFromBottom(35);
     auto category = bounds.removeFromLeft(100);
@@ -246,11 +248,12 @@ void DragAndDropTable::dragExport()
     m_acceptingfiles = false;
     performExternalDragDropOfFiles(m_selectedFile.getFullPathName(), false, this, [this](){
         m_acceptingfiles = true;
-        deselectAllRows();
     }
     );
-    juce::Timer::callAfterDelay(500, [&](){m_isDragging = false;});
+    m_isDragging = false;
+    deselectAllRows();
 }
+
 
 /*
  
@@ -310,29 +313,30 @@ void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEv
     
     if(mouseEvent.mods.isRightButtonDown())
     {
-        juce::PopupMenu m_cellMenu;
-        juce::PopupMenu m_cateMenu;
+        juce::PopupMenu cellMenu;
+        juce::PopupMenu cateMenu;
         
-        m_cellMenu.addItem(1,TRANS("Delete Item"));
-        m_cellMenu.addSeparator();
+        cellMenu.addItem(1,TRANS("Delete Item"));
+        cellMenu.addSeparator();
         
+        cateMenu.addItem(2, TRANS("Print Categories"));
         
-        m_cateMenu.addItem(2, TRANS("Print Categories"));
-        m_cateMenu.addSeparator();
+        //cateMenu.addCustomItem(2, std::make_unique<CategoryListModel::MenuTextBox>(100, 20), nullptr, "New Category");
+        
+        cateMenu.addSeparator();
         
         for (int i = 0; i < m_categoryModel.numCategories(); ++i)
         {
             auto title = m_categoryModel.m_uniqueCategories[i];
-            m_cateMenu.addItem(i + 3, TRANS(title));
+            cateMenu.addItem(i + 3, TRANS(title));
         }
         
-        m_cellMenu.addSubMenu(TRANS("Add to Category"), m_cateMenu);
+        cellMenu.addSubMenu(TRANS("Add to Category"), cateMenu);
         
-        int cateMenuSize= m_cateMenu.getNumItems();
         
-        m_cellMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
+        cellMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
                            {
-                                cellPopupAction(selection, m_lastSelectedRow, cateMenuSize);
+                                cellPopupAction(selection, m_lastSelectedRow, columnId, mouseEvent);
                            }
         );
         
@@ -412,13 +416,15 @@ void DragAndDropTable::printFileArray()
  
  */
 
-void MainComponent::cellPopupAction(int selection, int rowNumber, int numMenuOptions)
+void MainComponent::cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
 {
     // 1 = Delete
     // 2 = New Category
     // 3 = Ambiance
     // 4 = Impact
     // 5 = Gunshot
+    
+    int numMenuOptions = m_categoryModel.numCategories();
    if(selection == 1)
    {
        DBG("Delete This Row!");
@@ -427,6 +433,20 @@ void MainComponent::cellPopupAction(int selection, int rowNumber, int numMenuOpt
    else if(selection == 2)
    {
        m_table.m_fileArray[rowNumber].printCategories();
+       
+       auto categoryTextEditor = std::make_unique<juce::Label>(TRANS("Category Name"));
+       
+       auto textEditorPos = m_table.getHeader().getColumnPosition(columnId);
+       
+       categoryTextEditor->setEditable(true, false, true);
+       categoryTextEditor->setSize(200, 50);
+       categoryTextEditor->onTextChange = [&, this]()
+       {
+           auto newCategory = categoryTextEditor->getText();
+           AddNewCategory(newCategory);
+       };
+       
+       juce::CallOutBox::launchAsynchronously(std::move(categoryTextEditor), textEditorPos, this);
    }
    else
    {
@@ -498,4 +518,10 @@ bool CategoryListModel::categoryExists(juce::String category)
 int CategoryListModel::numCategories()
 {
     return static_cast<int>(m_uniqueCategories.size());
+}
+
+void MainComponent::AddNewCategory(juce::String newCategory)
+{
+    m_categoryModel.addCategoryToList(newCategory);
+    m_categories.updateContent();
 }

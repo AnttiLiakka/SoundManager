@@ -38,11 +38,12 @@ public:
     //Other TableListBoxModel functions
     void cellClicked(int rowNumber, int columnId, const juce::MouseEvent& mouseEvent) override;
     void selectedRowsChanged(int lastRowSelected) override;
-    juce::Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component *existingComponentToUpdate) override;
+    juce::Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component                                             *existingComponentToUpdate) override;
     
     
     //PopupMenu functions
-    void cellPopupAction(int selection, int rowNumber, int numMenuOptions);
+    void cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent);
+    void AddNewCategory(juce::String newCategory);
     
 
 private:
@@ -72,7 +73,6 @@ private:
     int m_lastSelectedRow;
     
     //For cellMenu
-
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
