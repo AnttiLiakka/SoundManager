@@ -45,6 +45,9 @@ public:
     void cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent);
     void AddNewCategory(juce::String newCategory);
     
+    //Data structure
+    void saveContentToXml();
+    void printContent();
 
 private:
     //==============================================================================
@@ -65,14 +68,14 @@ private:
     
     juce::AudioBuffer<float> m_sampleBuffer;
     juce::AudioFormatManager m_formatManager;
-    juce::TextButton m_playStop;
+    juce::TextButton m_playStop, m_saveData, m_printData;
     
     bool m_playSoundFile = false;
     int m_playPosition = 0;
     
     int m_lastSelectedRow;
     
-    //For cellMenu
+    juce::XmlElement m_audioLibrary;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

@@ -3,7 +3,8 @@
 //==============================================================================
 MainComponent::MainComponent() : m_table(*this),
                                  m_categories("categories", nullptr),
-                                 m_categoryModel(*this)
+                                 m_categoryModel(*this),
+                                 m_audioLibrary("audiolibrary")
 {
     // Make sure you set the size of the component after
     // you add any child components
@@ -13,18 +14,23 @@ MainComponent::MainComponent() : m_table(*this),
     m_playStop.setButtonText(TRANS("Play"));
     m_playStop.setEnabled(false);
     
+    m_saveData.setButtonText(TRANS("Save data"));
+    m_printData.setButtonText(TRANS("Print data"));
+    
     m_table.setModel(this);
     m_table.setOutlineThickness(1);
     m_table.setMultipleSelectionEnabled(false);
-    m_table.getHeader().addColumn(juce::String(TRANS("File Name")), 1, 200);
-    m_table.getHeader().addColumn(juce::String(TRANS("Duration(Seconds)")), 2, 100);
-    m_table.getHeader().addColumn(juce::String(TRANS("Sample Rate")), 3, 100);
-    m_table.getHeader().addColumn(juce::String(TRANS("Channels")), 4, 70);
-    m_table.getHeader().addColumn(juce::String(TRANS("Description")), 5, 250);
+    m_table.getHeader().addColumn(juce::String(TRANS("File Name")), 1, 200, 30, -1, juce::TableHeaderComponent::ColumnPropertyFlags::notSortable);
+    m_table.getHeader().addColumn(juce::String(TRANS("Duration(Seconds)")), 2, 100, 30, -1, juce::TableHeaderComponent::ColumnPropertyFlags::notSortable);
+    m_table.getHeader().addColumn(juce::String(TRANS("Sample Rate")), 3, 100, 30, -1, juce::TableHeaderComponent::ColumnPropertyFlags::notSortable);
+    m_table.getHeader().addColumn(juce::String(TRANS("Channels")), 4, 70, 30, -1, juce::TableHeaderComponent::ColumnPropertyFlags::notSortable);
+    m_table.getHeader().addColumn(juce::String(TRANS("Description")), 5, 250, 30, -1, juce::TableHeaderComponent::ColumnPropertyFlags::notSortable);
     
     m_categories.setModel(&m_categoryModel);
     
     addAndMakeVisible(m_playStop);
+    addAndMakeVisible(m_saveData);
+    addAndMakeVisible(m_printData);
     addAndMakeVisible(m_table);
     addAndMakeVisible(m_categories);
     
@@ -36,6 +42,16 @@ MainComponent::MainComponent() : m_table(*this),
         } else {
             m_playStop.setButtonText(TRANS("Play"));
         }
+    };
+    
+    m_saveData.onClick = [&]()
+    {
+        saveContentToXml();
+    };
+    
+    m_printData.onClick = [&]()
+    {
+        printContent();
     };
     
     m_categoryModel.addCategoryToList(TRANS("Ambiance"));
@@ -135,7 +151,9 @@ void MainComponent::resized()
     auto category = bounds.removeFromLeft(100);
         
     m_categories.setBounds(category);
-    m_playStop.setBounds(transpControl);
+    m_playStop.setBounds(transpControl.removeFromLeft(300));
+    m_saveData.setBounds(transpControl.removeFromLeft(300));
+    m_printData.setBounds(transpControl.removeFromLeft(300));
     m_table.setBounds(bounds);
 }
 
@@ -200,6 +218,10 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
     }
 }
 
+void DragAndDropTable::foldersDropped (const juce::Array<juce::File>& folders)
+{
+    
+}
 
 void DragAndDropTable::showFile(juce::File& file, double length, double sampleRate, int numChannels, juce::String filePath)
 {
@@ -334,6 +356,7 @@ void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEv
         cellMenu.addSubMenu(TRANS("Add to Category"), cateMenu);
         
         
+        
         cellMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
                            {
                                 cellPopupAction(selection, m_lastSelectedRow, columnId, mouseEvent);
@@ -356,6 +379,7 @@ void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEv
 void DragAndDropTable::backgroundClicked (const juce::MouseEvent&)
 {
     deselectAllRows();
+    m_mainApp.m_categories.deselectAllRows();
 }
 
 void MainComponent::selectedRowsChanged(int lastRowSelected)
@@ -424,7 +448,7 @@ void MainComponent::cellPopupAction(int selection, int rowNumber, int columnId, 
     // 4 = Impact
     // 5 = Gunshot
     
-    int numMenuOptions = m_categoryModel.numCategories();
+    int numCategories = m_categoryModel.numCategories();
    if(selection == 1)
    {
        DBG("Delete This Row!");
@@ -450,12 +474,11 @@ void MainComponent::cellPopupAction(int selection, int rowNumber, int columnId, 
    }
    else
    {
-       for (int i = 0; i < numMenuOptions; ++i )
+       for (int i = 0; i < numCategories; ++i )
        {
            if(selection == i + 3)
            {
               m_table.m_fileArray[rowNumber].addCategory(m_categoryModel.m_uniqueCategories[i]);
-               return;
            }
        }
        
@@ -524,4 +547,64 @@ void MainComponent::AddNewCategory(juce::String newCategory)
 {
     m_categoryModel.addCategoryToList(newCategory);
     m_categories.updateContent();
+}
+
+
+/*
+ 
+ 
+ 
+ THIS SECTION IS FOR THE DATA STRUCTURE
+ 
+ 
+ 
+ 
+ */
+
+void MainComponent::saveContentToXml()
+{
+    m_audioLibrary.deleteAllChildElements();
+    
+    auto numFiles = m_table.m_fileArray.size();
+    
+    auto files = m_table.m_fileArray;
+    
+    for (auto i = 0; i < numFiles; ++i)
+    {
+        auto fileInfo = files[i];
+        
+        juce::XmlElement* fileInformation = new juce::XmlElement ("fileInfo");
+        juce::XmlElement* information = new juce::XmlElement("information");
+        juce::XmlElement* categories = new juce::XmlElement("categories");
+        
+        auto numCategories = files[i].categories.size();
+        
+        for (auto i = 0; i <numCategories; ++i)
+        {
+            juce::XmlElement* category = new juce::XmlElement (fileInfo.categories[i]);
+            
+            categories->addChildElement(category);
+        }
+        
+        fileInformation->setAttribute("filepath", files[i].filePath);
+        
+        information->setAttribute("filename", fileInfo.file.getFileName());
+        information->setAttribute("duration", fileInfo.lengthInSeconds);
+        information->setAttribute("channels", fileInfo.numChannels);
+        information->setAttribute("samplerate", fileInfo.sampleRate);
+        information->setAttribute("description", fileInfo.description);
+        
+        fileInformation->addChildElement(information);
+        fileInformation->addChildElement(categories);
+        m_audioLibrary.addChildElement(fileInformation);
+    }
+}
+
+void MainComponent::printContent()
+{
+    auto xmlString = m_audioLibrary.toString();
+    
+    DBG("**************");
+    DBG(xmlString);
+    DBG("**************");
 }

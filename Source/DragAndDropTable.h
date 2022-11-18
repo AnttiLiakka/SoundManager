@@ -18,16 +18,25 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
     friend class MainComponent;
     friend class CategoryListModel;
     
+    ///Structure that holds information about the cells on the table
     struct FileInfo
     {
+        ///The juce File class representation of the file
         juce::File file;
+        ///The lenght of the file in seconds
         double lengthInSeconds;
+        ///The sample rate of the file
         double sampleRate;
+        ///The number of channels the file has
         int numChannels;
+        ///The description that can be assigned to the file from the table
         juce::String description;
+        ///The filepath to the file
         juce::String filePath;
+        ///Contains the information on which categories the structure is assigned to
         std::vector<juce::String> categories;
         
+        ///Prints all categories in a structure
         void printCategories()
         {
             DBG("Number of Categories: " + juce::String(categories.size()));
@@ -37,6 +46,7 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
             }
         }
         
+        ///Returns true if a category is already assigned to the structure
         bool categoryExists(juce::String newCategory)
         {
             for(int i = 0 ; i < categories.size();++i)
@@ -45,6 +55,7 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
             }
             return false;
         }
+        ///Adds a category to the structure
         void addCategory(juce::String newCategory)
         {
             if(!categoryExists(newCategory))
@@ -53,12 +64,12 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
                 categories.push_back(juce::String(newCategory));
             }
         }
-        
+        ///Changes the description of the structure
         void changeDescription(juce::String newDescription)
         {
             description = newDescription;
         }
-        
+        ///Prints all the members with the exception of categories (use printCategories() for that)
         void printInfo()
         {
             DBG("Length: " + juce::String(lengthInSeconds));
@@ -68,6 +79,7 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
             DBG("File path: " + filePath);
         }
         
+        ///A constructor used to create a FileInfo structure
         FileInfo(juce::File _file,double _lengthInSeconds,double _sampleRate, int _numChannels, juce::String _filePath):
             file(_file),
             lengthInSeconds(_lengthInSeconds),
@@ -85,6 +97,12 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
     
     
 public:
+    
+    /**
+        This class is used alongside juce TableListBoxModel to create a table of audio files which can be dragged and dropped in and out of the table
+     */
+    ///The constructor
+    /// The mainApp is the class that holds the TableListBoxModel which is need to create the table
     DragAndDropTable(class MainComponent& mainApp) :
                      TableListBox("table", nullptr),
                      DragAndDropContainer(),
@@ -93,34 +111,52 @@ public:
         
 
     }
-    //For drag and drop import
+    ///Overridden pure virtual functions for the juce DragAndDropTarget class
     bool isInterestedInFileDrag(const juce::StringArray& files) override;
+    
+    ///Called if isInterestedInFileDrag returns true and files are dropped on the table. This checks whether the dropped files are valid audio files
     void filesDropped(const juce::StringArray& files, int x, int y) override;
+    ///called if isInterestedinFileDrag returns true and folders are dropped on the table. This checks wether the files in the folder are valid audio files
+    void foldersDropped (const juce::Array<juce::File>& folders);
 
     //For drag and drop export
-    void dragExport();   
+    
+    ///Performs an asynchronous drag and drop export of a selected file.
+    void dragExport();
+    ///This function will be replaced
     void showFile(juce::File& file, double length,double sampleRate, int numChannels, juce::String filePath);
     
     //for table
+    
+    ///This is called when a table background is clicked
     void backgroundClicked (const juce::MouseEvent&) override;
+    
+    ///updates the description string of a FileInfo structure located on the row
     void updateDescription(juce::String newString, int rowNum);
     
     //For fileArray
+    ///Prints all of the FileInfos in the m_fileArray vector
     void printFileArray();
     
 private:
-
+    
+    ///A reference to class holding the juce TableListBoxModel
     class MainComponent& m_mainApp;
     
+    ///States whether the table is currently accepting imported files
     bool m_acceptingfiles = true;
+    ///States whether a file is currently being dragged from this class
     bool m_isDragging = false;
     
-    //File to be exported if dragExport() is called
+    ///The file to be exported if dragExport() is called
     juce::File m_selectedFile;
-    
+    ///A container for all the FileInfos
     std::vector<FileInfo> m_fileArray;
     
     //For table
+    ///The current number of rows in the table
     int m_numRows = 0;
+    
+    ///The font used to write the text in the cells
     juce::Font m_font = (15.0f);
 };
