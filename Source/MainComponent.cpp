@@ -4,23 +4,32 @@
 MainComponent::MainComponent() : m_table(*this),
                                  m_categories("categories", nullptr),
                                  m_categoryModel(*this),
-                                 m_audioLibrary("audiolibrary"),
-                                 m_saveLocation(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
+                                 m_audioLibrary(std::make_unique<juce::XmlElement>("audiolibrary")),
+                                 m_saveFile(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
 {
     // Make sure you set the size of the component after
     // you add any child components
     
-    if(!m_saveLocation.exists())
+    
+    //Check whether application folder already exists in application data directory
+    if(!m_saveFile.exists())
     {
         {
-            m_saveLocation.createDirectory();
+            //if not, create one
+            m_saveFile.createDirectory();
         }
     }
-    m_saveLocation = m_saveLocation.getChildFile("audiolibrary.xml");
+    //check whether a save file already exists
+    m_saveFile = m_saveFile.getChildFile("audiolibrary.xml");
     
-    if(!m_saveLocation.exists())
+    if(!m_saveFile.exists())
     {
-        m_saveLocation.create();
+        //if not create a save file
+        m_saveFile.create();
+    } else
+    {
+        //if yes, load the save data from it
+        m_audioLibrary = juce::XmlDocument::parse(m_saveFile);
     }
 
     m_formatManager.registerBasicFormats();
@@ -585,7 +594,7 @@ void MainComponent::AddNewCategory(juce::String newCategory)
 
 void MainComponent::saveContentToXml()
 {
-    m_audioLibrary.deleteAllChildElements();
+    m_audioLibrary->deleteAllChildElements();
     
     auto numFiles = m_table.m_fileArray.size();
     
@@ -618,17 +627,22 @@ void MainComponent::saveContentToXml()
         
         fileInformation->addChildElement(information);
         fileInformation->addChildElement(categories);
-        m_audioLibrary.addChildElement(fileInformation);
+        m_audioLibrary->addChildElement(fileInformation);
+        
     }
+    jassert(m_saveFile.exists());
+    m_audioLibrary->writeTo(m_saveFile, juce::XmlElement::TextFormat());
 }
 
 void MainComponent::printContent()
 {
-    jassert(m_saveLocation.exists());
-    auto xmlString = m_audioLibrary.toString();
-    m_audioLibrary.writeTo(m_saveLocation, juce::XmlElement::TextFormat());
+    auto xmlString = m_audioLibrary->toString();
     DBG("**************");
-   // DBG(xmlString);
-    DBG(m_saveLocation.getFullPathName());
+    DBG(xmlString);
     DBG("**************");
+}
+
+void MainComponent::loadXmlContent()
+{
+    m_audioLibrary = juce::XmlDocument::parse(m_saveFile);
 }
