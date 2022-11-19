@@ -4,10 +4,24 @@
 MainComponent::MainComponent() : m_table(*this),
                                  m_categories("categories", nullptr),
                                  m_categoryModel(*this),
-                                 m_audioLibrary("audiolibrary")
+                                 m_audioLibrary("audiolibrary"),
+                                 m_saveLocation(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
 {
     // Make sure you set the size of the component after
     // you add any child components
+    
+    if(!m_saveLocation.exists())
+    {
+        {
+            m_saveLocation.createDirectory();
+        }
+    }
+    m_saveLocation = m_saveLocation.getChildFile("audiolibrary.xml");
+    
+    if(!m_saveLocation.exists())
+    {
+        m_saveLocation.create();
+    }
 
     m_formatManager.registerBasicFormats();
   
@@ -198,6 +212,14 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                 if(fileToTest.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
                 if(!fileToTest.hasFileExtension("wav;aiff")   )throw TRANS("Please select wav or aiff file");
                 if(!fileToTest.existsAsFile())throw TRANS("That file doesn't exist!!");
+                
+                for (auto i = 0; i < m_fileArray.size(); ++i)
+                {
+                    if (fileToTest.getFullPathName() == m_fileArray[i].filePath)
+                    {
+                        throw TRANS("This file already exists in the application");
+                    }
+                }
                 
                 auto fileReader = m_mainApp.m_formatManager.createReaderFor(fileToTest);
                 if(fileReader == nullptr) throw TRANS("Error Loading the File");
@@ -602,9 +624,11 @@ void MainComponent::saveContentToXml()
 
 void MainComponent::printContent()
 {
+    jassert(m_saveLocation.exists());
     auto xmlString = m_audioLibrary.toString();
-    
+    m_audioLibrary.writeTo(m_saveLocation, juce::XmlElement::TextFormat());
     DBG("**************");
-    DBG(xmlString);
+   // DBG(xmlString);
+    DBG(m_saveLocation.getFullPathName());
     DBG("**************");
 }

@@ -75,7 +75,9 @@ private:
     
     int m_lastSelectedRow;
     
+    //For save data
     juce::XmlElement m_audioLibrary;
+    juce::File m_saveLocation;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

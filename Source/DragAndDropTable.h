@@ -13,7 +13,8 @@
 #include "MainComponent.h"
 #include "CategoryListModel.h"
 
-class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropContainer, public juce::FileDragAndDropTarget
+class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropContainer, public
+                         juce::FileDragAndDropTarget
 {
     friend class MainComponent;
     friend class CategoryListModel;
