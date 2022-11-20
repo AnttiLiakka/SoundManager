@@ -49,6 +49,7 @@ public:
     void saveContentToXml();
     void printContent();
     void loadXmlContent();
+    void importDataIntoArray();
 
 private:
     //==============================================================================
@@ -66,7 +67,7 @@ private:
     ///The  audio format manager
     juce::AudioFormatManager m_formatManager;
     ///Buttons for playback and save data
-    juce::TextButton m_playStop, m_saveData, m_printData;
+    juce::TextButton m_playStop, m_saveData, m_printData, m_printArray;
     
     ///Whether sound file is currently playing or not, defauts to false
     bool m_playSoundFile = false;
@@ -75,6 +76,7 @@ private:
     
     ///This member holds the last selected row number. This is important so that the user does not have to reclick rows after each action
     int m_lastSelectedRow;
+    
     
     //For save data
     ///The xml element holding the applications save data

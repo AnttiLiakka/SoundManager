@@ -19,6 +19,25 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
     friend class MainComponent;
     friend class CategoryListModel;
     
+    ///A juce label that can be put into a cell to keep the FileInfo description information
+    struct CellLabel: public juce::Label
+    {
+        ///The row this label is on. Important to make sure that the correct description is edited
+        int row;
+        
+        ///Sets the row member
+        void setRow(const int rowNum)
+        {
+            row = rowNum;
+        }
+        
+        
+        ///Default Constructor
+        CellLabel()
+        {
+        }
+    };
+    
     ///Structure that holds information about the cells on the table
     struct FileInfo
     {
@@ -36,16 +55,6 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
         juce::String filePath;
         ///Contains the information on which categories the structure is assigned to
         std::vector<juce::String> categories;
-        
-        ///Prints all categories in a structure
-        void printCategories()
-        {
-            DBG("Number of Categories: " + juce::String(categories.size()));
-            for(int i = 0 ; i < categories.size();++i)
-            {
-                DBG("Category: " + categories[i]);
-            }
-        }
         
         ///Returns true if a category is already assigned to the structure
         bool categoryExists(juce::String newCategory)
@@ -70,23 +79,30 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
         {
             description = newDescription;
         }
-        ///Prints all the members with the exception of categories (use printCategories() for that)
+        ///Prints all the members
         void printInfo()
         {
+            int numCategories = 0;
+            DBG("File path: " + filePath);
             DBG("Length: " + juce::String(lengthInSeconds));
             DBG("SampleRate: " + juce::String(sampleRate));
             DBG("Channels: " + juce::String(numChannels));
             DBG("Description: " + description);
-            DBG("File path: " + filePath);
+            for(int i = 0 ; i < categories.size();++i)
+            {
+                DBG("Category: " + categories[i]);
+                ++numCategories;
+            }
+            DBG("Total number of categories: " + juce::String(numCategories));
         }
         
         ///A constructor used to create a FileInfo structure
-        FileInfo(juce::File _file,double _lengthInSeconds,double _sampleRate, int _numChannels, juce::String _filePath):
+        FileInfo(juce::File _file,double _lengthInSeconds,double _sampleRate, int _numChannels, juce::String _filePath, juce::String _description = ""):
             file(_file),
             lengthInSeconds(_lengthInSeconds),
             sampleRate(_sampleRate),
             numChannels(_numChannels),
-            description(),
+            description(_description),
             filePath(_filePath)
         {
             
@@ -124,8 +140,8 @@ public:
     
     ///Performs an asynchronous drag and drop export of a selected file.
     void dragExport();
-    ///This function will be replaced
-    void showFile(juce::File& file, double length,double sampleRate, int numChannels, juce::String filePath);
+    ///This function adds a new fileInfo into the fileArray, note the default value to desciption is an emptry string because when a file is first imported in to fileArray it will not have a description. However, when a fileInfo is added via xml data, I can potentially have a description string
+    void AddFile(juce::File& file, double length,double sampleRate, int numChannels, juce::String filePath, juce::String description = "");
     
     //for table
     

@@ -26,10 +26,14 @@ MainComponent::MainComponent() : m_table(*this),
     {
         //if not create a save file
         m_saveFile.create();
+        //and save an empty xml file
+        saveContentToXml();
     } else
     {
         //if yes, load the save data from it
         m_audioLibrary = juce::XmlDocument::parse(m_saveFile);
+        //And import the data into the array
+        importDataIntoArray();
     }
 
     m_formatManager.registerBasicFormats();
@@ -39,6 +43,7 @@ MainComponent::MainComponent() : m_table(*this),
     
     m_saveData.setButtonText(TRANS("Save data"));
     m_printData.setButtonText(TRANS("Print data"));
+    m_printArray.setButtonText(TRANS("Print Array"));
     
     m_table.setModel(this);
     m_table.setOutlineThickness(1);
@@ -56,6 +61,7 @@ MainComponent::MainComponent() : m_table(*this),
     addAndMakeVisible(m_printData);
     addAndMakeVisible(m_table);
     addAndMakeVisible(m_categories);
+    addAndMakeVisible(m_printArray);
     
     m_playStop.onClick = [&]()
     {
@@ -75,6 +81,11 @@ MainComponent::MainComponent() : m_table(*this),
     m_printData.onClick = [&]()
     {
         printContent();
+    };
+    
+    m_printArray.onClick = [&]()
+    {
+        m_table.printFileArray();
     };
     
     m_categoryModel.addCategoryToList(TRANS("Ambiance"));
@@ -174,9 +185,10 @@ void MainComponent::resized()
     auto category = bounds.removeFromLeft(100);
         
     m_categories.setBounds(category);
-    m_playStop.setBounds(transpControl.removeFromLeft(300));
-    m_saveData.setBounds(transpControl.removeFromLeft(300));
-    m_printData.setBounds(transpControl.removeFromLeft(300));
+    m_playStop.setBounds(transpControl.removeFromLeft(getWidth() / 4));
+    m_saveData.setBounds(transpControl.removeFromLeft(getWidth() / 4));
+    m_printData.setBounds(transpControl.removeFromLeft(getWidth() / 4));
+    m_printArray.setBounds(transpControl.removeFromLeft(getWidth() / 4));
     m_table.setBounds(bounds);
 }
 
@@ -238,7 +250,7 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                 juce::String filePath = fileToTest.getFullPathName();
                 
                 
-                showFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
+                AddFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
                 delete fileReader;
 
                 
@@ -254,9 +266,9 @@ void DragAndDropTable::foldersDropped (const juce::Array<juce::File>& folders)
     
 }
 
-void DragAndDropTable::showFile(juce::File& file, double length, double sampleRate, int numChannels, juce::String filePath)
+void DragAndDropTable::AddFile(juce::File& file, double length, double sampleRate, int numChannels, juce::String filePath, juce::String description)
 {
-    m_fileArray.push_back(FileInfo(file,length,sampleRate, numChannels, filePath));
+    m_fileArray.push_back(FileInfo(file,length,sampleRate, numChannels, filePath, description));
     ++m_numRows;
     updateContent();
 }
@@ -372,9 +384,7 @@ void MainComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEv
         cellMenu.addItem(1,TRANS("Delete Item"));
         cellMenu.addSeparator();
         
-        cateMenu.addItem(2, TRANS("Print Categories"));
-        
-        //cateMenu.addCustomItem(2, std::make_unique<CategoryListModel::MenuTextBox>(100, 20), nullptr, "New Category");
+        cateMenu.addItem(2, TRANS("New Category"));
         
         cateMenu.addSeparator();
         
@@ -423,21 +433,20 @@ juce::Component* MainComponent::refreshComponentForCell(int rowNumber, int colum
 {
     if (columnId == 5)
     {
-        juce::Label * label = static_cast<juce::Label *>(existingComponentToUpdate);
+        auto* label = static_cast<DragAndDropTable::CellLabel *>(existingComponentToUpdate);
         if (label == nullptr)
         {
-            label = new juce::Label;
+            label = new DragAndDropTable::CellLabel();
+            label->setRow(rowNumber);
+            label->setEditable(false, true, false);
             label->onTextChange = [&,label ]()
             {
                 jassert(label != nullptr);
-                
                 juce::String newDescription = label->getText();
-                m_table.updateDescription(newDescription, rowNumber);
-                m_table.printFileArray();
+                m_table.updateDescription(newDescription, label->row);
             };
-            
         }
-        label->setEditable(false, true, false);
+        label->setText(m_table.m_fileArray[label->row].description, juce::NotificationType::dontSendNotification);
         existingComponentToUpdate = label;
     }
     return existingComponentToUpdate;
@@ -482,13 +491,13 @@ void MainComponent::cellPopupAction(int selection, int rowNumber, int columnId, 
     int numCategories = m_categoryModel.numCategories();
    if(selection == 1)
    {
+       m_table.m_fileArray.erase(m_table.m_fileArray.begin() + rowNumber);
+       m_table.m_numRows -= 1;
        DBG("Delete This Row!");
        m_table.updateContent();
    }
    else if(selection == 2)
    {
-       m_table.m_fileArray[rowNumber].printCategories();
-       
        auto categoryTextEditor = std::make_unique<juce::Label>(TRANS("Category Name"));
        
        auto textEditorPos = m_table.getHeader().getColumnPosition(columnId);
@@ -517,9 +526,6 @@ void MainComponent::cellPopupAction(int selection, int rowNumber, int columnId, 
        
     
 }
-        
-
-
 
 
 /*
@@ -645,4 +651,40 @@ void MainComponent::printContent()
 void MainComponent::loadXmlContent()
 {
     m_audioLibrary = juce::XmlDocument::parse(m_saveFile);
+}
+
+void MainComponent::importDataIntoArray()
+{
+    int index = 0;
+    juce::File file;
+    juce::String filePath;
+    double duration;
+    double sampleRate;
+    int numChannels;
+    juce::String description;
+    for (auto* fileInfoElement : m_audioLibrary->getChildIterator())
+    {
+        filePath = fileInfoElement->getStringAttribute("filepath");
+        file = juce::File(filePath);
+        
+        auto* info = fileInfoElement->getChildByName("information");
+        auto* categories = fileInfoElement->getChildByName("categories");
+        
+        duration = info->getDoubleAttribute("duration");
+        sampleRate = info->getDoubleAttribute("samplerate");
+        numChannels = info->getIntAttribute("channels");
+        description = info->getStringAttribute("description");
+        
+        m_table.AddFile(file, duration, sampleRate, numChannels, filePath, description);
+        
+        for (auto* categoryElement : categories->getChildIterator())
+        {
+            juce::String categoryName = categoryElement->getTagName();
+            m_categoryModel.addCategoryToList(categoryName);
+            m_table.m_fileArray[index].addCategory(categoryName);
+        }
+        
+        ++index;
+    }
+    m_table.updateContent();
 }
