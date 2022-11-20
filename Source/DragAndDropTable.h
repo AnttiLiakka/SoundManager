@@ -22,7 +22,7 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
     ///A juce label that can be put into a cell to keep the FileInfo description information
     struct CellLabel: public juce::Label
     {
-        ///The row this label is on. Important to make sure that the correct description is edited
+        ///The row this label is in. Important to make sure that the correct description is edited and displayed
         int row;
         
         ///Sets the row member
@@ -30,7 +30,6 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
         {
             row = rowNum;
         }
-        
         
         ///Default Constructor
         CellLabel()
@@ -41,7 +40,7 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
     ///Structure that holds information about the cells on the table
     struct FileInfo
     {
-        ///The juce File class representation of the file
+        ///The juce File class representation of the file, this is used to create a file reader for audio playback and to get the name of the file
         juce::File file;
         ///The lenght of the file in seconds
         double lengthInSeconds;
@@ -79,7 +78,7 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
         {
             description = newDescription;
         }
-        ///Prints all the members
+        ///Prints all the member information and categories to the console
         void printInfo()
         {
             int numCategories = 0;
@@ -96,7 +95,7 @@ class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropCont
             DBG("Total number of categories: " + juce::String(numCategories));
         }
         
-        ///A constructor used to create a FileInfo structure
+        ///A constructor used to create a FileInfo structure, note the _desciption is defaulted to an empty string because when a file is imported into the application it will not have a description. However, when a FileInfo is constructed from xml data, I may have a description value in which case the defaut empty string is replaced
         FileInfo(juce::File _file,double _lengthInSeconds,double _sampleRate, int _numChannels, juce::String _filePath, juce::String _description = ""):
             file(_file),
             lengthInSeconds(_lengthInSeconds),
@@ -128,10 +127,10 @@ public:
         
 
     }
-    ///Overridden pure virtual functions for the juce DragAndDropTarget class
+    ///Pure virtual function inherited from juce DragAndDropTarget class. This function check whether the table is interested in files that are dragged over it
     bool isInterestedInFileDrag(const juce::StringArray& files) override;
     
-    ///Called if isInterestedInFileDrag returns true and files are dropped on the table. This checks whether the dropped files are valid audio files
+    ///Pure virtual function inherited from juce  DragAndDropTarget class. Called if isInterestedInFileDrag returns true and files are dropped on the table. This function checks whether the dropped files are valid audio files
     void filesDropped(const juce::StringArray& files, int x, int y) override;
     ///called if isInterestedinFileDrag returns true and folders are dropped on the table. This checks wether the files in the folder are valid audio files
     void foldersDropped (const juce::Array<juce::File>& folders);
@@ -159,21 +158,17 @@ private:
     
     ///A reference to class holding the juce TableListBoxModel
     class MainComponent& m_mainApp;
-    
     ///States whether the table is currently accepting imported files
     bool m_acceptingfiles = true;
     ///States whether a file is currently being dragged from this class
     bool m_isDragging = false;
-    
     ///The file to be exported if dragExport() is called
     juce::File m_selectedFile;
     ///A container for all the FileInfos
     std::vector<FileInfo> m_fileArray;
-    
     //For table
     ///The current number of rows in the table
     int m_numRows = 0;
-    
     ///The font used to write the text in the cells
     juce::Font m_font = (15.0f);
 };

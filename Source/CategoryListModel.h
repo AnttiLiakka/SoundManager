@@ -28,16 +28,23 @@ public:
         
     }
     
-    ///Abstract function incherited from Juce ListBoxModel
+    ///Pure virtual function incherited from Juce ListBoxModel used to paint the listbox
     void paintListBoxItem (int rowNumber, juce::Graphics &g, int width, int height, bool rowIsSelected) override;
-    ///Abstract function inherited from Juce ListBoxMode
+    ///Pure virtual function inherited from Juce ListBoxModel returning the number of rows on the listbox
     int getNumRows () override;
+    ///Virtual function inherited from juce ListBoxModel, this function is called when a row is clicked
+    void listBoxItemClicked(int row, const juce::MouseEvent& mouseEvent) override;
+    ///Virtual fucntion inherited from juce ListBoxMode, this functoin is called whenever a row is selected or deselected
+    void selectedRowsChanged(int lastRowSelected) override ;
     ///Adds a category into the listbox if it does not already exist in it
     void addCategoryToList(juce::String name);
     ///Returns true if a category already exists in the list
     bool categoryExists(juce::String category);
     ///Returns the number of categories in the list
     int numCategories();
+    ///Function used to delete a category(row) from the list
+    void listPopupAction();
+    
     
 private:
     
@@ -45,5 +52,9 @@ private:
     class MainComponent& m_mainApp;
     ///Contains all of the category strings
     std::vector<juce::String> m_uniqueCategories;
+    ///Number of unique categories in the listbox
+    int m_numCategories = 0;
+    ///The row that is currectly selected
+    int m_selectedRow;
     
 };

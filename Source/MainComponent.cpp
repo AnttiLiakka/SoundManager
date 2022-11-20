@@ -527,6 +527,12 @@ void MainComponent::cellPopupAction(int selection, int rowNumber, int columnId, 
     
 }
 
+void CategoryListModel::listPopupAction()
+{
+    m_uniqueCategories.erase(m_uniqueCategories.begin() + m_selectedRow);
+    m_mainApp.m_categories.updateContent();
+}
+
 
 /*
  
@@ -542,8 +548,8 @@ void MainComponent::cellPopupAction(int selection, int rowNumber, int columnId, 
 
 int CategoryListModel::getNumRows()
 {
-    int numCategories = static_cast<int>(m_uniqueCategories.size());
-    return numCategories;
+    int m_numCategories = static_cast<int>(m_uniqueCategories.size());
+    return m_numCategories;
 }
 
 void CategoryListModel::paintListBoxItem(int rowNumber, juce::Graphics &g, int width, int height, bool rowIsSelected)
@@ -557,6 +563,28 @@ void CategoryListModel::paintListBoxItem(int rowNumber, juce::Graphics &g, int w
     g.setColour(juce::Colours::white);
     g.drawText(m_uniqueCategories[rowNumber], 2, 0, width - 4, height, juce::Justification::centredLeft);
     g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
+}
+
+void CategoryListModel::listBoxItemClicked(int row, const juce::MouseEvent& mouseEvent)
+{
+    m_selectedRow = row;
+    
+    if(mouseEvent.mods.isRightButtonDown())
+    {
+        juce::PopupMenu listMenu;
+        
+        listMenu.addItem(1, TRANS("Delete Category"));
+        
+        listMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
+                           {
+                            listPopupAction();
+                            });
+    }
+}
+
+void CategoryListModel::selectedRowsChanged(int lastRowSelected)
+{
+    m_selectedRow = lastRowSelected;
 }
 
 void CategoryListModel::addCategoryToList(juce::String name)
