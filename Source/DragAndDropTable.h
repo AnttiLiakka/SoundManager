@@ -12,30 +12,14 @@
 #include <JuceHeader.h>
 #include "MainComponent.h"
 #include "CategoryListModel.h"
+#include "SoundTableModel.h"
 
 class DragAndDropTable : public juce::TableListBox, public juce::DragAndDropContainer, public
                          juce::FileDragAndDropTarget
 {
     friend class MainComponent;
     friend class CategoryListModel;
-    
-    ///A juce label that can be put into a cell to keep the FileInfo description information
-    struct CellLabel: public juce::Label
-    {
-        ///The row this label is in. Important to make sure that the correct description is edited and displayed
-        int row;
-        
-        ///Sets the row member
-        void setRow(const int rowNum)
-        {
-            row = rowNum;
-        }
-        
-        ///Default Constructor
-        CellLabel()
-        {
-        }
-    };
+    friend class SoundTableModel;
     
     ///Structure that holds information about the cells on the table
     struct FileInfo
@@ -139,8 +123,6 @@ public:
     
     ///Performs an asynchronous drag and drop export of a selected file.
     void dragExport();
-    ///This function adds a new fileInfo into the fileArray, note the default value to desciption is an emptry string because when a file is first imported in to fileArray it will not have a description. However, when a fileInfo is added via xml data, I can potentially have a description string
-    void AddFile(juce::File& file, double length,double sampleRate, int numChannels, juce::String filePath, juce::String description = "");
     
     //for table
     

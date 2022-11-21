@@ -48,6 +48,7 @@ public:
     
 private:
     
+    
     ///A referece to the class that holds the juce Listbox this model handles
     class MainComponent& m_mainApp;
     ///Contains all of the category strings

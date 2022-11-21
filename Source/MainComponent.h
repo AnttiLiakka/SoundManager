@@ -3,16 +3,19 @@
 #include <JuceHeader.h>
 #include "DragAndDropTable.h"
 #include "CategoryListModel.h"
+#include "SoundTableModel.h"
 
 //==============================================================================
 /*
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent  : public juce::AudioAppComponent, juce::TableListBoxModel
+class MainComponent  : public juce::AudioAppComponent
 {
     friend class DragAndDropTable;
     friend class CategoryListModel;
+    friend class SoundTableModel;
+    friend class SoundManager;
 public:
     //==============================================================================
     MainComponent();
@@ -28,19 +31,7 @@ public:
     void resized() override;
 
     void prepFileToPlay(int rowNumber);
-    
-    //TableListBoxModel =0 virtuals
-    void paintRowBackground(juce::Graphics& p, int rowNumber, int width, int height, bool rowIsSelected) override;
-    void paintCell(juce::Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) override;
-    int  getNumRows() override;
-
-
-    //Other TableListBoxModel functions
-    void cellClicked(int rowNumber, int columnId, const juce::MouseEvent& mouseEvent) override;
-    void selectedRowsChanged(int lastRowSelected) override;
-    juce::Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component                                             *existingComponentToUpdate) override;
-    
-    
+        
     //PopupMenu functions
     void cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent);
     void AddNewCategory(juce::String newCategory);
@@ -49,16 +40,20 @@ public:
     void saveContentToXml();
     void printContent();
     void loadXmlContent();
-    void importDataIntoArray();
+    // void importDataIntoArray();
 
 private:
     //==============================================================================
-    ///The table with drag and drop functionality holding this model
-    DragAndDropTable m_table;
     ///The list of categories
     juce::ListBox m_categories;
     ///The model for the list of categories
     CategoryListModel m_categoryModel;
+    ///The model for the sound file table
+    SoundTableModel m_tableModel;
+    ///The sound file table with drag and drop functionality 
+    DragAndDropTable m_table;
+    ///The valueTree
+    SoundManager m_valueTree;
     
     
     
