@@ -59,6 +59,8 @@ public:
     
     juce::Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component*                                             existingComponentToUpdate) override;
     
+    void cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent);
+    
     void valueTreeChildAdded(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenAdded) override;
     
     void valueTreePropertyChanged(juce::ValueTree& parentTree, const juce::Identifier& property) override;
@@ -66,9 +68,12 @@ public:
     void valueTreeChildRemoved(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved) override;
     
 private:
-    
+    ///Reference to the Main Application
     class MainComponent& m_mainApp;
+    ///Reference to the ValueTree this class is listening to
     class SoundManager& m_valueTreeToListen;
+    ///This member is the last row that was selected
+    int m_lastSelectedRow = 0;
 
     
     

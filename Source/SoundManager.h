@@ -42,6 +42,8 @@ public:
     ///updates the description string of a  ValueTree located on the row
     void updateDescription(juce::String newString, int rowNum);
     
+    void removeFileInfoTree(int index);
+    
 private:
     
     class MainComponent& m_mainApp;

@@ -12,9 +12,10 @@
 #include <JuceHeader.h>
 #include "MainComponent.h"
 #include "DragAndDropTable.h"
+#include "SoundManager.h"
 
 /// This class manages the list of categories
-class CategoryListModel: public juce::ListBoxModel
+class CategoryListModel: public juce::ListBoxModel, public juce::ValueTree::Listener
 {
     
     friend class MainComponent;
@@ -22,8 +23,9 @@ class CategoryListModel: public juce::ListBoxModel
     
 public:
     
-    ///Default Constructor
-    CategoryListModel(class MainComponent& mainApp): ListBoxModel(), m_mainApp(mainApp)
+    ///Default Constructor, takes a reference to the main application
+    CategoryListModel(class MainComponent& mainApp, class SoundManager& valueTree ): ListBoxModel(), m_mainApp(mainApp),
+                                                                                     m_valueTreeToListen(valueTree)
     {
         
     }
@@ -44,13 +46,20 @@ public:
     int numCategories();
     ///Function used to delete a category(row) from the list
     void listPopupAction();
+    ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the listbox when new categories are added as children
+    void valueTreeChildAdded(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenAdded) override;
+    //Virtual function inherited from Juce ValueTree Listener. Not sure if this funcion is needeed
+    void valueTreePropertyChanged(juce::ValueTree& parentTree, const juce::Identifier& property) override;
+    ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the listbox when categories are removed from the valueTree
+    void valueTreeChildRemoved(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved) override;
     
     
 private:
     
-    
     ///A referece to the class that holds the juce Listbox this model handles
     class MainComponent& m_mainApp;
+    ///Reference to the ValueTree this class is listening to
+    class SoundManager& m_valueTreeToListen;
     ///Contains all of the category strings
     std::vector<juce::String> m_uniqueCategories;
     ///Number of unique categories in the listbox

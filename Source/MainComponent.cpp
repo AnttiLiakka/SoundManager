@@ -3,7 +3,7 @@
 
 //==============================================================================
 MainComponent::MainComponent() : m_categories("categories", nullptr),
-                                 m_categoryModel(*this),
+                                 m_categoryModel(*this, m_valueTree),
                                  m_tableModel(*this, m_valueTree),
                                  m_table(*this),
                                  m_valueTree(*this),
@@ -398,6 +398,27 @@ void SoundTableModel::paintCell(juce::Graphics &g, int rowNumber, int columnId, 
 
 void SoundTableModel::cellClicked(int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
 {
+    m_lastSelectedRow = rowNumber;
+    
+    if(mouseEvent.mods.isRightButtonDown())
+    {
+        juce::PopupMenu cellMenu;
+        juce::PopupMenu cateMenu;
+        
+        cellMenu.addItem(1, TRANS("Delete Item"));
+        cellMenu.addSeparator();
+        
+        cateMenu.addItem(2, TRANS("New Category"));
+        cateMenu.addSeparator();
+        
+        
+        cellMenu.addSubMenu(TRANS("Add To Category"), cateMenu);
+        
+        cellMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
+                               {
+                                    cellPopupAction(selection, m_lastSelectedRow, columnId, mouseEvent);
+                                });
+    }
     /* Old code
     m_lastSelectedRow = rowNumber;
     
@@ -450,10 +471,7 @@ void DragAndDropTable::backgroundClicked (const juce::MouseEvent&)
 
 void SoundTableModel::selectedRowsChanged(int lastRowSelected)
 {
-    /* old Code
     m_lastSelectedRow = lastRowSelected;
-    prepFileToPlay(m_lastSelectedRow);
-    */
 }
 
 juce::Component* SoundTableModel::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component *existingComponentToUpdate)
@@ -545,7 +563,7 @@ void DragAndDropTable::printFileArray()
  
  */
 
-void MainComponent::cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
+void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
 {
     // 1 = Delete
     // 2 = New Category
@@ -553,30 +571,27 @@ void MainComponent::cellPopupAction(int selection, int rowNumber, int columnId, 
     // 4 = Impact
     // 5 = Gunshot
     
-    int numCategories = m_categoryModel.numCategories();
+   // int numCategories = m_categoryModel.numCategories();
    if(selection == 1)
    {
-       m_table.m_fileArray.erase(m_table.m_fileArray.begin() + rowNumber);
-       m_table.m_numRows -= 1;
-       DBG("Delete This Row!");
-       m_table.updateContent();
+       m_valueTreeToListen.removeFileInfoTree(rowNumber);
    }
    else if(selection == 2)
    {
        auto categoryTextEditor = std::make_unique<juce::Label>(TRANS("Category Name"));
        
-       auto textEditorPos = m_table.getHeader().getColumnPosition(columnId);
+       auto textEditorPos = m_mainApp.m_table.getHeader().getColumnPosition(columnId);
        
        categoryTextEditor->setEditable(true, false, true);
        categoryTextEditor->setSize(200, 50);
        categoryTextEditor->onTextChange = [&, this]()
        {
            auto newCategory = categoryTextEditor->getText();
-           AddNewCategory(newCategory);
+           //AddNewCategory(newCategory);
        };
        
-       juce::CallOutBox::launchAsynchronously(std::move(categoryTextEditor), textEditorPos, this);
-   }
+       juce::CallOutBox::launchAsynchronously(std::move(categoryTextEditor), textEditorPos, &m_mainApp);
+   } /*
    else
    {
        for (int i = 0; i < numCategories; ++i )
@@ -587,7 +602,7 @@ void MainComponent::cellPopupAction(int selection, int rowNumber, int columnId, 
            }
        }
        
-   }
+   } */
        
     
 }
@@ -677,6 +692,20 @@ void MainComponent::AddNewCategory(juce::String newCategory)
 {
     m_categoryModel.addCategoryToList(newCategory);
     m_categories.updateContent();
+}
+
+void CategoryListModel::valueTreeChildAdded(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenAdded)
+{
+    
+}
+void CategoryListModel::valueTreeChildRemoved(juce::ValueTree &parentTree, juce::ValueTree &childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved)
+{
+    
+}
+
+void CategoryListModel::valueTreePropertyChanged(juce::ValueTree &parentTree, const juce::Identifier &property)
+{
+    
 }
 
 

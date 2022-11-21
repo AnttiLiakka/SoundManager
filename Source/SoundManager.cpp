@@ -148,3 +148,10 @@ void SoundManager::updateDescription(juce::String newString, int rowNum)
     auto information = fileInfo.getChildWithName(m_information);
     information.setProperty(m_description, newString, nullptr);
 }
+
+void SoundManager::removeFileInfoTree(int index)
+{
+    jassert(m_audioLibraryTree.isValid());
+    m_audioLibraryTree.removeChild(index, nullptr);
+    
+}

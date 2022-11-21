@@ -33,7 +33,6 @@ public:
     void prepFileToPlay(int rowNumber);
         
     //PopupMenu functions
-    void cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent);
     void AddNewCategory(juce::String newCategory);
     
     //Data structure
