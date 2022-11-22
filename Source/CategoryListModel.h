@@ -15,11 +15,12 @@
 #include "SoundManager.h"
 
 /// This class manages the list of categories
-class CategoryListModel: public juce::ListBoxModel, public juce::ValueTree::Listener
+class CategoryListModel: public juce::ListBoxModel, public juce::ValueTree::Listener, public juce::Label::Listener
 {
     
     friend class MainComponent;
     friend class DragAndDropTable;
+    friend class SoundTableModel;
     
 public:
     
@@ -52,6 +53,7 @@ public:
     void valueTreePropertyChanged(juce::ValueTree& parentTree, const juce::Identifier& property) override;
     ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the listbox when categories are removed from the valueTree
     void valueTreeChildRemoved(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved) override;
+    void labelTextChanged(juce::Label* labelThatHasChanged) override;
     
     
 private:

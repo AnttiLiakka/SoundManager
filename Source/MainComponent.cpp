@@ -325,6 +325,8 @@ void DragAndDropTable::dragExport()
 
 int SoundTableModel::getNumRows()
 {
+    jassert(m_valueTreeToListen.m_audioLibraryTree.isValid());
+    
     int numRows = m_valueTreeToListen.getNumFileTrees();
     //DBG("NumRows =: " + juce::String(numRows));
     return numRows;
@@ -340,37 +342,41 @@ void SoundTableModel::paintRowBackground(juce::Graphics &g, int rowNumber, int w
 
 void SoundTableModel::paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected)
 {
+   
     if(columnId == 1)
     {
         g.setColour(juce::Colours::white);
         g.drawText(m_valueTreeToListen.getInformationAtIndex(rowNumber, 1), 2, 0, width - 4, height, juce::Justification::centredLeft);
         g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
-        
-        
-    } else if (columnId == 2)
+    }else if (columnId == 2)
     {
         //This column is Duration
         g.setColour(juce::Colours::white);
         g.drawText(m_valueTreeToListen.getInformationAtIndex(rowNumber, 2), 2, 0, width - 4, height, juce::Justification::centred);
         g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
-        
+                
     } else if (columnId == 3)
     {
         //This column is sample rate
         g.setColour(juce::Colours::white);
         g.drawText(m_valueTreeToListen.getInformationAtIndex(rowNumber, 4), 2, 0, width - 4, height, juce::Justification::centred);
         g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
-        
+                
     } else if (columnId == 4)
     {
         //This column is num channels
         g.setColour(juce::Colours::white);
         g.drawText(m_valueTreeToListen.getInformationAtIndex(rowNumber, 3), 2, 0, width - 4, height, juce::Justification::centred);
         g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
-        
+                
     }
+}
+      
+
     
-    /* Old code
+   
+    
+    /* Code with the Structure
     g.setFont(m_table.m_font);
     if(columnId == 1){
     g.setColour(juce::Colours::white);
@@ -394,7 +400,7 @@ void SoundTableModel::paintCell(juce::Graphics &g, int rowNumber, int columnId, 
     }
      */
     
-}
+
 
 void SoundTableModel::cellClicked(int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
 {
@@ -411,6 +417,12 @@ void SoundTableModel::cellClicked(int rowNumber, int columnId, const juce::Mouse
         cateMenu.addItem(2, TRANS("New Category"));
         cateMenu.addSeparator();
         
+        for (int i = 0; i < m_mainApp.m_categoryModel.numCategories(); ++i)
+        {
+            auto title = m_mainApp.m_categoryModel.m_uniqueCategories[i];
+            cateMenu.addItem(i + 3, TRANS(title));
+        }
+        
         
         cellMenu.addSubMenu(TRANS("Add To Category"), cateMenu);
         
@@ -419,6 +431,8 @@ void SoundTableModel::cellClicked(int rowNumber, int columnId, const juce::Mouse
                                     cellPopupAction(selection, m_lastSelectedRow, columnId, mouseEvent);
                                 });
     }
+    
+}
     /* Old code
     m_lastSelectedRow = rowNumber;
     
@@ -461,7 +475,7 @@ void SoundTableModel::cellClicked(int rowNumber, int columnId, const juce::Mouse
     
     }
     */
-}
+
 
 void DragAndDropTable::backgroundClicked (const juce::MouseEvent&)
 {
@@ -520,19 +534,16 @@ juce::Component* SoundTableModel::refreshComponentForCell(int rowNumber, int col
 void SoundTableModel::valueTreeChildAdded(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenAdded)
 {
     m_mainApp.m_table.updateContent();
-    DBG("ValueTree Child: " + childWhichHasBeenAdded.toXmlString() + " Added To " + parentTree.toXmlString());
 }
 
 void SoundTableModel::valueTreePropertyChanged(juce::ValueTree& parentTree, const juce::Identifier& property)
 {
     m_mainApp.m_table.updateContent();
-    DBG("Property " + property.toString() +" Added To " + parentTree.toXmlString());
 }
 
 void SoundTableModel::valueTreeChildRemoved(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved)
 {
     m_mainApp.m_table.updateContent();
-    DBG("ValueTree Child: " + childWhichHasBeenRemoved.toXmlString() + "at Index " + juce::String(indexFromWhichChildWasRemoved) + "Has Been Removed From: " + parentTree.toXmlString());
 }
 
 void DragAndDropTable::updateDescription(juce::String newString, int rowNum)
@@ -571,7 +582,7 @@ void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId
     // 4 = Impact
     // 5 = Gunshot
     
-   // int numCategories = m_categoryModel.numCategories();
+   //int numCategories = m_mainApp.m_categoryModel.numCategories();
    if(selection == 1)
    {
        m_valueTreeToListen.removeFileInfoTree(rowNumber);
@@ -584,25 +595,22 @@ void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId
        
        categoryTextEditor->setEditable(true, false, true);
        categoryTextEditor->setSize(200, 50);
-       categoryTextEditor->onTextChange = [&, this]()
-       {
-           auto newCategory = categoryTextEditor->getText();
-           //AddNewCategory(newCategory);
-       };
+       categoryTextEditor->addListener(&m_mainApp.m_categoryModel);
        
        juce::CallOutBox::launchAsynchronously(std::move(categoryTextEditor), textEditorPos, &m_mainApp);
-   } /*
+   }
    else
    {
-       for (int i = 0; i < numCategories; ++i )
+       for (int i = 0; i < m_mainApp.m_categoryModel.numCategories(); ++i )
        {
            if(selection == i + 3)
            {
-              m_table.m_fileArray[rowNumber].addCategory(m_categoryModel.m_uniqueCategories[i]);
+             // m_table.m_fileArray[rowNumber].addCategory(m_categoryModel.m_uniqueCategories[i]);
+               DBG(m_mainApp.m_categoryModel.m_uniqueCategories[i]);
            }
        }
        
-   } */
+   }
        
     
 }
@@ -706,6 +714,12 @@ void CategoryListModel::valueTreeChildRemoved(juce::ValueTree &parentTree, juce:
 void CategoryListModel::valueTreePropertyChanged(juce::ValueTree &parentTree, const juce::Identifier &property)
 {
     
+}
+
+void CategoryListModel::labelTextChanged(juce::Label* labelThatHasChanged)
+{
+    auto newCategory = labelThatHasChanged->getText();
+    addCategoryToList(newCategory);
 }
 
 

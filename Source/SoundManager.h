@@ -16,6 +16,7 @@ class SoundManager
 {
     friend class MainComponent;
     friend class DragAndDropTable;
+    friend class SoundTableModel;
     
 public:
     
@@ -41,8 +42,10 @@ public:
     
     ///updates the description string of a  ValueTree located on the row
     void updateDescription(juce::String newString, int rowNum);
-    
+    ///This functon removes a fileInfo from the tree based on the index proviced
     void removeFileInfoTree(int index);
+    ///This function adds a category into a fileInfo
+    void addCategory(juce::String name);
     
 private:
     

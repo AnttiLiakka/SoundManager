@@ -79,6 +79,7 @@ juce::String SoundManager::getInformationAtIndex(int index, int property)
 {
     juce::String PropertyValue;
     
+    
     auto Fileinfo = m_audioLibraryTree.getChild(index);
     
     auto Information = Fileinfo.getChildWithName(m_information);
@@ -138,7 +139,7 @@ void SoundManager::AddFile(juce::File& file, double length,double sampleRate, in
       }
     };
     
-    m_audioLibraryTree.addChild(fileInfo, -1, nullptr);
+    m_audioLibraryTree.appendChild(fileInfo, nullptr);
 }
 
 void SoundManager::updateDescription(juce::String newString, int rowNum)
@@ -153,5 +154,10 @@ void SoundManager::removeFileInfoTree(int index)
 {
     jassert(m_audioLibraryTree.isValid());
     m_audioLibraryTree.removeChild(index, nullptr);
+    
+}
+
+void addCategory(juce::String name)
+{
     
 }

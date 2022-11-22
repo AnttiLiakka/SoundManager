@@ -19,6 +19,7 @@ class SoundTableModel : public juce::TableListBoxModel, public juce::ValueTree::
     friend class MainComponent;
     friend class SoundManager;
     friend class DragAndDropTable;
+    friend class CategoryListModel;
     
     ///A juce label that can be put into a cell to keep the FileInfo description information
     struct CellLabel: public juce::Label
