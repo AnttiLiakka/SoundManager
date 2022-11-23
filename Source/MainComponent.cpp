@@ -2,11 +2,11 @@
 #include "SoundManager.h"
 
 //==============================================================================
-MainComponent::MainComponent() : m_categories("categories", nullptr),
-                                 m_categoryModel(*this, m_valueTree),
-                                 m_tableModel(*this, m_valueTree),
+MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
                                  m_table(*this),
                                  m_valueTree(*this),
+                                 m_categories("categories", nullptr),
+                                 m_categoryModel(*this, m_valueTree),
                                  m_audioLibrary(std::make_unique<juce::XmlElement>("audiolibrary")),
                                  m_saveFile(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
 {
@@ -44,6 +44,7 @@ MainComponent::MainComponent() : m_categories("categories", nullptr),
   
     m_playStop.setButtonText(TRANS("Play"));
     m_playStop.setEnabled(false);
+    m_playStop.setColour(juce::TextButton::buttonColourId, juce::Colours::red);
     
     m_saveData.setButtonText(TRANS("Save data"));
     m_printData.setButtonText(TRANS("Print data"));
@@ -58,7 +59,14 @@ MainComponent::MainComponent() : m_categories("categories", nullptr),
     m_table.getHeader().addColumn(juce::String(TRANS("Channels")), 4, 70, 30, -1, juce::TableHeaderComponent::ColumnPropertyFlags::notSortable);
     m_table.getHeader().addColumn(juce::String(TRANS("Description")), 5, 250, 30, -1, juce::TableHeaderComponent::ColumnPropertyFlags::notSortable);
     
+    m_table.getHeader().setColour(juce::TableHeaderComponent::textColourId, juce::Colours::white);
+    m_table.getHeader().setColour(juce::TableHeaderComponent::backgroundColourId, juce::Colours::darkred);
+    m_table.getHeader().setColour(juce::TableHeaderComponent::outlineColourId, getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
+    m_table.setColour(juce::ListBox::outlineColourId, juce::Colours::darkred);
+    
     m_categories.setModel(&m_categoryModel);
+    
+    m_menuBar.setModel(this);
     
     addAndMakeVisible(m_playStop);
     addAndMakeVisible(m_saveData);
@@ -66,6 +74,7 @@ MainComponent::MainComponent() : m_categories("categories", nullptr),
     addAndMakeVisible(m_table);
     addAndMakeVisible(m_categories);
     addAndMakeVisible(m_printArray);
+    addAndMakeVisible(m_menuBar);
     
     m_playStop.onClick = [&]()
     {
@@ -99,7 +108,11 @@ MainComponent::MainComponent() : m_categories("categories", nullptr),
     m_categoryModel.addCategoryToList(TRANS("Gunshot"));
     m_categoryModel.addCategoryToList(TRANS("Footsteps"));
     m_categoryModel.addCategoryToList(TRANS("Weather"));
-
+    
+#if JUCE_MAC
+    juce::MenuBarModel::setMacMainMenu(this);
+#endif
+    
     setSize (800, 600);
 
     // Some platforms require permissions to open input channels so request that here
@@ -119,6 +132,11 @@ MainComponent::MainComponent() : m_categories("categories", nullptr),
 MainComponent::~MainComponent()
 {
     // This shuts down the audio device and clears the audio source.
+    
+#if JUCE_MAC
+   juce::MenuBarModel::setMacMainMenu(nullptr);
+#endif
+    
     m_table.setModel(nullptr);
     m_categories.setModel(nullptr);
     shutdownAudio();
@@ -176,9 +194,12 @@ void MainComponent::releaseResources()
 void MainComponent::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (juce::Colours::darkgrey);
+    g.fillAll(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
 
     // You can add your drawing code here!
+    //auto headerArea = getLocalBounds().removeFromTop(20);
+    //g.setColour(juce::Colours::darkred);
+    //g.fillRect(headerArea);
  
 }
 
@@ -187,8 +208,10 @@ void MainComponent::resized()
 {
     
     auto bounds = getLocalBounds();
+    auto header = bounds.removeFromTop(20);
     auto transpControl = bounds.removeFromBottom(35);
     auto category = bounds.removeFromLeft(100);
+    
         
     m_categories.setBounds(category);
     m_playStop.setBounds(transpControl.removeFromLeft(getWidth() / 4));
@@ -196,6 +219,10 @@ void MainComponent::resized()
     m_printData.setBounds(transpControl.removeFromLeft(getWidth() / 4));
     m_printArray.setBounds(transpControl.removeFromLeft(getWidth() / 4));
     m_table.setBounds(bounds);
+    
+    m_menuBar.setBounds(header);
+
+    
 }
 
 /*
@@ -239,6 +266,19 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                 if(fileToTest.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
                 if(!fileToTest.hasFileExtension("wav;aiff")   )throw TRANS("Please select wav or aiff file");
                 if(!fileToTest.existsAsFile())throw TRANS("That file doesn't exist!!");
+                
+                auto* valueTree = &m_mainApp.m_valueTree.m_audioLibraryTree;
+                
+                if (valueTree->isValid())
+                {
+                
+                    auto existingFileName = valueTree->getChildWithProperty(SoundManager::m_filePath, juce::var(fileToTest.getFullPathName()));
+                
+                    if (existingFileName.isValid())
+                    {
+                        throw TRANS("Cannot import duplicate files");
+                    }
+                }
                 
                 auto fileReader = m_mainApp.m_formatManager.createReaderFor(fileToTest);
                 if(fileReader == nullptr) throw TRANS("Error Loading the File");
@@ -573,6 +613,92 @@ void DragAndDropTable::printFileArray()
  
  
  */
+
+juce::StringArray MainComponent::getMenuBarNames()
+{
+    return {"File", "Category", "Options", "Help" };
+}
+
+juce::PopupMenu MainComponent::getMenuForIndex (int menuIndex, const juce::String& menuName)
+{
+    juce::PopupMenu menu;
+    
+    if (menuIndex == 0)
+    {
+        menu.addItem(1,"Import Audio File");
+    }
+    
+    if (menuIndex == 1)
+    {
+        menu.addItem (2, "Add New Category");
+    }
+    else if (menuIndex == 2)
+    {
+        menu.addItem (2, "Preferences");
+    }
+    else if (menuIndex == 3)
+    {
+        menu.addItem (3, "ReadMe");
+    }
+    return menu;
+}
+
+void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
+{
+    juce::PopupMenu menu;
+    //File has been clicked
+    if (topLevelMenuIndex == 0)
+    {
+        //Import Audio File
+        if (menuItemID == 1)
+        {
+            
+        }
+    }
+    //Category has been clicked
+    else if (topLevelMenuIndex == 1)
+    {
+        //Add new category
+        if (menuItemID == 2)
+        {
+            auto categoryTextEditor = std::make_unique<juce::Label>(TRANS("Category Name"));
+            
+            auto headerPos = getLocalBounds().removeFromTop(20);
+            
+            auto textEditorPos = headerPos.removeFromLeft(20);
+            
+            categoryTextEditor->setEditable(true, false, true);
+            categoryTextEditor->setSize(200, 50);
+            categoryTextEditor->addListener(&m_categoryModel);
+            
+            juce::CallOutBox::launchAsynchronously(std::move(categoryTextEditor), textEditorPos, this);
+            
+            
+        }
+        
+    }
+    //Options has been clicked
+    else if (topLevelMenuIndex == 2)
+    {
+        //Open Audio device manager
+        if( menuItemID == 2)
+        {
+            
+        }
+    }
+    //Help has been clicked
+    else if (topLevelMenuIndex == 3)
+    {
+        //Open readme
+        if (menuItemID == 3)
+        {
+            
+        }
+    }
+
+    DBG("MenuItemSelected: " + juce::String(menuItemID));
+    //DBG("TopLevelMenuIndex: " + juce::String(topLevelMenuIndex));
+}
 
 void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
 {

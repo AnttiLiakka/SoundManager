@@ -10,7 +10,7 @@
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent  : public juce::AudioAppComponent
+class MainComponent  : public juce::AudioAppComponent, public juce::MenuBarModel
 {
     friend class DragAndDropTable;
     friend class CategoryListModel;
@@ -29,31 +29,40 @@ public:
     //==============================================================================
     void paint (juce::Graphics& g) override;
     void resized() override;
-
+    
+    ///This function is used to prepare a file in a given row for playback by loading it into the samplebuffer using a filereader
     void prepFileToPlay(int rowNumber);
         
-    //PopupMenu functions
+    //Menu functions
+    juce::StringArray getMenuBarNames() override;
+    juce::PopupMenu getMenuForIndex (int menuIndex, const juce::String& menuName) override;
+    void menuItemSelected(int menuItemID, int topLevelMenuIndex) override;
+    
+    ///This function is used to create a new category that will appear into the categorylist and can be assigned to files by right clicking them on the table
     void AddNewCategory(juce::String newCategory);
     
     //Data structure
+    ///This function is used to save the valuetree as an xml file into the saveFile
     void saveContentToXml();
+    ///This function is to be deleted
     void printContent();
+    ///This function is to be deleted
     void loadXmlContent();
     // void importDataIntoArray();
 
 private:
     //==============================================================================
-    ///The list of categories
-    juce::ListBox m_categories;
-    ///The model for the list of categories
-    CategoryListModel m_categoryModel;
+
     ///The model for the sound file table
     SoundTableModel m_tableModel;
     ///The sound file table with drag and drop functionality 
     DragAndDropTable m_table;
     ///The valueTree
     SoundManager m_valueTree;
-    
+    ///The list of categories
+    juce::ListBox m_categories;
+    ///The model for the list of categories
+    CategoryListModel m_categoryModel;
     
     
     ///The audiobuffer
@@ -71,6 +80,8 @@ private:
     ///This member holds the last selected row number. This is important so that the user does not have to reclick rows after each action
     int m_lastSelectedRow;
     
+    ///The menubar Component
+    juce::MenuBarComponent m_menuBar;
     
     //For save data
     ///The xml element holding the applications save data
