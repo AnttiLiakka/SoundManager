@@ -5,6 +5,9 @@
     <Filter Include="SoundManager\Source">
       <UniqueIdentifier>{02A788B4-4126-564D-F1C6-724F1C3316FD}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SoundManager\Icons">
+      <UniqueIdentifier>{5311E8C3-48B2-B08D-AB03-72B56062168F}</UniqueIdentifier>
+    </Filter>
     <Filter Include="SoundManager">
       <UniqueIdentifier>{7B5FD58A-706C-BC8F-7439-ECE38D058D31}</UniqueIdentifier>
     </Filter>
@@ -2818,6 +2821,9 @@
     <ClCompile Include="C:\JUCE\modules\juce_gui_extra\juce_gui_extra.mm">
       <Filter>JUCE Modules\juce_gui_extra</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\BinaryData.cpp">
+      <Filter>JUCE Library Code</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_audio_basics.cpp">
       <Filter>JUCE Library Code</Filter>
     </ClCompile>
@@ -5535,11 +5541,50 @@
     <ClInclude Include="..\..\..\..\JUCE\modules\juce_gui_extra\juce_gui_extra.h">
       <Filter>JUCE Modules\juce_gui_extra</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\BinaryData.h">
+      <Filter>JUCE Library Code</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h">
       <Filter>JUCE Library Code</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Resources\Icons\MagGlassActive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\MagGlassHover.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\MagGlassInactive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\pauseActive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\pauseHover.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\pauseInactive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\playActive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\playHover.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\playInactive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\stopActive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\stopHover.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\stopInactive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
     <None Include="C:\JUCE\modules\juce_audio_devices\native\oboe\CMakeLists.txt">
       <Filter>JUCE Modules\juce_audio_devices\native\oboe</Filter>
     </None>

@@ -7,12 +7,15 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
                                  m_valueTree(*this),
                                  m_categories("categories", nullptr),
                                  m_categoryModel(*this, m_valueTree),
+                                 m_playButton("Play", juce::DrawableButton::ButtonStyle::ImageFitted),
+                                 m_pauseButton("Pause", juce::DrawableButton::ButtonStyle::ImageFitted),
+                                 m_stopButton("Stop", juce::DrawableButton::ButtonStyle::ImageFitted),
+                                 m_searchButton("Search", juce::DrawableButton::ButtonStyle::ImageFitted),
                                  m_audioLibrary(std::make_unique<juce::XmlElement>("audiolibrary")),
                                  m_saveFile(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
 {
     // Make sure you set the size of the component after
     // you add any child components
-    
     
     //Check whether application folder already exists in application data directory
     if(!m_saveFile.exists())
@@ -41,14 +44,6 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
     }
 
     m_formatManager.registerBasicFormats();
-  
-    m_playStop.setButtonText(TRANS("Play"));
-    m_playStop.setEnabled(false);
-    m_playStop.setColour(juce::TextButton::buttonColourId, juce::Colours::red);
-    
-    m_saveData.setButtonText(TRANS("Save data"));
-    m_printData.setButtonText(TRANS("Print data"));
-    m_printArray.setButtonText(TRANS("Print Tree"));
     
     m_table.setModel(&m_tableModel);
     m_table.setOutlineThickness(1);
@@ -59,14 +54,43 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
     m_table.getHeader().addColumn(juce::String(TRANS("Channels")), 4, 70, 30, -1, juce::TableHeaderComponent::ColumnPropertyFlags::notSortable);
     m_table.getHeader().addColumn(juce::String(TRANS("Description")), 5, 250, 30, -1, juce::TableHeaderComponent::ColumnPropertyFlags::notSortable);
     
+    getLookAndFeel().setColour(juce::ListBox::backgroundColourId, juce::Colours::black.withLightness(0.1));
+    
     m_table.getHeader().setColour(juce::TableHeaderComponent::textColourId, juce::Colours::white);
     m_table.getHeader().setColour(juce::TableHeaderComponent::backgroundColourId, juce::Colours::darkred);
     m_table.getHeader().setColour(juce::TableHeaderComponent::outlineColourId, getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
     m_table.setColour(juce::ListBox::outlineColourId, juce::Colours::darkred);
+    m_searchBar.setColour(juce::Label::backgroundColourId, juce::Colours::black.withLightness(0.15));
+    m_searchButton.setColour(juce::DrawableButton::backgroundColourId, juce::Colours::black.withLightness(0.15));
+    getLookAndFeel().setColour(juce::ScrollBar::backgroundColourId, juce::Colours::darkred);
     
     m_categories.setModel(&m_categoryModel);
+    m_categories.setOutlineThickness(1);
+    m_categories.setColour(juce::ListBox::outlineColourId, juce::Colours::darkred);
     
     m_menuBar.setModel(this);
+    
+    m_searchBar.setEditable(false, true, false);
+    
+    m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::playInactive_svg, BinaryData::playInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playHover_svg, BinaryData::playHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
+    
+    m_pauseButton.setImages(juce::Drawable::createFromImageData(BinaryData::pauseInactive_svg, BinaryData::pauseInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseHover_svg, BinaryData::pauseHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseActive_svg, BinaryData::pauseActive_svgSize).get());
+    
+    m_stopButton.setImages(juce::Drawable::createFromImageData(BinaryData::stopInactive_svg, BinaryData::stopInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::stopHover_svg, BinaryData::stopHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::stopActive_svg, BinaryData::stopActive_svgSize).get());
+    
+    m_searchButton.setImages(juce::Drawable::createFromImageData(BinaryData::MagGlassInactive_svg, BinaryData::MagGlassInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::MagGlassHover_svg, BinaryData::MagGlassHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::MagGlassActive_svg, BinaryData::MagGlassActive_svgSize).get());
+    
+    m_searchButton.addShortcut(juce::KeyPress('f'));
+    
+    m_searchButton.onClick = [&]()
+    {
+        m_searchBar.showEditor();
+    };
+    
+    m_playButton.setTooltip("Play");
+    m_pauseButton.setTooltip("Pause");
+    m_stopButton.setTooltip("Stop");
+    m_searchButton.setTooltip("Search");
     
     addAndMakeVisible(m_playStop);
     addAndMakeVisible(m_saveData);
@@ -75,33 +99,13 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
     addAndMakeVisible(m_categories);
     addAndMakeVisible(m_printArray);
     addAndMakeVisible(m_menuBar);
+    addAndMakeVisible(m_searchBar);
     
-    m_playStop.onClick = [&]()
-    {
-        m_playSoundFile = !m_playSoundFile;
-        if(m_playSoundFile) {
-            m_playStop.setButtonText(TRANS("Pause"));
-        } else {
-            m_playStop.setButtonText(TRANS("Play"));
-        }
-    };
+    addAndMakeVisible(m_playButton);
+    addAndMakeVisible(m_pauseButton);
+    addAndMakeVisible(m_stopButton);
+    addAndMakeVisible(m_searchButton);
     
-    m_saveData.onClick = [&]()
-    {
-        //saveContentToXml();
-        m_valueTree.saveTreeToXml();
-    };
-    
-    m_printData.onClick = [&]()
-    {
-        printContent();
-    };
-    
-    m_printArray.onClick = [&]()
-    {
-        //m_table.printFileArray();
-        DBG(m_valueTree.printValueTree());
-    };
     
     m_categoryModel.addCategoryToList(TRANS("Ambiance"));
     m_categoryModel.addCategoryToList(TRANS("Impact"));
@@ -207,20 +211,23 @@ void MainComponent::paint (juce::Graphics& g)
 void MainComponent::resized()
 {
     
-    auto bounds = getLocalBounds();
-    auto header = bounds.removeFromTop(20);
-    auto transpControl = bounds.removeFromBottom(35);
-    auto category = bounds.removeFromLeft(100);
+    auto table = getLocalBounds();
+    auto header = table.removeFromTop(20);
+    auto searchArea = header.removeFromRight(150);
+    auto transport = table.removeFromBottom(110);
+    auto transpControl = transport.removeFromBottom(30);
+    auto bottomMargin = transpControl.removeFromBottom(5);
+    auto SliderArea = transpControl.removeFromLeft(getWidth() / 2 - 52.5);
+    auto category = table.removeFromLeft(100);
     
-        
     m_categories.setBounds(category);
-    m_playStop.setBounds(transpControl.removeFromLeft(getWidth() / 4));
-    m_saveData.setBounds(transpControl.removeFromLeft(getWidth() / 4));
-    m_printData.setBounds(transpControl.removeFromLeft(getWidth() / 4));
-    m_printArray.setBounds(transpControl.removeFromLeft(getWidth() / 4));
-    m_table.setBounds(bounds);
-    
+    m_table.setBounds(table);
     m_menuBar.setBounds(header);
+    m_playButton.setBounds(transpControl.removeFromLeft(35));
+    m_pauseButton.setBounds(transpControl.removeFromLeft(35));
+    m_stopButton.setBounds(transpControl.removeFromLeft(35));
+    m_searchButton.setBounds(searchArea.removeFromLeft(25));
+    m_searchBar.setBounds(searchArea);
 
     
 }
@@ -626,6 +633,7 @@ juce::PopupMenu MainComponent::getMenuForIndex (int menuIndex, const juce::Strin
     if (menuIndex == 0)
     {
         menu.addItem(1,"Import Audio File");
+        menu.addItem(2, "Save Data");
     }
     
     if (menuIndex == 1)
@@ -635,6 +643,8 @@ juce::PopupMenu MainComponent::getMenuForIndex (int menuIndex, const juce::Strin
     else if (menuIndex == 2)
     {
         menu.addItem (2, "Preferences");
+        menu.addItem (3, "Print Tree");
+        menu.addItem (4, "Print XML Data");
     }
     else if (menuIndex == 3)
     {
@@ -653,6 +663,12 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
         if (menuItemID == 1)
         {
             
+        }
+        //Save Data
+        if(menuItemID == 2)
+        {
+            m_valueTree.saveTreeToXml();
+            DBG("Data Saved To XML");
         }
     }
     //Category has been clicked
@@ -685,6 +701,16 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
         {
             
         }
+        //Print Tree
+        if (menuItemID == 3)
+        {
+            DBG(m_valueTree.printValueTree());
+        }
+        //Print XML Data
+        if (menuItemID == 4)
+        {
+            printXmlContent();
+        }
     }
     //Help has been clicked
     else if (topLevelMenuIndex == 3)
@@ -695,9 +721,6 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
             
         }
     }
-
-    DBG("MenuItemSelected: " + juce::String(menuItemID));
-    //DBG("TopLevelMenuIndex: " + juce::String(topLevelMenuIndex));
 }
 
 void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
@@ -902,7 +925,7 @@ void MainComponent::saveContentToXml()
     m_audioLibrary->writeTo(m_saveFile, juce::XmlElement::TextFormat());
 }
 
-void MainComponent::printContent()
+void MainComponent::printXmlContent()
 {
     auto xmlString = m_audioLibrary->toString();
     DBG("**************");

@@ -45,7 +45,7 @@ public:
     ///This function is used to save the valuetree as an xml file into the saveFile
     void saveContentToXml();
     ///This function is to be deleted
-    void printContent();
+    void printXmlContent();
     ///This function is to be deleted
     void loadXmlContent();
     // void importDataIntoArray();
@@ -71,6 +71,10 @@ private:
     juce::AudioFormatManager m_formatManager;
     ///Buttons for playback and save data
     juce::TextButton m_playStop, m_saveData, m_printData, m_printArray;
+    
+    juce::DrawableButton m_playButton, m_pauseButton, m_stopButton, m_searchButton;
+    
+    juce::Label m_searchBar;
     
     ///Whether sound file is currently playing or not, defauts to false
     bool m_playSoundFile = false;

@@ -18,6 +18,26 @@
       <FILE id="rt42Hu" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
     </GROUP>
+    <GROUP id="{17CEF6AA-94B8-812C-CAA0-0E5CCD29C50F}" name="Icons">
+      <FILE id="ZGRjpD" name="MagGlassActive.svg" compile="0" resource="1"
+            file="Resources/Icons/MagGlassActive.svg"/>
+      <FILE id="zxvzTR" name="MagGlassHover.svg" compile="0" resource="1"
+            file="Resources/Icons/MagGlassHover.svg"/>
+      <FILE id="cjhjAP" name="MagGlassInactive.svg" compile="0" resource="1"
+            file="Resources/Icons/MagGlassInactive.svg"/>
+      <FILE id="nQiqUo" name="pauseActive.svg" compile="0" resource="1" file="Resources/Icons/pauseActive.svg"/>
+      <FILE id="Oky1om" name="pauseHover.svg" compile="0" resource="1" file="Resources/Icons/pauseHover.svg"/>
+      <FILE id="bxFS0R" name="pauseInactive.svg" compile="0" resource="1"
+            file="Resources/Icons/pauseInactive.svg"/>
+      <FILE id="Vu22AN" name="playActive.svg" compile="0" resource="1" file="Resources/Icons/playActive.svg"/>
+      <FILE id="JgURfh" name="playHover.svg" compile="0" resource="1" file="Resources/Icons/playHover.svg"/>
+      <FILE id="Lzcbjx" name="playInactive.svg" compile="0" resource="1"
+            file="Resources/Icons/playInactive.svg"/>
+      <FILE id="bwd1IF" name="stopActive.svg" compile="0" resource="1" file="Resources/Icons/stopActive.svg"/>
+      <FILE id="Emdfxv" name="stopHover.svg" compile="0" resource="1" file="Resources/Icons/stopHover.svg"/>
+      <FILE id="pwIM5J" name="stopInactive.svg" compile="0" resource="1"
+            file="Resources/Icons/stopInactive.svg"/>
+    </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
   <EXPORTFORMATS>
