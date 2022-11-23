@@ -37,6 +37,7 @@ public:
     juce::StringArray getMenuBarNames() override;
     juce::PopupMenu getMenuForIndex (int menuIndex, const juce::String& menuName) override;
     void menuItemSelected(int menuItemID, int topLevelMenuIndex) override;
+    void manualFileImport();
     
     ///This function is used to create a new category that will appear into the categorylist and can be assigned to files by right clicking them on the table
     void AddNewCategory(juce::String newCategory);
@@ -69,6 +70,8 @@ private:
     juce::AudioBuffer<float> m_sampleBuffer;
     ///The  audio format manager
     juce::AudioFormatManager m_formatManager;
+    ///Filechooser used for manually importing files
+    std::unique_ptr<juce::FileChooser> m_fileChooser;
     ///Buttons for playback and save data
     juce::TextButton m_playStop, m_saveData, m_printData, m_printArray;
     

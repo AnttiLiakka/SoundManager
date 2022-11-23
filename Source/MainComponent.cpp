@@ -61,8 +61,8 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
     m_table.getHeader().setColour(juce::TableHeaderComponent::outlineColourId, getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
     m_table.setColour(juce::ListBox::outlineColourId, juce::Colours::darkred);
     m_searchBar.setColour(juce::Label::backgroundColourId, juce::Colours::black.withLightness(0.15));
+    m_searchBar.setColour(juce::Label::outlineColourId, juce::Colours::darkred);
     m_searchButton.setColour(juce::DrawableButton::backgroundColourId, juce::Colours::black.withLightness(0.15));
-    getLookAndFeel().setColour(juce::ScrollBar::backgroundColourId, juce::Colours::darkred);
     
     m_categories.setModel(&m_categoryModel);
     m_categories.setOutlineThickness(1);
@@ -662,7 +662,7 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
         //Import Audio File
         if (menuItemID == 1)
         {
-            
+            manualFileImport();
         }
         //Save Data
         if(menuItemID == 2)
@@ -721,6 +721,58 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
             
         }
     }
+}
+
+void MainComponent::manualFileImport()
+{
+    DBG("Attempting load");
+    
+    m_fileChooser = std::make_unique<juce::FileChooser>(TRANS("Load a file"),juce::File(),"*.wav"   );
+    
+    auto flags = juce::FileBrowserComponent::canSelectFiles | juce::FileBrowserComponent::openMode   ;
+    
+    m_fileChooser->launchAsync(flags, [&](const juce::FileChooser& chooser){
+        
+        juce::File fileToTest(chooser.getResult());
+        
+        try {
+            if(fileToTest.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
+            if(!fileToTest.existsAsFile())throw TRANS("That file doesn't exist!!");
+            
+            auto* valueTree = &m_valueTree.m_audioLibraryTree;
+            
+            if (valueTree->isValid())
+            {
+            
+                auto existingFileName = valueTree->getChildWithProperty(SoundManager::m_filePath, juce::var(fileToTest.getFullPathName()));
+            
+                if (existingFileName.isValid())
+                {
+                    throw TRANS("Cannot import duplicate files");
+                }
+            }
+            
+            auto fileReader = m_formatManager.createReaderFor(fileToTest);
+            if(fileReader == nullptr) throw TRANS("Error Loading the File");
+            auto sampleRate =fileReader->sampleRate;
+            double fileLength = std::round( fileReader->lengthInSamples / sampleRate);
+            int numChannels = fileReader->numChannels;
+            juce::String filePath = fileToTest.getFullPathName();
+            
+            
+            m_valueTree.AddFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
+            delete fileReader;
+
+            
+        } catch (juce::String message){
+            juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,fileToTest.getFileName() , message);
+        }
+        
+        
+        
+    } );
+    
+    
 }
 
 void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
