@@ -12,7 +12,7 @@
 #include<JuceHeader.h>
 #include"MainComponent.h"
 
-class SoundManager
+class SoundManager : public juce::Label::Listener
 {
     friend class MainComponent;
     friend class DragAndDropTable;
@@ -45,13 +45,27 @@ public:
     ///This functon removes a fileInfo from the tree based on the index proviced
     void removeFileInfoTree(int index);
     ///This function adds a category into a fileInfo
-    void addCategory(juce::String name);
+    void addCategory(juce::String name, int rowNumber);
+    
+    void filterByCategory(juce::String categoryName);
+    
+    void filterBySearch(juce::String searchText);
+    
+    void setAllVisible();
+    
+    void addExistingCategories();
+    
+    void labelTextChanged(juce::Label* labelThatHasChanged) override;
+    //This function updates table with currently visible children trees
+    juce::ValueTree getVisibleChildAtIndex(int index);
     
 private:
     
     class MainComponent& m_mainApp;
     
     juce::ValueTree m_audioLibraryTree;
+    
+    juce::Array<juce::ValueTree> m_currentTable;
     
     //Identifiers for child trees
     static juce::Identifier m_fileInfo;
@@ -67,5 +81,6 @@ private:
     static juce::Identifier m_sampleRate;
     static juce::Identifier m_description;
     static juce::Identifier m_category;
+    static juce::Identifier m_id;
     
 };

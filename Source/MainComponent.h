@@ -34,17 +34,19 @@ public:
     void prepFileToPlay(int rowNumber);
         
     //Menu functions
+    ///Pure virtual function inherited from Juce MenuBarModel. This fuction returns the names for the different bars in the menu
     juce::StringArray getMenuBarNames() override;
+    ///Pure virtual function inherited from Juce MenuBarModel. This function creates a juce PopupMenu based on which bar was clicked
     juce::PopupMenu getMenuForIndex (int menuIndex, const juce::String& menuName) override;
+    ///Pure virtual function inherited from Juce MenuBarModel. This function is used to decide what to do once user has clicked an option on the Juce PopupMenu created with getMenuForIndex
     void menuItemSelected(int menuItemID, int topLevelMenuIndex) override;
+    ///This function is used for manual file import. The functionality is very similar to Addfile in the SoundManager class
     void manualFileImport();
     
     ///This function is used to create a new category that will appear into the categorylist and can be assigned to files by right clicking them on the table
     void AddNewCategory(juce::String newCategory);
     
     //Data structure
-    ///This function is used to save the valuetree as an xml file into the saveFile
-    void saveContentToXml();
     ///This function is to be deleted
     void printXmlContent();
     ///This function is to be deleted
@@ -72,14 +74,12 @@ private:
     juce::AudioFormatManager m_formatManager;
     ///Filechooser used for manually importing files
     std::unique_ptr<juce::FileChooser> m_fileChooser;
-    ///Buttons for playback and save data
-    juce::TextButton m_playStop, m_saveData, m_printData, m_printArray;
-    
+    ///Buttons for transport control and search function.
     juce::DrawableButton m_playButton, m_pauseButton, m_stopButton, m_searchButton;
-    
+    ///The search bar
     juce::Label m_searchBar;
     
-    ///Whether sound file is currently playing or not, defauts to false
+    ///True if a soundfile should be currently playing. defaults to false.
     bool m_playSoundFile = false;
     ///The current position in the buffer, defaulted to zero so that the playback starts from the beginning of the audio file
     int m_playPosition = 0;

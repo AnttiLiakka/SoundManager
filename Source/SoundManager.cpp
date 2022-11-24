@@ -22,12 +22,22 @@ juce::Identifier SoundManager::m_channels = juce::Identifier("channels");
 juce::Identifier SoundManager::m_sampleRate = juce::Identifier("samplerate");
 juce::Identifier SoundManager::m_description = juce::Identifier("description");
 juce::Identifier SoundManager::m_category = juce::Identifier("category");
+juce::Identifier SoundManager::m_id = juce::Identifier("id");
 
 
-SoundManager::SoundManager(class MainComponent& mainApp) : m_mainApp(mainApp)
+SoundManager::SoundManager(class MainComponent& mainApp) : m_mainApp(mainApp),
+                                                           m_audioLibraryTree(
+                                                                                {"audiolibrary", {},
+                                                                                    {
+                                                                                     }
+                                                                                 }
+                                                                              )
+
 
 {
     m_audioLibraryTree.addListener(&m_mainApp.m_tableModel);
+    
+    
     
 }
 
@@ -72,7 +82,7 @@ int SoundManager::getNumFileTrees()
         }
     }
 
-    return numFileInfos;
+    return numVisibleFileInfos;
 }
 
 juce::String SoundManager::getInformationAtIndex(int index, int property)
@@ -80,7 +90,7 @@ juce::String SoundManager::getInformationAtIndex(int index, int property)
     juce::String PropertyValue;
     
     
-    auto Fileinfo = m_audioLibraryTree.getChild(index);
+    auto Fileinfo = getVisibleChildAtIndex(index);
     
     auto Information = Fileinfo.getChildWithName(m_information);
     
@@ -157,7 +167,144 @@ void SoundManager::removeFileInfoTree(int index)
     
 }
 
-void addCategory(juce::String name)
+void SoundManager::addCategory(juce::String name, int rowNumber)
 {
+    //set up a new category valuetree to add to the categories of the correct tree
+    juce::ValueTree newCategory(m_category);
+    newCategory.setProperty(m_id, name, nullptr);
+    
+    //get the filepath of the tree that was clicked
+    juce::ValueTree child = m_currentTable[rowNumber];
+    jassert(child.isValid());
+    juce::String filepath = child.getProperty(m_filePath);
+    
+    //get a child from m_audioLibrarytree with the same filepath. This is the tree the category needs to be added
+    auto correctFileInfo = m_audioLibraryTree.getChildWithProperty(m_filePath, filepath);
+    jassert(correctFileInfo.isValid());
+    
+    //get the categories child of the tree
+    auto categories = correctFileInfo.getChildWithName(m_categories);
+   //add new category as a child
+    categories.appendChild(newCategory, nullptr);
+    
+}
+
+void SoundManager::filterByCategory(juce::String categoryName)
+{
+    for(int i = 0; i < m_audioLibraryTree.getNumChildren(); ++i)
+    {
+        bool categoryExists = false;
+        
+        auto fileInfo = m_audioLibraryTree.getChild(i);
+        
+        auto categories = fileInfo.getChildWithName(m_categories);
+        
+        for(int n = 0; n < categories.getNumChildren(); ++n)
+        {
+            auto category = categories.getChild(n);
+            if(category.isValid())
+            {
+                juce::String name = category.getProperty(m_id);
+                if(name.equalsIgnoreCase(categoryName))
+                {
+                    categoryExists = true;
+                }
+            }
+        }
+        
+        if (categoryExists)
+        {
+            fileInfo.setProperty(m_isVisible, 1, nullptr);
+        } else
+        {
+            fileInfo.setProperty(m_isVisible, 0, nullptr);
+        }
+    }
+}
+
+void SoundManager::filterBySearch(juce::String searchText)
+{
+    auto testString = searchText;
+    
+    for (int i = 0; i <m_audioLibraryTree.getNumChildren(); ++i)
+    {
+        auto fileInfo = m_audioLibraryTree.getChild(i);
+        auto information = fileInfo.getChildWithName(m_information);
+        juce::String fileName = information.getProperty(m_fileName);
+        
+        if(fileName.containsIgnoreCase(testString))
+        {
+            fileInfo.setProperty(m_isVisible, 1, nullptr);
+        } else
+        {
+            fileInfo.setProperty(m_isVisible, 0, nullptr);
+        }
+    }
+}
+
+void SoundManager::setAllVisible()
+{
+    for (int i = 0; i <m_audioLibraryTree.getNumChildren(); ++i)
+    {
+        auto fileInfo = m_audioLibraryTree.getChild(i);
+        fileInfo.setProperty(m_isVisible, 1, nullptr);
+    }
+}
+
+juce::ValueTree SoundManager::getVisibleChildAtIndex(int index)
+{
+    juce::ValueTree child;
+    
+    juce::Array<juce::ValueTree> visibleChildren;
+    
+    for (int i = 0; i < m_audioLibraryTree.getNumChildren(); ++i)
+    {
+        if(m_audioLibraryTree.getChild(i).getProperty(m_isVisible, false))
+        {
+            visibleChildren.add(m_audioLibraryTree.getChild(i));
+        }
+        
+    }
+    
+    m_currentTable = visibleChildren;
+    child = visibleChildren[index];
+    
+    return child;
+}
+
+void SoundManager::addExistingCategories()
+{
+    for(int i = 0; i < m_audioLibraryTree.getNumChildren(); ++i)
+    {
+        auto fileinfo = m_audioLibraryTree.getChild(i);
+        auto categories = fileinfo.getChildWithName(m_categories);
+        
+        for(int n = 0; n < categories.getNumChildren(); ++n)
+        {
+            auto category = categories.getChild(n);
+            if(category.isValid())
+            {
+                juce::String categoryName = category.getProperty(m_id);
+                //This will stop an empty string getting into the list (if fileinfo has no categories it will be empty)
+                if(categoryName.isNotEmpty())
+                {
+                    m_mainApp.m_categoryModel.addCategoryToList(categoryName);
+                }
+            }
+        }
+    }
+}
+
+void SoundManager::labelTextChanged(juce::Label* labelThatHasChanged)
+{
+    auto newText = labelThatHasChanged->getText();
+    
+    if (newText.isNotEmpty())
+    {
+        filterBySearch(newText);
+    } else
+    {
+        setAllVisible();
+    }
     
 }

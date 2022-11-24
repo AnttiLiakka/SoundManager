@@ -10,7 +10,7 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
                                  m_playButton("Play", juce::DrawableButton::ButtonStyle::ImageFitted),
                                  m_pauseButton("Pause", juce::DrawableButton::ButtonStyle::ImageFitted),
                                  m_stopButton("Stop", juce::DrawableButton::ButtonStyle::ImageFitted),
-                                 m_searchButton("Search", juce::DrawableButton::ButtonStyle::ImageFitted),
+                                 m_searchButton("Search", juce::DrawableButton::ButtonStyle::ImageRaw),
                                  m_audioLibrary(std::make_unique<juce::XmlElement>("audiolibrary")),
                                  m_saveFile(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
 {
@@ -33,14 +33,15 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
         //if not create a save file
         m_saveFile.create();
         //and save an empty xml file
-        saveContentToXml();
+        m_valueTree.saveTreeToXml();
     } else
     {
         //if yes, load the save data from it
         m_audioLibrary = juce::XmlDocument::parse(m_saveFile);
         //And import the data into the valueTree
-        //importDataIntoArray();
         m_valueTree.getTreeFromXml(m_audioLibrary.get());
+        //Also need to add all the existing categories into the categoryListModel
+        m_valueTree.addExistingCategories();
     }
 
     m_formatManager.registerBasicFormats();
@@ -68,9 +69,12 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
     m_categories.setOutlineThickness(1);
     m_categories.setColour(juce::ListBox::outlineColourId, juce::Colours::darkred);
     
+    getLookAndFeel().setColour(juce::ScrollBar::ColourIds::thumbColourId, juce::Colours::darkred);
+    
     m_menuBar.setModel(this);
     
     m_searchBar.setEditable(false, true, false);
+    m_searchBar.addListener(&m_valueTree);
     
     m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::playInactive_svg, BinaryData::playInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playHover_svg, BinaryData::playHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
     
@@ -92,12 +96,9 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
     m_stopButton.setTooltip("Stop");
     m_searchButton.setTooltip("Search");
     
-    addAndMakeVisible(m_playStop);
-    addAndMakeVisible(m_saveData);
-    addAndMakeVisible(m_printData);
+
     addAndMakeVisible(m_table);
     addAndMakeVisible(m_categories);
-    addAndMakeVisible(m_printArray);
     addAndMakeVisible(m_menuBar);
     addAndMakeVisible(m_searchBar);
     
@@ -212,7 +213,7 @@ void MainComponent::resized()
 {
     
     auto table = getLocalBounds();
-    auto header = table.removeFromTop(20);
+    auto header = table.removeFromTop(25);
     auto searchArea = header.removeFromRight(150);
     auto transport = table.removeFromBottom(110);
     auto transpControl = transport.removeFromBottom(30);
@@ -228,6 +229,9 @@ void MainComponent::resized()
     m_stopButton.setBounds(transpControl.removeFromLeft(35));
     m_searchButton.setBounds(searchArea.removeFromLeft(25));
     m_searchBar.setBounds(searchArea);
+    
+
+
 
     
 }
@@ -321,8 +325,7 @@ void MainComponent::prepFileToPlay(int rowNumber)
         auto useRightChannel = fileReader->numChannels > 1;
         
         fileReader->read(&m_sampleBuffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, useRightChannel);
-    
-        m_playStop.setEnabled(true);
+
     
         delete fileReader;
     }
@@ -585,7 +588,7 @@ void SoundTableModel::valueTreeChildAdded(juce::ValueTree& parentTree, juce::Val
 
 void SoundTableModel::valueTreePropertyChanged(juce::ValueTree& parentTree, const juce::Identifier& property)
 {
-    m_mainApp.m_table.updateContent();
+   m_mainApp.m_table.updateContent();
 }
 
 void SoundTableModel::valueTreeChildRemoved(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved)
@@ -806,8 +809,9 @@ void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId
        {
            if(selection == i + 3)
            {
-             // m_table.m_fileArray[rowNumber].addCategory(m_categoryModel.m_uniqueCategories[i]);
-               DBG(m_mainApp.m_categoryModel.m_uniqueCategories[i]);
+               auto categoryToAdd = m_mainApp.m_categoryModel.m_uniqueCategories[i];
+               m_valueTreeToListen.addCategory(categoryToAdd, m_lastSelectedRow);
+               
            }
        }
        
@@ -858,6 +862,9 @@ void CategoryListModel::listBoxItemClicked(int row, const juce::MouseEvent& mous
 {
     m_selectedRow = row;
     
+    juce::String categoryName = m_uniqueCategories[m_selectedRow];
+    m_mainApp.m_valueTree.filterByCategory(categoryName);
+    
     if(mouseEvent.mods.isRightButtonDown())
     {
         juce::PopupMenu listMenu;
@@ -869,11 +876,20 @@ void CategoryListModel::listBoxItemClicked(int row, const juce::MouseEvent& mous
                             listPopupAction();
                             });
     }
+    
+    if(mouseEvent.mods.isCommandDown())
+    {
+        m_mainApp.m_categories.deselectRow(row);
+        m_mainApp.m_valueTree.setAllVisible();
+    }
 }
 
 void CategoryListModel::selectedRowsChanged(int lastRowSelected)
 {
+    m_mainApp.m_valueTree.setAllVisible();
     m_selectedRow = lastRowSelected;
+    juce::String categoryName = m_uniqueCategories[lastRowSelected];
+    m_mainApp.m_valueTree.filterByCategory(categoryName);
 }
 
 void CategoryListModel::addCategoryToList(juce::String name)
@@ -914,7 +930,7 @@ void CategoryListModel::valueTreeChildRemoved(juce::ValueTree &parentTree, juce:
 
 void CategoryListModel::valueTreePropertyChanged(juce::ValueTree &parentTree, const juce::Identifier &property)
 {
-    
+
 }
 
 void CategoryListModel::labelTextChanged(juce::Label* labelThatHasChanged)
@@ -935,47 +951,6 @@ void CategoryListModel::labelTextChanged(juce::Label* labelThatHasChanged)
  
  */
 
-void MainComponent::saveContentToXml()
-{
-    m_audioLibrary->deleteAllChildElements();
-    
-    auto numFiles = m_table.m_fileArray.size();
-    
-    auto files = m_table.m_fileArray;
-    
-    for (auto i = 0; i < numFiles; ++i)
-    {
-        auto fileInfo = files[i];
-        
-        juce::XmlElement* fileInformation = new juce::XmlElement ("fileInfo");
-        juce::XmlElement* information = new juce::XmlElement("information");
-        juce::XmlElement* categories = new juce::XmlElement("categories");
-        
-        auto numCategories = files[i].categories.size();
-        
-        for (auto i = 0; i <numCategories; ++i)
-        {
-            juce::XmlElement* category = new juce::XmlElement (fileInfo.categories[i]);
-            
-            categories->addChildElement(category);
-        }
-        
-        fileInformation->setAttribute("filepath", files[i].filePath);
-        
-        information->setAttribute("filename", fileInfo.file.getFileName());
-        information->setAttribute("duration", fileInfo.lengthInSeconds);
-        information->setAttribute("channels", fileInfo.numChannels);
-        information->setAttribute("samplerate", fileInfo.sampleRate);
-        information->setAttribute("description", fileInfo.description);
-        
-        fileInformation->addChildElement(information);
-        fileInformation->addChildElement(categories);
-        m_audioLibrary->addChildElement(fileInformation);
-        
-    }
-    jassert(m_saveFile.exists());
-    m_audioLibrary->writeTo(m_saveFile, juce::XmlElement::TextFormat());
-}
 
 void MainComponent::printXmlContent()
 {
