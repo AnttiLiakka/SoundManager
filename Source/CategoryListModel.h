@@ -14,8 +14,8 @@
 #include "DragAndDropTable.h"
 #include "SoundManager.h"
 
-/// This class manages the list of categories
-class CategoryListModel: public juce::ListBoxModel, public juce::ValueTree::Listener, public juce::Label::Listener
+/// This class is the model for the MainComponents m_categoryList member. It updates the ListBox when new categories are added to it or removed from it.
+class CategoryListModel: public juce::ListBoxModel, public juce::Label::Listener
 {
     
     friend class MainComponent;
@@ -24,22 +24,22 @@ class CategoryListModel: public juce::ListBoxModel, public juce::ValueTree::List
     
 public:
     
-    ///Default Constructor, takes a reference to the main application
+    ///The constructor, takes a reference to the MainComponent and SoundManager.
     CategoryListModel(class MainComponent& mainApp, class SoundManager& valueTree ): ListBoxModel(), m_mainApp(mainApp),
                                                                                      m_valueTreeToListen(valueTree)
     {
         
     }
     
-    ///Pure virtual function incherited from Juce ListBoxModel used to paint the listbox
+    ///Pure virtual function incherited from Juce ListBoxModel used to paint the listbox. It is overridden to paint the juce ListBox with the stock categories and categories on the ValueTree database.
     void paintListBoxItem (int rowNumber, juce::Graphics &g, int width, int height, bool rowIsSelected) override;
-    ///Pure virtual function inherited from Juce ListBoxModel returning the number of rows on the listbox
+    ///Pure virtual function inherited from Juce ListBoxModel returning the number of rows on the listbox. It is overridden to return the number of categories on the ListBox.
     int getNumRows () override;
-    ///Virtual function inherited from juce ListBoxModel, this function is called when a row is clicked
+    ///Virtual function inherited from juce ListBoxModel. This function is called when a row is clicked and it is overridden to filter and unfilter the table when categories are selected and unselected.
     void listBoxItemClicked(int row, const juce::MouseEvent& mouseEvent) override;
-    ///Virtual fucntion inherited from juce ListBoxMode, this functoin is called whenever a row is selected or deselected
+    ///Virtual function inherited from juce ListBoxMode. This function is called whenever a row is selected or deselected and it is overridden to update m_selectedRow to make sure that correct category is used to filter the table
     void selectedRowsChanged(int lastRowSelected) override ;
-    ///Adds a category into the listbox if it does not already exist in it
+    ///This function adds a category into the listbox if it does not already exist in it
     void addCategoryToList(juce::String name);
     ///Returns true if a category already exists in the list
     bool categoryExists(juce::String category);
@@ -47,25 +47,18 @@ public:
     int numCategories();
     ///Function used to delete a category(row) from the list
     void listPopupAction();
-    ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the listbox when new categories are added as children
-    void valueTreeChildAdded(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenAdded) override;
-    //Virtual function inherited from Juce ValueTree Listener. Not sure if this funcion is needeed
-    void valueTreePropertyChanged(juce::ValueTree& parentTree, const juce::Identifier& property) override;
-    ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the listbox when categories are removed from the valueTree
-    void valueTreeChildRemoved(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved) override;
+    ///Pure virtual function inherited from Juce Label Listener. This function responds to changes in Labels this class is listening to and it is overridden to add categories to the list
     void labelTextChanged(juce::Label* labelThatHasChanged) override;
     
     
 private:
     
-    ///A referece to the class that holds the juce Listbox this model handles
+    ///Reference to the MainComponent
     class MainComponent& m_mainApp;
-    ///Reference to the ValueTree this class is listening to
+    ///Reference to the SoundManager
     class SoundManager& m_valueTreeToListen;
-    ///Contains all of the category strings
+    ///This member contains all of the category strings
     std::vector<juce::String> m_uniqueCategories;
-    ///Number of unique categories in the listbox
-    int m_numCategories = 0;
     ///The row that is currectly selected
     int m_selectedRow;
     

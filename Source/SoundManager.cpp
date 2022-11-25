@@ -189,6 +189,20 @@ void SoundManager::addCategory(juce::String name, int rowNumber)
     
 }
 
+void SoundManager::deleteCategory(juce::String name, int rowNumber)
+{
+    auto categoryToDelete = name;
+    juce::ValueTree fileInfo = m_currentTable[rowNumber];
+    
+    auto categories = fileInfo.getChildWithName(m_categories);
+    
+    auto category = categories.getChildWithProperty(m_id, categoryToDelete);
+    if(category.isValid())
+    {
+        categories.removeChild(category, nullptr);
+    }
+}
+
 void SoundManager::filterByCategory(juce::String categoryName)
 {
     for(int i = 0; i < m_audioLibraryTree.getNumChildren(); ++i)
@@ -307,4 +321,30 @@ void SoundManager::labelTextChanged(juce::Label* labelThatHasChanged)
         setAllVisible();
     }
     
+}
+
+juce::StringArray SoundManager::getCategories(int rowNumber)
+{
+    juce::StringArray categoryArray;
+    
+    auto fileInfo = m_currentTable[rowNumber];
+    
+    auto categories = fileInfo.getChildWithName(m_categories);
+    
+    for(int i = 0; i < categories.getNumChildren(); ++i)
+    {
+        auto category = categories.getChild(i);
+        
+        if(category.isValid())
+        {
+            juce::String categoryName = category.getProperty(m_id);
+            
+            if(categoryName.isNotEmpty())
+            {
+                categoryArray.add(categoryName);
+            }
+        }
+    }
+    
+    return categoryArray;
 }
