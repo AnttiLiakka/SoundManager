@@ -2,7 +2,8 @@
 #include "SoundManager.h"
 
 //==============================================================================
-MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
+MainComponent::MainComponent() : juce::AudioAppComponent(m_audioDeviceManager),
+                                 m_tableModel(*this, m_valueTree),
                                  m_table(*this),
                                  m_valueTree(*this),
                                  m_categories("categories", nullptr),
@@ -12,7 +13,8 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
                                  m_stopButton("Stop", juce::DrawableButton::ButtonStyle::ImageFitted),
                                  m_searchButton("Search", juce::DrawableButton::ButtonStyle::ImageRaw),
                                  m_audioLibrary(std::make_unique<juce::XmlElement>("audiolibrary")),
-                                 m_saveFile(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
+                                 m_saveFile(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager")),
+                                 m_settingsWindow(std::make_unique<SeperateWindow>("Audio Settings", m_seperateWindowColour, 4, true ))
 {
     // Make sure you set the size of the component after
     // you add any child components
@@ -45,6 +47,9 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
         //Finally, set everything visible
         m_valueTree.setAllVisible();
     }
+    
+    m_audioDeviceManager.initialise(0, 2, nullptr, true);
+    m_audioSettings.reset(new juce::AudioDeviceSelectorComponent(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, true));
 
     m_formatManager.registerBasicFormats();
     
@@ -98,7 +103,12 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
     m_stopButton.setTooltip("Stop");
     m_searchButton.setTooltip("Search");
     
-
+    m_audioSettings->setVisible(true);
+    //m_audioSettings->setOpaque(true);
+    m_audioSettings->centreWithSize(200, 200);
+    m_audioSettings->addToDesktop(juce::ComponentPeer::StyleFlags::windowHasCloseButton);
+    addAndMakeVisible(m_audioSettings.get());
+    
     addAndMakeVisible(m_table);
     addAndMakeVisible(m_categories);
     addAndMakeVisible(m_menuBar);
@@ -108,8 +118,7 @@ MainComponent::MainComponent() : m_tableModel(*this, m_valueTree),
     addAndMakeVisible(m_pauseButton);
     addAndMakeVisible(m_stopButton);
     addAndMakeVisible(m_searchButton);
-    
-    
+
     m_categoryModel.addCategoryToList(TRANS("Ambiance"));
     m_categoryModel.addCategoryToList(TRANS("Impact"));
     m_categoryModel.addCategoryToList(TRANS("Gunshot"));
@@ -224,10 +233,6 @@ void MainComponent::resized()
     m_stopButton.setBounds(transpControl.removeFromLeft(35));
     m_searchButton.setBounds(searchArea.removeFromLeft(25));
     m_searchBar.setBounds(searchArea);
-    
-
-
-
     
 }
 
@@ -501,7 +506,7 @@ juce::PopupMenu MainComponent::getMenuForIndex (int menuIndex, const juce::Strin
     }
     else if (menuIndex == 2)
     {
-        menu.addItem (2, "Preferences");
+        menu.addItem (2, "Audio Settings");
         menu.addItem (3, "Print Tree");
         menu.addItem (4, "Print XML Data");
     }

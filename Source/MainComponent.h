@@ -16,6 +16,21 @@ class MainComponent  : public juce::AudioAppComponent, public juce::MenuBarModel
     friend class CategoryListModel;
     friend class SoundTableModel;
     friend class SoundManager;
+    
+    struct SeperateWindow : public juce::DocumentWindow
+    {
+        SeperateWindow(juce::String name, juce::Colour colour, int buttons, bool addToDesktop):
+                                                                juce::DocumentWindow(name, colour, buttons, addToDesktop)
+                                                            
+        {
+            setBounds(100, 100, 100, 100);
+            setResizable(true, false);
+            setDraggable(true);
+            setFullScreen(false);
+            //centreWithSize(getWidth(), getHeight());
+            setVisible(true);
+        }
+    };
 public:
     //==============================================================================
     MainComponent();
@@ -63,6 +78,8 @@ private:
     ///The model for the list of categories
     CategoryListModel m_categoryModel;
     
+    juce::AudioDeviceManager m_audioDeviceManager;
+    std::unique_ptr<juce::AudioDeviceSelectorComponent> m_audioSettings;
     
     ///The audiobuffer
     juce::AudioBuffer<float> m_sampleBuffer;
@@ -86,6 +103,10 @@ private:
     std::unique_ptr<juce::XmlElement> m_audioLibrary;
     ///The file where the xml data is stored
     juce::File m_saveFile;
+    
+    juce::Colour m_seperateWindowColour;
+    
+    std::unique_ptr<SeperateWindow> m_settingsWindow;
     
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
