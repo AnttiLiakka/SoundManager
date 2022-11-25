@@ -8,13 +8,10 @@ MainComponent::MainComponent() : juce::AudioAppComponent(m_audioDeviceManager),
                                  m_valueTree(*this),
                                  m_categories("categories", nullptr),
                                  m_categoryModel(*this, m_valueTree),
-                                 m_playButton("Play", juce::DrawableButton::ButtonStyle::ImageFitted),
-                                 m_pauseButton("Pause", juce::DrawableButton::ButtonStyle::ImageFitted),
-                                 m_stopButton("Stop", juce::DrawableButton::ButtonStyle::ImageFitted),
+                                 m_transport(m_tableModel),
                                  m_searchButton("Search", juce::DrawableButton::ButtonStyle::ImageRaw),
                                  m_audioLibrary(std::make_unique<juce::XmlElement>("audiolibrary")),
-                                 m_saveFile(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager")),
-                                 m_settingsWindow(std::make_unique<SeperateWindow>("Audio Settings", m_seperateWindowColour, 4, true ))
+                                 m_saveFile(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
 {
     // Make sure you set the size of the component after
     // you add any child components
@@ -48,10 +45,10 @@ MainComponent::MainComponent() : juce::AudioAppComponent(m_audioDeviceManager),
         m_valueTree.setAllVisible();
     }
     
+    m_table.m_formatManager.registerBasicFormats();
     m_audioDeviceManager.initialise(0, 2, nullptr, true);
-    m_audioSettings.reset(new juce::AudioDeviceSelectorComponent(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, true));
-
-    m_formatManager.registerBasicFormats();
+    
+    m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, true);
     
     m_table.setModel(&m_tableModel);
     m_table.setOutlineThickness(1);
@@ -83,11 +80,6 @@ MainComponent::MainComponent() : juce::AudioAppComponent(m_audioDeviceManager),
     m_searchBar.setEditable(false, true, false);
     m_searchBar.addListener(&m_valueTree);
     
-    m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::playInactive_svg, BinaryData::playInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playHover_svg, BinaryData::playHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
-    
-    m_pauseButton.setImages(juce::Drawable::createFromImageData(BinaryData::pauseInactive_svg, BinaryData::pauseInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseHover_svg, BinaryData::pauseHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseActive_svg, BinaryData::pauseActive_svgSize).get());
-    
-    m_stopButton.setImages(juce::Drawable::createFromImageData(BinaryData::stopInactive_svg, BinaryData::stopInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::stopHover_svg, BinaryData::stopHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::stopActive_svg, BinaryData::stopActive_svgSize).get());
     
     m_searchButton.setImages(juce::Drawable::createFromImageData(BinaryData::MagGlassInactive_svg, BinaryData::MagGlassInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::MagGlassHover_svg, BinaryData::MagGlassHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::MagGlassActive_svg, BinaryData::MagGlassActive_svgSize).get());
     
@@ -98,25 +90,14 @@ MainComponent::MainComponent() : juce::AudioAppComponent(m_audioDeviceManager),
         m_searchBar.showEditor();
     };
     
-    m_playButton.setTooltip("Play");
-    m_pauseButton.setTooltip("Pause");
-    m_stopButton.setTooltip("Stop");
     m_searchButton.setTooltip("Search");
-    
-    m_audioSettings->setVisible(true);
-    //m_audioSettings->setOpaque(true);
-    m_audioSettings->centreWithSize(200, 200);
-    m_audioSettings->addToDesktop(juce::ComponentPeer::StyleFlags::windowHasCloseButton);
-    addAndMakeVisible(m_audioSettings.get());
     
     addAndMakeVisible(m_table);
     addAndMakeVisible(m_categories);
     addAndMakeVisible(m_menuBar);
     addAndMakeVisible(m_searchBar);
+    addAndMakeVisible(m_transport);
     
-    addAndMakeVisible(m_playButton);
-    addAndMakeVisible(m_pauseButton);
-    addAndMakeVisible(m_stopButton);
     addAndMakeVisible(m_searchButton);
 
     m_categoryModel.addCategoryToList(TRANS("Ambiance"));
@@ -129,7 +110,7 @@ MainComponent::MainComponent() : juce::AudioAppComponent(m_audioDeviceManager),
     juce::MenuBarModel::setMacMainMenu(this);
 #endif
     
-    setSize (800, 600);
+    setSize (900, 600);
 
     // Some platforms require permissions to open input channels so request that here
     if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
@@ -178,6 +159,8 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
 
     // Right now we are not producing any data, in which case we need to clear the buffer
     // (to prevent the output of random noise)
+    
+    /*
     bufferToFill.clearActiveBufferRegion();
     
     if(!m_playSoundFile) return;
@@ -196,6 +179,7 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& buffe
         if(m_playPosition >= m_sampleBuffer.getNumSamples())m_playPosition = 0;
         
     }
+     */
 }
 
 void MainComponent::releaseResources()
@@ -219,20 +203,15 @@ void MainComponent::resized()
     auto table = getLocalBounds();
     auto header = table.removeFromTop(25);
     auto searchArea = header.removeFromRight(150);
-    auto transport = table.removeFromBottom(110);
-    auto transpControl = transport.removeFromBottom(30);
-    auto bottomMargin = transpControl.removeFromBottom(5);
-    auto SliderArea = transpControl.removeFromLeft(getWidth() / 2 - 52.5);
+    auto transport = table.removeFromBottom(150);
     auto category = table.removeFromLeft(100);
     
     m_categories.setBounds(category);
     m_table.setBounds(table);
     m_menuBar.setBounds(header);
-    m_playButton.setBounds(transpControl.removeFromLeft(35));
-    m_pauseButton.setBounds(transpControl.removeFromLeft(35));
-    m_stopButton.setBounds(transpControl.removeFromLeft(35));
     m_searchButton.setBounds(searchArea.removeFromLeft(25));
     m_searchBar.setBounds(searchArea);
+    m_transport.setBounds(transport);
     
 }
 
@@ -291,7 +270,7 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                     }
                 }
                 
-                auto fileReader = m_mainApp.m_formatManager.createReaderFor(fileToTest);
+                auto fileReader = m_formatManager.createReaderFor(fileToTest);
                 if(fileReader == nullptr) throw TRANS("Error Loading the File");
                 auto sampleRate =fileReader->sampleRate;
                 double fileLength = std::round( fileReader->lengthInSamples / sampleRate);
@@ -435,6 +414,8 @@ void DragAndDropTable::backgroundClicked (const juce::MouseEvent&)
 void SoundTableModel::selectedRowsChanged(int lastRowSelected)
 {
     m_lastSelectedRow = lastRowSelected;
+
+    m_mainApp.m_transport.setFileToPlay(m_valueTreeToListen.getFileOnRow(m_lastSelectedRow));
 }
 
 juce::Component* SoundTableModel::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component *existingComponentToUpdate)
@@ -563,6 +544,9 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
         //Open Audio device manager
         if( menuItemID == 2)
         {
+            m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, false);
+            m_audioSettings->setSize(400, 600);
+            juce::DialogWindow::showDialog("Audio settings",m_audioSettings.get() , this, juce::Colours::black, true);
             
         }
         //Print Tree
@@ -616,7 +600,7 @@ void MainComponent::manualFileImport()
                 }
             }
             
-            auto fileReader = m_formatManager.createReaderFor(fileToTest);
+            auto fileReader = m_table.m_formatManager.createReaderFor(fileToTest);
             if(fileReader == nullptr) throw TRANS("Error Loading the File");
             auto sampleRate =fileReader->sampleRate;
             double fileLength = std::round( fileReader->lengthInSamples / sampleRate);

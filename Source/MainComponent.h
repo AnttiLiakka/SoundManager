@@ -4,6 +4,7 @@
 #include "DragAndDropTable.h"
 #include "CategoryListModel.h"
 #include "SoundTableModel.h"
+#include "TransportEditor.h"
 
 //==============================================================================
 /*
@@ -16,21 +17,8 @@ class MainComponent  : public juce::AudioAppComponent, public juce::MenuBarModel
     friend class CategoryListModel;
     friend class SoundTableModel;
     friend class SoundManager;
+    friend class TransportEditor;
     
-    struct SeperateWindow : public juce::DocumentWindow
-    {
-        SeperateWindow(juce::String name, juce::Colour colour, int buttons, bool addToDesktop):
-                                                                juce::DocumentWindow(name, colour, buttons, addToDesktop)
-                                                            
-        {
-            setBounds(100, 100, 100, 100);
-            setResizable(true, false);
-            setDraggable(true);
-            setFullScreen(false);
-            //centreWithSize(getWidth(), getHeight());
-            setVisible(true);
-        }
-    };
 public:
     //==============================================================================
     MainComponent();
@@ -77,18 +65,15 @@ private:
     juce::ListBox m_categories;
     ///The model for the list of categories
     CategoryListModel m_categoryModel;
+    ///The transport editor
+    TransportEditor m_transport;
     
     juce::AudioDeviceManager m_audioDeviceManager;
     std::unique_ptr<juce::AudioDeviceSelectorComponent> m_audioSettings;
-    
-    ///The audiobuffer
-    juce::AudioBuffer<float> m_sampleBuffer;
-    ///The  audio format manager
-    juce::AudioFormatManager m_formatManager;
     ///Filechooser used for manually importing files
     std::unique_ptr<juce::FileChooser> m_fileChooser;
     ///Buttons for transport control and search function.
-    juce::DrawableButton m_playButton, m_pauseButton, m_stopButton, m_searchButton;
+    juce::DrawableButton m_searchButton;
     ///The search bar
     juce::Label m_searchBar;
     
@@ -105,8 +90,6 @@ private:
     juce::File m_saveFile;
     
     juce::Colour m_seperateWindowColour;
-    
-    std::unique_ptr<SeperateWindow> m_settingsWindow;
     
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)

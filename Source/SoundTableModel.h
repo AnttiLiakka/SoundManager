@@ -12,7 +12,6 @@
 #include <JuceHeader.h>
 #include "MainComponent.h"
 #include "SoundManager.h"
-#include "DragAndDropTable.h"
 
 ///This class is the model for DragAndDropTable. it listens to a juce ValueTree holding the database for the table and updates the model when the tree changes
 class SoundTableModel : public juce::TableListBoxModel, public juce::ValueTree::Listener
@@ -43,7 +42,7 @@ class SoundTableModel : public juce::TableListBoxModel, public juce::ValueTree::
 public:
     
     ///The constructor, takes in a reference to the main application and the juce ValueTree this class is a listener to
-    SoundTableModel(class MainComponent& mainApp, class SoundManager& valueTree) : m_mainApp(mainApp),
+    SoundTableModel(class MainComponent& mainApp, SoundManager& valueTree) : m_mainApp(mainApp),
                                                                                    m_valueTreeToListen(valueTree)
     {
         
@@ -73,7 +72,7 @@ private:
     ///Reference to the MainComponent
     class MainComponent& m_mainApp;
     ///Reference to the ValueTree this class is listening to
-    class SoundManager& m_valueTreeToListen;
+    SoundManager& m_valueTreeToListen;
     ///This member is the last row that was selected
     int m_lastSelectedRow = 0;
 

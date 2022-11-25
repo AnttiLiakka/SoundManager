@@ -11,7 +11,6 @@
 #pragma once
 #include <JuceHeader.h>
 #include "MainComponent.h"
-#include "DragAndDropTable.h"
 #include "SoundManager.h"
 
 /// This class is the model for the MainComponents m_categoryList member. It updates the ListBox when new categories are added to it or removed from it.
@@ -25,7 +24,7 @@ class CategoryListModel: public juce::ListBoxModel, public juce::Label::Listener
 public:
     
     ///The constructor, takes a reference to the MainComponent and SoundManager.
-    CategoryListModel(class MainComponent& mainApp, class SoundManager& valueTree ): ListBoxModel(), m_mainApp(mainApp),
+    CategoryListModel(class MainComponent& mainApp, SoundManager& valueTree ): ListBoxModel(), m_mainApp(mainApp),
                                                                                      m_valueTreeToListen(valueTree)
     {
         
@@ -56,7 +55,7 @@ private:
     ///Reference to the MainComponent
     class MainComponent& m_mainApp;
     ///Reference to the SoundManager
-    class SoundManager& m_valueTreeToListen;
+    SoundManager& m_valueTreeToListen;
     ///This member contains all of the category strings
     std::vector<juce::String> m_uniqueCategories;
     ///The row that is currectly selected

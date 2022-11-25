@@ -11,8 +11,6 @@
 #pragma once
 #include <JuceHeader.h>
 #include "MainComponent.h"
-#include "CategoryListModel.h"
-#include "SoundTableModel.h"
 
 ///This class is the table component holding the SoundTableModel. Supported audiofiles can be dragged and dropped on the table to add them to the database
 class DragAndDropTable : public juce::TableListBox, public
@@ -46,4 +44,6 @@ private:
     bool m_acceptingfiles = true;
     ///The font used to write the text in the cells
     juce::Font m_font = (15.0f);
+    ///The  audio format manager needed to test whether audio files are valid
+    juce::AudioFormatManager m_formatManager;
 };

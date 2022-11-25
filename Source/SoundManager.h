@@ -65,6 +65,8 @@ public:
     ///This function returns a visible fileinfo ValueTree that is put on a row on the table. It creates an Array of visible FileInfos and the index integer defines which FileInfo is returned from the Array
     juce::ValueTree getVisibleChildAtIndex(int index);
     
+    juce::File getFileOnRow(int rowNumber);
+    
 private:
     ///Reference to the MainComponent
     class MainComponent& m_mainApp;

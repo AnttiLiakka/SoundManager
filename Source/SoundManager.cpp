@@ -25,7 +25,7 @@ juce::Identifier SoundManager::m_category = juce::Identifier("category");
 juce::Identifier SoundManager::m_id = juce::Identifier("id");
 
 
-SoundManager::SoundManager(class MainComponent& mainApp) : m_mainApp(mainApp),
+SoundManager::SoundManager(MainComponent& mainApp) : m_mainApp(mainApp),
                                                            m_audioLibraryTree(
                                                                                 {"audiolibrary", {},
                                                                                     {
@@ -347,4 +347,17 @@ juce::StringArray SoundManager::getCategories(int rowNumber)
     }
     
     return categoryArray;
+}
+
+juce::File SoundManager::getFileOnRow(int rowNumber)
+{
+    juce::String filepath;
+    
+    auto fileInfo = m_currentTable[rowNumber];
+    
+    filepath = fileInfo.getProperty(m_filePath);
+    
+    juce::File file(filepath);
+    
+    return file;
 }
