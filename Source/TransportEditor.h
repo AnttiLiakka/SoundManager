@@ -13,38 +13,58 @@
 
 class SoundTableModel;
 
-class TransportEditor : juce::Component
+class TransportEditor : public juce::Component, public juce::ChangeListener
 {
     friend class MainComponent;
     
 public:
+    
+    enum PlayState
+    {
+        Stopped,
+        Starting,
+        Playing,
+        Pausing,
+        Paused,
+        Stopping
+    };
     
     TransportEditor(class SoundTableModel& tableModel);
     
     void paint(juce::Graphics& g) override;
     void resized() override;
     
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override;
+    
     void setFileToPlay(juce::File file);
     
     void paintLoadedFile(juce::Graphics& g, const juce::Rectangle<int>& bounds);
     
+    void changePlayState (TransportEditor::PlayState newPlayState);
+    
+    void relocateFile(juce::Graphics& g, const juce::Rectangle<int>& bounds);
+    
+    bool isFileValid(juce::File fileToTest);
     
 private:
     
-    SoundTableModel& m_tableModel;
+    class SoundTableModel& m_tableModel;
     
     juce::AudioThumbnailCache m_thumbnailCache;
     
     juce::AudioThumbnail m_thumbnail;
-    ///The audiobuffer
-    juce::AudioBuffer<float> m_sampleBuffer;
     ///The  audio format manager
     juce::AudioFormatManager m_formatManager;
     
     juce::DrawableButton m_playButton, m_pauseButton, m_stopButton;
     
-    bool m_fileSelected = false, m_fileIsValid = false, m_shouldBePainting = false;
+    juce::TextButton m_relocateButton;
     
+    bool m_fileSelected = false, m_fileIsValid = false;
+
     juce::File m_fileToPlay;
+    
+    PlayState playState;
+    
     
 };

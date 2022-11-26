@@ -11,7 +11,6 @@
 #pragma once
 #include <JuceHeader.h>
 #include "MainComponent.h"
-#include "SoundManager.h"
 
 ///This class is the model for DragAndDropTable. it listens to a juce ValueTree holding the database for the table and updates the model when the tree changes
 class SoundTableModel : public juce::TableListBoxModel, public juce::ValueTree::Listener
@@ -68,11 +67,15 @@ public:
     ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the Listener when a child is removed from m_valueTreeToListen. It is overridden to update the table when visibility or categories of the tree changes,
     void valueTreeChildRemoved(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved) override;
     
+    void locateFile(juce::File file);
+    
+    void reloadWaveform();
+    
 private:
     ///Reference to the MainComponent
     class MainComponent& m_mainApp;
     ///Reference to the ValueTree this class is listening to
-    SoundManager& m_valueTreeToListen;
+    class SoundManager& m_valueTreeToListen;
     ///This member is the last row that was selected
     int m_lastSelectedRow = 0;
 

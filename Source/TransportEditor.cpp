@@ -8,63 +8,95 @@
   ==============================================================================
 */
 
-#include "TransportEditor.h"
+#include "MainComponent.h"
 
-TransportEditor::TransportEditor(class SoundTableModel& tableModel) :m_tableModel(tableModel),
-                                                                     m_thumbnailCache(5),
-                                                                     m_thumbnail(512,
-                                                                     m_formatManager, m_thumbnailCache),
-                                                                     m_playButton("Play", juce::DrawableButton::ButtonStyle::ImageFitted),
-                                                                     m_pauseButton("Pause", juce::DrawableButton::ButtonStyle::ImageFitted),
-                                                                     m_stopButton("Stop", juce::DrawableButton::ButtonStyle::ImageFitted)
+TransportEditor::TransportEditor(class SoundTableModel& tableModel) :
+                 m_tableModel(tableModel),
+                 m_thumbnailCache(5),
+                 m_thumbnail(1024,
+                 m_formatManager, m_thumbnailCache),
+                 m_playButton("Play", juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_pauseButton("Pause", juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_stopButton("Stop", juce::DrawableButton::ButtonStyle::ImageFitted),
+                 playState(Stopped)
 {
     
     m_formatManager.registerBasicFormats();
     
+    m_thumbnail.addChangeListener(this);
     
-    m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::playInactive_svg, BinaryData::playInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playHover_svg, BinaryData::playHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
+    m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::playInactive_svg, BinaryData::playInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playHover_svg, BinaryData::playHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
     
-    m_pauseButton.setImages(juce::Drawable::createFromImageData(BinaryData::pauseInactive_svg, BinaryData::pauseInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseHover_svg, BinaryData::pauseHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseActive_svg, BinaryData::pauseActive_svgSize).get());
+    m_pauseButton.setImages(juce::Drawable::createFromImageData(BinaryData::pauseInactive_svg, BinaryData::pauseInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseHover_svg, BinaryData::pauseHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseActive_svg, BinaryData::pauseActive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
     
-    m_stopButton.setImages(juce::Drawable::createFromImageData(BinaryData::stopInactive_svg, BinaryData::stopInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::stopHover_svg, BinaryData::stopHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::stopActive_svg, BinaryData::stopActive_svgSize).get());
+    m_stopButton.setImages(juce::Drawable::createFromImageData(BinaryData::stopInactive_svg, BinaryData::stopInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::stopHover_svg, BinaryData::stopHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::stopActive_svg, BinaryData::stopActive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::stopActive_svg, BinaryData::stopActive_svgSize).get());
     
-    
+    m_relocateButton.setButtonText(TRANS("Relocate"));
+    m_relocateButton.setEnabled(false);
+    m_relocateButton.setAlpha(0);
+
     m_playButton.setTooltip("Play");
     m_pauseButton.setTooltip("Pause");
     m_stopButton.setTooltip("Stop");
+    m_stopButton.setEnabled(false);
+    
+    m_playButton.onClick = [&](){
+        changePlayState(Starting);
+    };
+    m_pauseButton.onClick = [&](){
+        if (playState != Playing) return;
+        changePlayState(Paused);
+    };
+    m_stopButton.onClick = [&](){
+        changePlayState(Stopping);
+    };
+    
+    m_relocateButton.onClick = [&]()
+    {
+        (m_fileToPlay.getFullPathName());
+         m_tableModel.locateFile(m_fileToPlay);
+    };
     
     
     
     addAndMakeVisible(m_playButton);
     addAndMakeVisible(m_pauseButton);
     addAndMakeVisible(m_stopButton);
+    addAndMakeVisible(m_relocateButton);
 }
 
 
 void TransportEditor::paint(juce::Graphics &g)
 {
-    
     auto waveformBounds = getLocalBounds();
     auto controls = waveformBounds.removeFromBottom(30);
+    g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
+    g.fillRect(waveformBounds);
+    g.setFont(juce::Font(25));
     
-    if(m_shouldBePainting)
+    if(!m_fileSelected)
     {
-        paintLoadedFile(g, waveformBounds);
-    } else
-    {
-        g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
-        g.fillRect(waveformBounds);
         g.setColour(juce::Colours::darkred);
         g.drawFittedText(TRANS("File Not Selected"), waveformBounds, juce::Justification::centred, 1);
+        
+    } else if (!m_fileIsValid)
+    {
+        relocateFile(g, waveformBounds);
+    } else
+    {
+        paintLoadedFile(g, waveformBounds);
     }
-    
 }
 
 void TransportEditor::resized()
 {
-    auto controls = getLocalBounds().removeFromBottom(30);
+    auto bounds = getLocalBounds();
+    auto controls = bounds.removeFromBottom(30);
     auto buttonMargin = controls.removeFromBottom(4);
     auto sliders = controls.removeFromLeft(getWidth() / 2 - 52.5);
+    auto relocateButtonBottonMargin = bounds.removeFromBottom(getLocalBounds().getHeight() / 4);
+    auto relocateButtonTopMargin = bounds.removeFromTop(getLocalBounds().getHeight() / 4);
+    m_relocateButton.setBounds(bounds.removeFromRight(bounds.getWidth() / 4));
     
     m_playButton.setBounds(controls.removeFromLeft(35));
     m_pauseButton.setBounds(controls.removeFromLeft(35));
@@ -73,28 +105,109 @@ void TransportEditor::resized()
 
 void TransportEditor::setFileToPlay(juce::File file)
 {
-    m_shouldBePainting = false;
-    if(file.exists())
+    m_fileSelected = true;
+    m_fileToPlay = file;
+    if (playState != Stopped)
     {
-        m_fileToPlay = file;
-    } else
-    {
-        DBG("FILE NOT VALID");
-        return;
+        changePlayState(Stopping);
     }
     
-    m_thumbnail.setSource(new juce::FileInputSource(file));
-    
-    m_shouldBePainting = true;
-    repaint();
+    if(!isFileValid(file))
+    {
+        m_relocateButton.setEnabled(true);
+        m_relocateButton.setAlpha(1);
+        m_fileIsValid = false;
+        m_thumbnail.clear();
+    } else
+    {
+        m_relocateButton.setEnabled(false);
+        m_relocateButton.setAlpha(0);
+        m_thumbnail.setSource(new juce::FileInputSource(file));
+        m_fileIsValid = true;
+    }
 }
 
 void TransportEditor::paintLoadedFile(juce::Graphics& g, const juce::Rectangle<int>& bounds)
 {
-    g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
-    g.fillRect(bounds);
     g.setColour(juce::Colours::darkred);
     m_thumbnail.drawChannel(g, bounds, 0, m_thumbnail.getTotalLength(), m_thumbnail.getNumChannels(), 1.0f);
     m_thumbnail.drawChannels(g, bounds, 0, m_thumbnail.getTotalLength(), 1.0f);
-    DBG(juce::String(m_thumbnail.getTotalLength()));
+}
+
+void TransportEditor::changePlayState(PlayState newPlayState)
+{
+    if (playState != newPlayState)
+    {
+        playState = newPlayState;
+        
+        switch (playState)
+        {
+            case Stopped:
+                m_stopButton.setEnabled(false);
+                m_playButton.setEnabled(true);
+                m_pauseButton.setEnabled(true);
+                break;
+                
+            case Starting:
+                m_playButton.setEnabled(false);
+                
+                break;
+                
+            case Playing:
+                m_stopButton.setEnabled(true);
+                m_pauseButton.setEnabled(true);
+                break;
+                
+            case Pausing:
+                
+                break;
+                
+            case Paused:
+                m_playButton.setEnabled(true);
+                m_stopButton.setEnabled(true);
+                m_pauseButton.setEnabled(false);
+                break;
+                
+            case Stopping:
+    
+                break;
+                
+            default:
+                jassertfalse;
+                break;
+                
+        }
+    }
+}
+
+void TransportEditor::relocateFile(juce::Graphics& g, const juce::Rectangle<int>& bounds)
+{
+    g.setColour(juce::Colours::darkred);
+    g.drawFittedText(TRANS("File Not Found, Please Relocate:"), bounds, juce::Justification::centred, 1);
+}
+
+bool TransportEditor::isFileValid(juce::File fileToTest)
+{
+    auto file = fileToTest;
+    
+    if(!file.existsAsFile())
+    {
+        return false;
+    }
+    auto fileReader = m_formatManager.createReaderFor(fileToTest);
+    if (fileReader== nullptr)
+    {
+        delete fileReader;
+        return false;
+    }
+    delete fileReader;
+    return true;
+}
+
+void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
+{
+    if(source == &m_thumbnail)
+    {
+        repaint();
+    }
 }

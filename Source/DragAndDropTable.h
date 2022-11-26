@@ -19,6 +19,7 @@ class DragAndDropTable : public juce::TableListBox, public
     friend class MainComponent;
     friend class CategoryListModel;
     friend class SoundTableModel;
+    friend class SoundManager;
     
 public:
     ///The constructor, takes a reference to the MainComponent

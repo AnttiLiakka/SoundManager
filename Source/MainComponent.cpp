@@ -455,6 +455,18 @@ void SoundTableModel::valueTreeChildRemoved(juce::ValueTree& parentTree, juce::V
     m_mainApp.m_table.updateContent();
 }
 
+void SoundTableModel::locateFile(juce::File file)
+{
+    auto fileToLocation = file;
+    m_valueTreeToListen.setNewFilepath(file);
+
+}
+
+void SoundTableModel::reloadWaveform()
+{
+    m_mainApp.m_transport.setFileToPlay(m_valueTreeToListen.getFileOnRow(m_lastSelectedRow));
+}
+
 /*
  
  
@@ -573,9 +585,8 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
 
 void MainComponent::manualFileImport()
 {
-    DBG("Attempting load");
     
-    m_fileChooser = std::make_unique<juce::FileChooser>(TRANS("Load a file"),juce::File(),"*.wav"   );
+    m_fileChooser = std::make_unique<juce::FileChooser>(TRANS("Load a file"),juce::File(),"*.wav; *.aiff"   );
     
     auto flags = juce::FileBrowserComponent::canSelectFiles | juce::FileBrowserComponent::openMode   ;
     

@@ -7,7 +7,6 @@
 
   ==============================================================================
 */
-//WHY DONT I HAVE TO #include "SoundManager.h"
 #include "MainComponent.h"
 
 juce::Identifier SoundManager::m_fileInfo = juce::Identifier("fileInfo");
@@ -360,4 +359,40 @@ juce::File SoundManager::getFileOnRow(int rowNumber)
     juce::File file(filepath);
     
     return file;
+}
+
+void SoundManager::setNewFilepath(juce::File fileToRelocate)
+{
+    m_oldFilepath = fileToRelocate.getFullPathName();
+    
+    m_fileChooser = std::make_unique<juce::FileChooser>(TRANS("Select a file"),juce::File(),"*.wav; *.aiff"   );
+    auto flags = juce::FileBrowserComponent::canSelectFiles | juce::FileBrowserComponent::openMode   ;
+    m_fileChooser->launchAsync(flags, [&](const juce::FileChooser& chooser){
+        
+        juce::File fileToTest(chooser.getResult());
+        
+        try {
+            if(fileToTest.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
+            if(!fileToTest.existsAsFile())throw TRANS("That file doesn't exist!!");
+            auto fileReader = m_mainApp.m_table.m_formatManager.createReaderFor(fileToTest);
+            if(fileReader == nullptr) throw TRANS("Error Loading the File");
+            juce::String newFilepath = fileToTest.getFullPathName();
+            delete fileReader;
+            
+            changeFilepah(newFilepath, m_oldFilepath);
+            
+        } catch (juce::String message){
+            juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,fileToTest.getFileName() , message);
+        }
+    
+    
+    });
+}
+
+void SoundManager::changeFilepah(juce::String newPath, juce::String oldPath)
+{
+    auto fileinfo = m_audioLibraryTree.getChildWithProperty(m_filePath, oldPath);
+    jassert(fileinfo.isValid());
+    fileinfo.setProperty(m_filePath, newPath, nullptr);
+    m_mainApp.m_tableModel.reloadWaveform();
 }

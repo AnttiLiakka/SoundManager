@@ -5,12 +5,10 @@
 #include "CategoryListModel.h"
 #include "SoundTableModel.h"
 #include "TransportEditor.h"
+#include "SoundManager.h"
 
-//==============================================================================
-/*
-    This component lives inside our window, and this is where you should put all
-    your controls and content.
-*/
+class TransportEditor;
+
 class MainComponent  : public juce::AudioAppComponent, public juce::MenuBarModel
 {
     friend class DragAndDropTable;
@@ -56,17 +54,17 @@ private:
     //==============================================================================
 
     ///The model for the sound file table
-    SoundTableModel m_tableModel;
+    class SoundTableModel m_tableModel;
     ///The sound file table with drag and drop functionality 
-    DragAndDropTable m_table;
+    class DragAndDropTable m_table;
     ///The valueTree
-    SoundManager m_valueTree;
+    class SoundManager m_valueTree;
     ///The list of categories
-    juce::ListBox m_categories;
+    class juce::ListBox m_categories;
     ///The model for the list of categories
-    CategoryListModel m_categoryModel;
+    class CategoryListModel m_categoryModel;
     ///The transport editor
-    TransportEditor m_transport;
+    class TransportEditor m_transport;
     
     juce::AudioDeviceManager m_audioDeviceManager;
     std::unique_ptr<juce::AudioDeviceSelectorComponent> m_audioSettings;

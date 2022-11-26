@@ -10,7 +10,6 @@
 
 #pragma once
 #include<JuceHeader.h>
-#include"MainComponent.h"
 
 ///This class is the juce ValueTree holding the database for SoundTableModel. 
 class SoundManager : public juce::Label::Listener
@@ -67,6 +66,10 @@ public:
     
     juce::File getFileOnRow(int rowNumber);
     
+    void setNewFilepath(juce::File fileToRelocate);
+    
+    void changeFilepah(juce::String newPath, juce::String oldPath);
+    
 private:
     ///Reference to the MainComponent
     class MainComponent& m_mainApp;
@@ -74,6 +77,10 @@ private:
     juce::ValueTree m_audioLibraryTree;
     ///A juce Array of juce ValueTrees currently visible on the table. This member is crucual to make sure that when user interacts with cells on the table, correct FileInfo is interacted with.
     juce::Array<juce::ValueTree> m_currentTable;
+    
+    juce::String m_oldFilepath;
+    
+    std::unique_ptr<juce::FileChooser> m_fileChooser;
     
     ///A static juce Identifier for the fileinfo tree.
     static juce::Identifier m_fileInfo;
