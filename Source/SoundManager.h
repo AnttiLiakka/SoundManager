@@ -63,9 +63,9 @@ public:
     void labelTextChanged(juce::Label* labelThatHasChanged) override;
     ///This function returns a visible fileinfo ValueTree that is put on a row on the table. It creates an Array of visible FileInfos and the index integer defines which FileInfo is returned from the Array
     juce::ValueTree getVisibleChildAtIndex(int index);
-    
+    ///This function returns a file that is currently in a row on the table
     juce::File getFileOnRow(int rowNumber);
-    
+    ///This function is the first part of changing a filepath of a fileinfo
     void setNewFilepath(juce::File fileToRelocate);
     
     void changeFilepah(juce::String newPath, juce::String oldPath);

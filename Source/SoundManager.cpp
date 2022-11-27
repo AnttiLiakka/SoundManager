@@ -373,9 +373,9 @@ void SoundManager::setNewFilepath(juce::File fileToRelocate)
         
         try {
             if(fileToTest.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
-            if(!fileToTest.existsAsFile())throw TRANS("That file doesn't exist!!");
+            if(!fileToTest.existsAsFile())throw TRANS("No file selected");
             auto fileReader = m_mainApp.m_table.m_formatManager.createReaderFor(fileToTest);
-            if(fileReader == nullptr) throw TRANS("Error Loading the File");
+            if(fileReader == nullptr) throw TRANS("Error loading the File");
             juce::String newFilepath = fileToTest.getFullPathName();
             delete fileReader;
             
@@ -391,8 +391,19 @@ void SoundManager::setNewFilepath(juce::File fileToRelocate)
 
 void SoundManager::changeFilepah(juce::String newPath, juce::String oldPath)
 {
+    juce::File newFile(newPath);
+    
+    auto newFilename = newFile.getFileName();
+    
     auto fileinfo = m_audioLibraryTree.getChildWithProperty(m_filePath, oldPath);
     jassert(fileinfo.isValid());
-    fileinfo.setProperty(m_filePath, newPath, nullptr);
-    m_mainApp.m_tableModel.reloadWaveform();
+    auto information = fileinfo.getChildWithName(m_information);
+    if(information.getProperty(m_fileName) != newFilename)
+    {
+        juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, TRANS("File name does not match"), TRANS("Please select another file"));
+    } else
+    {
+        fileinfo.setProperty(m_filePath, newPath, nullptr);
+        m_mainApp.m_tableModel.reloadWaveform();
+    }
 }

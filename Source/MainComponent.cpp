@@ -467,6 +467,16 @@ void SoundTableModel::reloadWaveform()
     m_mainApp.m_transport.setFileToPlay(m_valueTreeToListen.getFileOnRow(m_lastSelectedRow));
 }
 
+void SoundTableModel::preventFileImport()
+{
+    m_mainApp.m_table.m_acceptingfiles = false;
+}
+
+void SoundTableModel::allowFIleImport()
+{
+    m_mainApp.m_table.m_acceptingfiles = true;
+}
+
 /*
  
  
@@ -596,7 +606,7 @@ void MainComponent::manualFileImport()
         
         try {
             if(fileToTest.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
-            if(!fileToTest.existsAsFile())throw TRANS("That file doesn't exist!!");
+            if(!fileToTest.existsAsFile())throw TRANS("No file selected");
             
             auto* valueTree = &m_valueTree.m_audioLibraryTree;
             

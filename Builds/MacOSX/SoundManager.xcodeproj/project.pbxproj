@@ -42,9 +42,11 @@
 
 /* Begin PBXFileReference section */
 		083BACB5CFC793A913B3DF99 /* WebKit.framework */ /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		09E489AACB3767878F8D0C09 /* LocateInactive.svg */ /* LocateInactive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = LocateInactive.svg; path = ../../Resources/Icons/LocateInactive.svg; sourceTree = SOURCE_ROOT; };
 		0E03A33F076FEAF7EFE136D6 /* SoundManager.h */ /* SoundManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SoundManager.h; path = ../../Source/SoundManager.h; sourceTree = SOURCE_ROOT; };
 		0EC68BF0A71D401B711062BB /* Cocoa.framework */ /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		0EF7D135A77D5BDCC69D4B84 /* stopHover.svg */ /* stopHover.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = stopHover.svg; path = ../../Resources/Icons/stopHover.svg; sourceTree = SOURCE_ROOT; };
+		11D3EBB2A8AF66153655B0B0 /* LoopInactive.svg */ /* LoopInactive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = LoopInactive.svg; path = ../../Resources/Icons/LoopInactive.svg; sourceTree = SOURCE_ROOT; };
 		1488F8190E401D19140599CC /* TransportEditor.h */ /* TransportEditor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TransportEditor.h; path = ../../Source/TransportEditor.h; sourceTree = SOURCE_ROOT; };
 		1C31AC062F26F735A9A229F1 /* include_juce_audio_processors.mm */ /* include_juce_audio_processors.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_processors.mm; path = ../../JuceLibraryCode/include_juce_audio_processors.mm; sourceTree = SOURCE_ROOT; };
 		1E4CC3972E7FA7ED13161FD7 /* juce_gui_basics */ /* juce_gui_basics */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_gui_basics; path = /Users/anna/Documents/Juce/JUCE/modules/juce_gui_basics; sourceTree = "<absolute>"; };
@@ -60,6 +62,7 @@
 		3C4E4A7FE7CE97C54F79409D /* playHover.svg */ /* playHover.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = playHover.svg; path = ../../Resources/Icons/playHover.svg; sourceTree = SOURCE_ROOT; };
 		3FC86DA7323F0F045A076754 /* include_juce_data_structures.mm */ /* include_juce_data_structures.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_data_structures.mm; path = ../../JuceLibraryCode/include_juce_data_structures.mm; sourceTree = SOURCE_ROOT; };
 		47CDAC159EA649ED3F92125C /* MagGlassInactive.svg */ /* MagGlassInactive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = MagGlassInactive.svg; path = ../../Resources/Icons/MagGlassInactive.svg; sourceTree = SOURCE_ROOT; };
+		4834BAF369D165041E4B1B2D /* LoopHover.svg */ /* LoopHover.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = LoopHover.svg; path = ../../Resources/Icons/LoopHover.svg; sourceTree = SOURCE_ROOT; };
 		4AA0D14391796531E3E08904 /* include_juce_audio_basics.mm */ /* include_juce_audio_basics.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_basics.mm; path = ../../JuceLibraryCode/include_juce_audio_basics.mm; sourceTree = SOURCE_ROOT; };
 		4F9142935314AB2D5C519C1C /* CoreMIDI.framework */ /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
 		4FAD22E1D72145DD1F959618 /* playInactive.svg */ /* playInactive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = playInactive.svg; path = ../../Resources/Icons/playInactive.svg; sourceTree = SOURCE_ROOT; };
@@ -73,8 +76,10 @@
 		642150DAA3D1E7C182CBC2E9 /* Accelerate.framework */ /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		68CEA2D1B7FC1462FB63CDCC /* MagGlassHover.svg */ /* MagGlassHover.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = MagGlassHover.svg; path = ../../Resources/Icons/MagGlassHover.svg; sourceTree = SOURCE_ROOT; };
 		6E6C2070E3C4DD3A24B645D3 /* juce_graphics */ /* juce_graphics */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_graphics; path = /Users/anna/Documents/Juce/JUCE/modules/juce_graphics; sourceTree = "<absolute>"; };
+		72E6BD367268C6399F534F22 /* LocateActive.svg */ /* LocateActive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = LocateActive.svg; path = ../../Resources/Icons/LocateActive.svg; sourceTree = SOURCE_ROOT; };
 		7421E541A009A03172B24C96 /* include_juce_audio_utils.mm */ /* include_juce_audio_utils.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_utils.mm; path = ../../JuceLibraryCode/include_juce_audio_utils.mm; sourceTree = SOURCE_ROOT; };
 		7CA14B17206F1699B458E8FA /* pauseActive.svg */ /* pauseActive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = pauseActive.svg; path = ../../Resources/Icons/pauseActive.svg; sourceTree = SOURCE_ROOT; };
+		7F285B771C6A8CEB0CDA58C7 /* LoopActive.svg */ /* LoopActive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = LoopActive.svg; path = ../../Resources/Icons/LoopActive.svg; sourceTree = SOURCE_ROOT; };
 		80E294FE7092311E9A5143AA /* include_juce_audio_formats.mm */ /* include_juce_audio_formats.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_formats.mm; path = ../../JuceLibraryCode/include_juce_audio_formats.mm; sourceTree = SOURCE_ROOT; };
 		840F4B03796AFD319BF76D40 /* juce_audio_devices */ /* juce_audio_devices */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_devices; path = /Users/anna/Documents/Juce/JUCE/modules/juce_audio_devices; sourceTree = "<absolute>"; };
 		84F88C3F5057217730A8A150 /* include_juce_graphics.mm */ /* include_juce_graphics.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_graphics.mm; path = ../../JuceLibraryCode/include_juce_graphics.mm; sourceTree = SOURCE_ROOT; };
@@ -82,6 +87,7 @@
 		8F64DC7379A207E9F349CEF4 /* RecentFilesMenuTemplate.nib */ /* RecentFilesMenuTemplate.nib */ = {isa = PBXFileReference; lastKnownFileType = file.nib; name = RecentFilesMenuTemplate.nib; path = RecentFilesMenuTemplate.nib; sourceTree = SOURCE_ROOT; };
 		9216D81C7BCEEC91055BD759 /* CoreAudio.framework */ /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		9238D82FBA6F431F7CDDB9FD /* include_juce_gui_basics.mm */ /* include_juce_gui_basics.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_gui_basics.mm; path = ../../JuceLibraryCode/include_juce_gui_basics.mm; sourceTree = SOURCE_ROOT; };
+		978AFDADB60763B67BD4F943 /* LocateHover.svg */ /* LocateHover.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = LocateHover.svg; path = ../../Resources/Icons/LocateHover.svg; sourceTree = SOURCE_ROOT; };
 		987845157B276D3D85A245A1 /* DiscRecording.framework */ /* DiscRecording.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DiscRecording.framework; path = System/Library/Frameworks/DiscRecording.framework; sourceTree = SDKROOT; };
 		9E70E1E524402E8F7DA99359 /* pauseHover.svg */ /* pauseHover.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = pauseHover.svg; path = ../../Resources/Icons/pauseHover.svg; sourceTree = SOURCE_ROOT; };
 		A74D4925CDD5AEF0FD30C938 /* IOKit.framework */ /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -201,6 +207,12 @@
 		9C59DAABB3EC05967C5F330B /* Icons */ = {
 			isa = PBXGroup;
 			children = (
+				72E6BD367268C6399F534F22,
+				978AFDADB60763B67BD4F943,
+				09E489AACB3767878F8D0C09,
+				7F285B771C6A8CEB0CDA58C7,
+				4834BAF369D165041E4B1B2D,
+				11D3EBB2A8AF66153655B0B0,
 				D1CD52CCBA5D6701E1011585,
 				68CEA2D1B7FC1462FB63CDCC,
 				47CDAC159EA649ED3F92125C,

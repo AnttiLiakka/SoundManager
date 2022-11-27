@@ -13,7 +13,7 @@
 
 class SoundTableModel;
 
-class TransportEditor : public juce::Component, public juce::ChangeListener
+class TransportEditor : public juce::Component, public juce::ChangeListener, private juce::Timer
 {
     friend class MainComponent;
     
@@ -42,9 +42,12 @@ public:
     
     void changePlayState (TransportEditor::PlayState newPlayState);
     
-    void relocateFile(juce::Graphics& g, const juce::Rectangle<int>& bounds);
+    void paintRelocateFile(juce::Graphics& g, const juce::Rectangle<int>& bounds);
     
     bool isFileValid(juce::File fileToTest);
+    
+    void mouseDown(const juce::MouseEvent& event) override;
+    void mouseDrag(const juce::MouseEvent& event) override;
     
 private:
     
@@ -56,15 +59,13 @@ private:
     ///The  audio format manager
     juce::AudioFormatManager m_formatManager;
     
-    juce::DrawableButton m_playButton, m_pauseButton, m_stopButton;
+    juce::DrawableButton m_playButton, m_stopButton, m_loopButton, m_relocateButton;
     
-    juce::TextButton m_relocateButton;
-    
-    bool m_fileSelected = false, m_fileIsValid = false;
+    bool m_fileSelected = false, m_fileIsValid = false, m_isLooping = false, m_canDragFile = true;
 
     juce::File m_fileToPlay;
     
     PlayState playState;
     
-    
+    void timerCallback() override;
 };

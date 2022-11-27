@@ -3180,6 +3180,12 @@
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h"/>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Resources\Icons\LocateActive.svg"/>
+    <None Include="..\..\Resources\Icons\LocateHover.svg"/>
+    <None Include="..\..\Resources\Icons\LocateInactive.svg"/>
+    <None Include="..\..\Resources\Icons\LoopActive.svg"/>
+    <None Include="..\..\Resources\Icons\LoopHover.svg"/>
+    <None Include="..\..\Resources\Icons\LoopInactive.svg"/>
     <None Include="..\..\Resources\Icons\MagGlassActive.svg"/>
     <None Include="..\..\Resources\Icons\MagGlassHover.svg"/>
     <None Include="..\..\Resources\Icons\MagGlassInactive.svg"/>

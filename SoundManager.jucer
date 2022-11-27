@@ -23,6 +23,15 @@
             file="Source/MainComponent.cpp"/>
     </GROUP>
     <GROUP id="{17CEF6AA-94B8-812C-CAA0-0E5CCD29C50F}" name="Icons">
+      <FILE id="SAHJjH" name="LocateActive.svg" compile="0" resource="1"
+            file="Resources/Icons/LocateActive.svg"/>
+      <FILE id="lKjJ2m" name="LocateHover.svg" compile="0" resource="1" file="Resources/Icons/LocateHover.svg"/>
+      <FILE id="flSTps" name="LocateInactive.svg" compile="0" resource="1"
+            file="Resources/Icons/LocateInactive.svg"/>
+      <FILE id="azxJt1" name="LoopActive.svg" compile="0" resource="1" file="Resources/Icons/LoopActive.svg"/>
+      <FILE id="jD2kuh" name="LoopHover.svg" compile="0" resource="1" file="Resources/Icons/LoopHover.svg"/>
+      <FILE id="wUTnc0" name="LoopInactive.svg" compile="0" resource="1"
+            file="Resources/Icons/LoopInactive.svg"/>
       <FILE id="ZGRjpD" name="MagGlassActive.svg" compile="0" resource="1"
             file="Resources/Icons/MagGlassActive.svg"/>
       <FILE id="zxvzTR" name="MagGlassHover.svg" compile="0" resource="1"

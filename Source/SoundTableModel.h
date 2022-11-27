@@ -66,10 +66,14 @@ public:
     void valueTreePropertyChanged(juce::ValueTree& parentTree, const juce::Identifier& property) override;
     ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the Listener when a child is removed from m_valueTreeToListen. It is overridden to update the table when visibility or categories of the tree changes,
     void valueTreeChildRemoved(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved) override;
-    
+    ///This function is called when the user clicks the locate button in the TransportEditor and it is calling the setNewFilePath function of the m_valueTreeToListen
     void locateFile(juce::File file);
-    
+    ///This functon is called by m_valueTreeToListen if user successfully locates a file. It calls the TransportEditors setFileToPlay function so that user does not have to click the row again to get the waveform to show up.
     void reloadWaveform();
+    ///This function is called when a file is being exported via dragging from the TransportEditor. It sets the DragAndDropTables m_acceptingFiles boolean to false and therefore prevents dragged files from being imported back into the application.
+    void preventFileImport();
+    ///This functoin is called when a drag export action from TransportEditor has finished. it sets the DragAndDropTables m_acceptingFiles boolean to true and making it possible to import files into the table via drag and drop.
+    void allowFIleImport();
     
 private:
     ///Reference to the MainComponent

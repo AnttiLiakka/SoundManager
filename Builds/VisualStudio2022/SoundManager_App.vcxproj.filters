@@ -5555,6 +5555,24 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Resources\Icons\LocateActive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\LocateHover.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\LocateInactive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\LoopActive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\LoopHover.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Icons\LoopInactive.svg">
+      <Filter>SoundManager\Icons</Filter>
+    </None>
     <None Include="..\..\Resources\Icons\MagGlassActive.svg">
       <Filter>SoundManager\Icons</Filter>
     </None>

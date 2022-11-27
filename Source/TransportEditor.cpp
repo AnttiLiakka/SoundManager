@@ -15,9 +15,10 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel) :
                  m_thumbnailCache(5),
                  m_thumbnail(1024,
                  m_formatManager, m_thumbnailCache),
-                 m_playButton("Play", juce::DrawableButton::ButtonStyle::ImageFitted),
-                 m_pauseButton("Pause", juce::DrawableButton::ButtonStyle::ImageFitted),
-                 m_stopButton("Stop", juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_playButton(TRANS("Play"), juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_stopButton(TRANS("Stop"), juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_loopButton(TRANS("Loop"), juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_relocateButton(TRANS("Locate File"), juce::DrawableButton::ButtonStyle::ImageFitted),
                  playState(Stopped)
 {
     
@@ -25,30 +26,40 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel) :
     
     m_thumbnail.addChangeListener(this);
     
+
     m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::playInactive_svg, BinaryData::playInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playHover_svg, BinaryData::playHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
-    
-    m_pauseButton.setImages(juce::Drawable::createFromImageData(BinaryData::pauseInactive_svg, BinaryData::pauseInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseHover_svg, BinaryData::pauseHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseActive_svg, BinaryData::pauseActive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
     
     m_stopButton.setImages(juce::Drawable::createFromImageData(BinaryData::stopInactive_svg, BinaryData::stopInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::stopHover_svg, BinaryData::stopHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::stopActive_svg, BinaryData::stopActive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::stopActive_svg, BinaryData::stopActive_svgSize).get());
     
-    m_relocateButton.setButtonText(TRANS("Relocate"));
+    m_loopButton.setImages(juce::Drawable::createFromImageData(BinaryData::LoopInactive_svg, BinaryData::LoopInactive_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::LoopHover_svg, BinaryData::LoopHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::LoopActive_svg, BinaryData::LoopActive_svgSize).get());
+    
+    m_relocateButton.setImages(juce::Drawable::createFromImageData(BinaryData::LocateInactive_svg, BinaryData::LocateInactive_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::LocateHover_svg, BinaryData::LocateHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::LocateActive_svg, BinaryData::LocateActive_svgSize).get());
+    
     m_relocateButton.setEnabled(false);
     m_relocateButton.setAlpha(0);
 
-    m_playButton.setTooltip("Play");
-    m_pauseButton.setTooltip("Pause");
-    m_stopButton.setTooltip("Stop");
+    m_playButton.setTooltip(TRANS("Play"));
+    m_loopButton.setTooltip(TRANS("Loop"));
+    m_stopButton.setTooltip(TRANS("Stop"));
+    m_relocateButton.setTooltip(TRANS("Locate File"));
     m_stopButton.setEnabled(false);
     
     m_playButton.onClick = [&](){
-        changePlayState(Starting);
+        if(playState == Playing)
+        {
+            changePlayState(Pausing);
+        } else
+        {
+            changePlayState(Starting);
+        }
     };
-    m_pauseButton.onClick = [&](){
-        if (playState != Playing) return;
-        changePlayState(Paused);
-    };
+
     m_stopButton.onClick = [&](){
         changePlayState(Stopping);
+    };
+    
+    m_loopButton.onClick = [&](){
+        m_isLooping = !m_isLooping;
     };
     
     m_relocateButton.onClick = [&]()
@@ -60,8 +71,8 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel) :
     
     
     addAndMakeVisible(m_playButton);
-    addAndMakeVisible(m_pauseButton);
     addAndMakeVisible(m_stopButton);
+    addAndMakeVisible(m_loopButton);
     addAndMakeVisible(m_relocateButton);
 }
 
@@ -81,7 +92,7 @@ void TransportEditor::paint(juce::Graphics &g)
         
     } else if (!m_fileIsValid)
     {
-        relocateFile(g, waveformBounds);
+        paintRelocateFile(g, waveformBounds);
     } else
     {
         paintLoadedFile(g, waveformBounds);
@@ -94,13 +105,13 @@ void TransportEditor::resized()
     auto controls = bounds.removeFromBottom(30);
     auto buttonMargin = controls.removeFromBottom(4);
     auto sliders = controls.removeFromLeft(getWidth() / 2 - 52.5);
-    auto relocateButtonBottonMargin = bounds.removeFromBottom(getLocalBounds().getHeight() / 4);
-    auto relocateButtonTopMargin = bounds.removeFromTop(getLocalBounds().getHeight() / 4);
-    m_relocateButton.setBounds(bounds.removeFromRight(bounds.getWidth() / 4));
+    auto relocateButtonBottonMargin = bounds.removeFromBottom(getLocalBounds().getHeight() / 3.5);
+    auto relocateButtonTopMargin = bounds.removeFromTop(getLocalBounds().getHeight() / 3.5);
+    m_relocateButton.setBounds(bounds.removeFromRight(bounds.getWidth() / 2.5));
     
     m_playButton.setBounds(controls.removeFromLeft(35));
-    m_pauseButton.setBounds(controls.removeFromLeft(35));
     m_stopButton.setBounds(controls.removeFromLeft(35));
+    m_loopButton.setBounds(controls.removeFromLeft(35));
 }
 
 void TransportEditor::setFileToPlay(juce::File file)
@@ -118,18 +129,20 @@ void TransportEditor::setFileToPlay(juce::File file)
         m_relocateButton.setAlpha(1);
         m_fileIsValid = false;
         m_thumbnail.clear();
+        stopTimer();
     } else
     {
         m_relocateButton.setEnabled(false);
         m_relocateButton.setAlpha(0);
         m_thumbnail.setSource(new juce::FileInputSource(file));
         m_fileIsValid = true;
+        if(!isTimerRunning()) startTimer(40);
     }
 }
 
 void TransportEditor::paintLoadedFile(juce::Graphics& g, const juce::Rectangle<int>& bounds)
 {
-    g.setColour(juce::Colours::darkred);
+    g.setColour(juce::Colours::white);
     m_thumbnail.drawChannel(g, bounds, 0, m_thumbnail.getTotalLength(), m_thumbnail.getNumChannels(), 1.0f);
     m_thumbnail.drawChannels(g, bounds, 0, m_thumbnail.getTotalLength(), 1.0f);
 }
@@ -144,18 +157,15 @@ void TransportEditor::changePlayState(PlayState newPlayState)
         {
             case Stopped:
                 m_stopButton.setEnabled(false);
-                m_playButton.setEnabled(true);
-                m_pauseButton.setEnabled(true);
+                
                 break;
                 
             case Starting:
-                m_playButton.setEnabled(false);
                 
                 break;
                 
             case Playing:
                 m_stopButton.setEnabled(true);
-                m_pauseButton.setEnabled(true);
                 break;
                 
             case Pausing:
@@ -163,9 +173,7 @@ void TransportEditor::changePlayState(PlayState newPlayState)
                 break;
                 
             case Paused:
-                m_playButton.setEnabled(true);
                 m_stopButton.setEnabled(true);
-                m_pauseButton.setEnabled(false);
                 break;
                 
             case Stopping:
@@ -180,7 +188,7 @@ void TransportEditor::changePlayState(PlayState newPlayState)
     }
 }
 
-void TransportEditor::relocateFile(juce::Graphics& g, const juce::Rectangle<int>& bounds)
+void TransportEditor::paintRelocateFile(juce::Graphics& g, const juce::Rectangle<int>& bounds)
 {
     g.setColour(juce::Colours::darkred);
     g.drawFittedText(TRANS("File Not Found, Please Relocate:"), bounds, juce::Justification::centred, 1);
@@ -209,5 +217,36 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
     if(source == &m_thumbnail)
     {
         repaint();
+    }
+}
+
+void TransportEditor::timerCallback()
+{
+    repaint();
+}
+
+void TransportEditor::mouseDown(const juce::MouseEvent& event)
+{
+    auto controlBounds = getLocalBounds().removeFromBottom(30);
+    if(controlBounds.contains(event.getPosition())) return;
+}
+
+void TransportEditor::mouseDrag(const juce::MouseEvent& event)
+{
+    auto controlBounds = getLocalBounds().removeFromBottom(30);
+    if(controlBounds.contains(event.getPosition())) return;
+    
+    if(event.mods.isCommandDown() && m_fileIsValid)
+    {
+        if(m_canDragFile)
+        {
+            m_canDragFile = false;
+            m_tableModel.preventFileImport();
+            juce::DragAndDropContainer::performExternalDragDropOfFiles(m_fileToPlay.getFullPathName(), false, this, [&]()
+            {
+                m_canDragFile = true;
+                m_tableModel.allowFIleImport();
+            });
+        }
     }
 }
