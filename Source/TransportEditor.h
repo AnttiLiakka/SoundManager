@@ -23,7 +23,6 @@ public:
         
     TransportEditor(class SoundTableModel& tableModel, class MainComponent& mainApp, class TransportPlayer& player);
     
-    
     void paint(juce::Graphics& g) override;
     void resized() override;
     
@@ -72,10 +71,12 @@ private:
     
     juce::DrawableButton m_playButton, m_stopButton, m_loopButton, m_relocateButton;
     
+    juce::Label m_playheadPosition;
+    
     bool m_fileSelected = false, m_fileIsValid = false, m_isLooping = false, m_canDragFile = true;
 
     juce::File m_fileToPlay;
-        
+    
     enum PlayState
     {
         Stopped,

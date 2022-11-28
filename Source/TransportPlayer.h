@@ -19,6 +19,8 @@ public:
     
     TransportPlayer(class TransportEditor& editor);
     
+    ~TransportPlayer();
+    
     void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override;
     
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
@@ -30,6 +32,12 @@ public:
     void playBuffer();
     
     void prepForNewFile();
+    
+    void startPlayback();
+    
+    void pausePlayback();
+    
+    void stopPlayback();
 private:
     
     class TransportEditor& m_editor;
@@ -41,6 +49,10 @@ private:
     juce::AudioSourcePlayer m_player;
     
     int m_playPosition = 0;
+    
+    double m_sampleRate;
+    
+    float m_playPosSeconds = 0;
     
     bool m_playing = false;
     

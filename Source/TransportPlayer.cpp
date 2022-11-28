@@ -19,6 +19,10 @@ TransportPlayer::TransportPlayer(class TransportEditor& editor) : m_editor(edito
     addChangeListener(&m_editor);
 }
 
+TransportPlayer::~TransportPlayer()
+{
+    //Something Something, Shutdown Audio, Something
+}
 
 void TransportPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
@@ -29,6 +33,7 @@ void TransportPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleR
     // but be careful - it will be called on the audio thread, not the GUI thread.
 
     // For more details, see the help for AudioProcessor::prepareToPlay()
+    m_sampleRate = sampleRate;
 }
 
 
@@ -56,6 +61,7 @@ void TransportPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& buf
         rightChannel[i] = m_buffer.getSample(1, m_playPosition);
         
         ++m_playPosition;
+        m_playPosSeconds = m_playPosition / m_sampleRate;
         
         if(m_playPosition >= m_buffer.getNumSamples())
         {
@@ -89,4 +95,22 @@ void TransportPlayer::prepForNewFile()
     m_playing = false;
     m_buffer.clear();
     m_playPosition = 0;
+    m_playPosSeconds = 0;
+}
+
+void TransportPlayer::startPlayback()
+{
+    m_playing = true;
+}
+
+void TransportPlayer::pausePlayback()
+{
+    m_playing = false;
+}
+
+void TransportPlayer::stopPlayback()
+{
+    m_playing = false;
+    m_playPosition = 0;
+    m_playPosSeconds = 0;
 }

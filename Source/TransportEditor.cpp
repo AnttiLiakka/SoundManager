@@ -21,6 +21,7 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
                  m_stopButton(TRANS("Stop"), juce::DrawableButton::ButtonStyle::ImageFitted),
                  m_loopButton(TRANS("Loop"), juce::DrawableButton::ButtonStyle::ImageFitted),
                  m_relocateButton(TRANS("Locate File"), juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_playheadPosition("PlayheadPosition"),
                  playState(Stopped)
 {
     
@@ -43,6 +44,9 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     
     m_relocateButton.setImages(juce::Drawable::createFromImageData(BinaryData::LocateInactive_svg, BinaryData::LocateInactive_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::LocateHover_svg, BinaryData::LocateHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::LocateActive_svg, BinaryData::LocateActive_svgSize).get());
     
+    m_playheadPosition.setEditable(false);
+    m_playheadPosition.setFont(juce::Font(20));
+    //m_playheadPosition.setText("00:00:00", juce::NotificationType::dontSendNotification);
 
     m_playButton.setTooltip(TRANS("Play"));
     m_stopButton.setTooltip(TRANS("Stop"));
@@ -71,12 +75,13 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
          m_tableModel.locateFile(m_fileToPlay);
     };
     
-    
+    m_playButton.addShortcut(juce::KeyPress(juce::KeyPress::spaceKey));
     
     addAndMakeVisible(m_playButton);
     addAndMakeVisible(m_stopButton);
     addAndMakeVisible(m_loopButton);
     addAndMakeVisible(m_relocateButton);
+    addAndMakeVisible(m_playheadPosition);
 }
 
 
@@ -115,6 +120,7 @@ void TransportEditor::resized()
     m_playButton.setBounds(controls.removeFromLeft(35));
     m_stopButton.setBounds(controls.removeFromLeft(35));
     m_loopButton.setBounds(controls.removeFromLeft(35));
+    m_playheadPosition.setBounds(controls.removeFromLeft(100));
 }
 
 void TransportEditor::setFileToPlay(juce::File file)
@@ -151,9 +157,10 @@ void TransportEditor::paintLoadedFile(juce::Graphics& g, const juce::Rectangle<i
     auto audioLenght = (float) m_thumbnail.getTotalLength();
     m_thumbnail.drawChannels(g, bounds, 0, audioLenght, 1.0f);
     g.setColour(juce::Colours::darkred);
-    auto audioPosition = (float) m_player.m_playPosition;
+    auto audioPosition = (float) m_player.m_playPosSeconds;
     auto drawPosition = (audioPosition / audioLenght) * (float) bounds.getWidth() + (float) bounds.getX();
     g.drawLine(drawPosition, (float) bounds.getY(), drawPosition, (float) bounds.getBottom(), 2.0f);
+    DBG(drawPosition);
 }
 
 void TransportEditor::changePlayState(PlayState newPlayState)
@@ -165,16 +172,17 @@ void TransportEditor::changePlayState(PlayState newPlayState)
         switch (playState)
         {
             case Starting:
-            
+                m_player.startPlayback();
+                changePlayState(Playing);
                 break;
                 
             case Playing:
-                m_player.m_playing = true;
                 m_stopButton.setEnabled(true);
                 break;
                 
             case Pausing:
-                
+                m_player.pausePlayback();
+                changePlayState(Paused);
                 break;
                 
             case Paused:
@@ -182,7 +190,8 @@ void TransportEditor::changePlayState(PlayState newPlayState)
                 break;
                 
             case Stopping:
-    
+                m_player.stopPlayback();
+                changePlayState(Stopped);
                 break;
                 
             case Stopped:
@@ -231,6 +240,7 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
     if(source == &m_player)
     {
         if (!m_isLooping) m_player.m_playing = false;
+        m_player.m_playPosSeconds = 0;
         changePlayState(Stopped);
         DBG("Playback Ended");
     }
@@ -240,6 +250,7 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
 void TransportEditor::timerCallback()
 {
     repaint();
+    m_playheadPosition.setText(juce::String(m_player.m_playPosSeconds), juce::NotificationType::dontSendNotification);
 }
 
 void TransportEditor::mouseDown(const juce::MouseEvent& event)
@@ -294,7 +305,7 @@ void TransportEditor::playButtonClicked()
         changePlayState(Pausing);
     } else
     {
-        changePlayState(Playing);
+        changePlayState(Starting);
     }
 }
 
