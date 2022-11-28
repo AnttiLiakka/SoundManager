@@ -379,7 +379,7 @@ void SoundManager::setNewFilepath(juce::File fileToRelocate)
             juce::String newFilepath = fileToTest.getFullPathName();
             delete fileReader;
             
-            changeFilepah(newFilepath, m_oldFilepath);
+            changeFilepath(newFilepath, m_oldFilepath);
             
         } catch (juce::String message){
             juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,fileToTest.getFileName() , message);
@@ -389,7 +389,7 @@ void SoundManager::setNewFilepath(juce::File fileToRelocate)
     });
 }
 
-void SoundManager::changeFilepah(juce::String newPath, juce::String oldPath)
+void SoundManager::changeFilepath(juce::String newPath, juce::String oldPath)
 {
     juce::File newFile(newPath);
     

@@ -35,14 +35,15 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel) :
     
     m_relocateButton.setImages(juce::Drawable::createFromImageData(BinaryData::LocateInactive_svg, BinaryData::LocateInactive_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::LocateHover_svg, BinaryData::LocateHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::LocateActive_svg, BinaryData::LocateActive_svgSize).get());
     
-    m_relocateButton.setEnabled(false);
-    m_relocateButton.setAlpha(0);
 
     m_playButton.setTooltip(TRANS("Play"));
-    m_loopButton.setTooltip(TRANS("Loop"));
     m_stopButton.setTooltip(TRANS("Stop"));
+    m_loopButton.setTooltip(TRANS("Loop"));
     m_relocateButton.setTooltip(TRANS("Locate File"));
+    
     m_stopButton.setEnabled(false);
+    m_relocateButton.setEnabled(false);
+    m_relocateButton.setAlpha(0);
     
     m_playButton.onClick = [&](){
         if(playState == Playing)

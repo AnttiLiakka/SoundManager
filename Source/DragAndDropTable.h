@@ -36,6 +36,8 @@ public:
     void filesDropped(const juce::StringArray& files, int x, int y) override;
     ///Pure virtual function inherited from juce TableListBox. Called when table background is clicked and it is overridden to deselect all table cells and category listbox rows
     void backgroundClicked (const juce::MouseEvent&) override;
+    ///This function is used for manual file import. The functionality is very similar to the filesDropped function
+    void manualFileImport();
     
 private:
     
@@ -47,4 +49,6 @@ private:
     juce::Font m_font = (15.0f);
     ///The  audio format manager needed to test whether audio files are valid
     juce::AudioFormatManager m_formatManager;
+    ///Filechooser used for manually importing files
+    std::unique_ptr<juce::FileChooser> m_fileChooser;
 };

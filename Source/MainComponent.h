@@ -38,17 +38,7 @@ public:
     juce::PopupMenu getMenuForIndex (int menuIndex, const juce::String& menuName) override;
     ///Pure virtual function inherited from Juce MenuBarModel. This function is used to decide what to do once user has clicked an option on the Juce PopupMenu created with getMenuForIndex
     void menuItemSelected(int menuItemID, int topLevelMenuIndex) override;
-    ///This function is used for manual file import. The functionality is very similar to Addfile in the SoundManager class
-    void manualFileImport();
-    
-    ///This function is used to create a new category that will appear into the categorylist and can be assigned to files by right clicking them on the table
-    void AddNewCategory(juce::String newCategory);
-    //Data structure
-    ///This function is to be deleted
-    void printXmlContent();
-    ///This function is to be deleted
-    void loadXmlContent();
-    // void importDataIntoArray();
+   
 
 private:
     //==============================================================================
@@ -68,8 +58,7 @@ private:
     
     juce::AudioDeviceManager m_audioDeviceManager;
     std::unique_ptr<juce::AudioDeviceSelectorComponent> m_audioSettings;
-    ///Filechooser used for manually importing files
-    std::unique_ptr<juce::FileChooser> m_fileChooser;
+    
     ///Buttons for transport control and search function.
     juce::DrawableButton m_searchButton;
     ///The search bar
@@ -86,8 +75,6 @@ private:
     std::unique_ptr<juce::XmlElement> m_audioLibrary;
     ///The file where the xml data is stored
     juce::File m_saveFile;
-    
-    juce::Colour m_seperateWindowColour;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

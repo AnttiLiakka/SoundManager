@@ -65,21 +65,21 @@ public:
     juce::ValueTree getVisibleChildAtIndex(int index);
     ///This function returns a file that is currently in a row on the table
     juce::File getFileOnRow(int rowNumber);
-    ///This function is the first part of changing a filepath of a fileinfo
+    ///This function is the first part of changing a filepath of a fileinfo. It launches the m_fileChooser which lets user to select where the file is located
     void setNewFilepath(juce::File fileToRelocate);
-    
-    void changeFilepah(juce::String newPath, juce::String oldPath);
+    ///This function is the second part of changing a filepath of a fileinfo. it checks whether the filenames of the files match and if so replaces the old filepath with the new filepath
+    void changeFilepath(juce::String newPath, juce::String oldPath);
     
 private:
     ///Reference to the MainComponent
     class MainComponent& m_mainApp;
     ///The juce ValueTree holdeing the audiolibrary
     juce::ValueTree m_audioLibraryTree;
-    ///A juce Array of juce ValueTrees currently visible on the table. This member is crucual to make sure that when user interacts with cells on the table, correct FileInfo is interacted with.
+    ///A juce Array of juce ValueTrees currently visible on the table. This member is important in making sure that when user interacts with cells on the table, correct FileInfo is interacted with.
     juce::Array<juce::ValueTree> m_currentTable;
-    
+    ///This member is used in the filepath change functionality to prevent bad access
     juce::String m_oldFilepath;
-    
+    ///The juce filechooser used in the filepath change functionality
     std::unique_ptr<juce::FileChooser> m_fileChooser;
     
     ///A static juce Identifier for the fileinfo tree.

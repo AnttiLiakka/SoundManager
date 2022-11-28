@@ -50,6 +50,7 @@ public:
     void labelTextChanged(juce::Label* labelThatHasChanged) override;
     
     
+    
 private:
     
     ///Reference to the MainComponent

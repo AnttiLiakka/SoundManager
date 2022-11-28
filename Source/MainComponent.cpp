@@ -1,5 +1,4 @@
 #include "MainComponent.h"
-#include "SoundManager.h"
 
 //==============================================================================
 MainComponent::MainComponent() : juce::AudioAppComponent(m_audioDeviceManager),
@@ -420,24 +419,28 @@ void SoundTableModel::selectedRowsChanged(int lastRowSelected)
 
 juce::Component* SoundTableModel::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component *existingComponentToUpdate)
 {
-    if (columnId ==5)
+
+    if (columnId == 5)
     {
         auto* label = static_cast<SoundTableModel::CellLabel *>(existingComponentToUpdate);
         if (label == nullptr)
         {
             label = new SoundTableModel::CellLabel();
             label->setRow(rowNumber);
+            //DBG(juce::String(rowNumber));
             label->setEditable(false, true, false);
             label->onTextChange = [&,label]()
             {
                 juce::String newDescription = label->getText();
+                DBG(juce::String(label->row));
                 m_valueTreeToListen.updateDescription(newDescription, label->row);
             };
         }
         label->setText(m_valueTreeToListen.getInformationAtIndex(label->row, 5), juce::NotificationType::dontSendNotification);
-        existingComponentToUpdate = label;
+        //existingComponentToUpdate = label;
+        return label;
     }
-    return existingComponentToUpdate;
+    return nullptr;
 }
 
 void SoundTableModel::valueTreeChildAdded(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenAdded)
@@ -515,7 +518,7 @@ juce::PopupMenu MainComponent::getMenuForIndex (int menuIndex, const juce::Strin
     }
     else if (menuIndex == 3)
     {
-        menu.addItem (3, "ReadMe");
+        menu.addItem (3, "Readme");
     }
     return menu;
 }
@@ -529,7 +532,7 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
         //Import Audio File
         if (menuItemID == 1)
         {
-            manualFileImport();
+            m_table.manualFileImport();
         }
         //Save Data
         if(menuItemID == 2)
@@ -579,7 +582,9 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
         //Print XML Data
         if (menuItemID == 4)
         {
-            printXmlContent();
+            repaint();
+            m_table.updateContent();
+            DBG("Repaint");
         }
     }
     //Help has been clicked
@@ -593,7 +598,7 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
     }
 }
 
-void MainComponent::manualFileImport()
+void DragAndDropTable::manualFileImport()
 {
     
     m_fileChooser = std::make_unique<juce::FileChooser>(TRANS("Load a file"),juce::File(),"*.wav; *.aiff"   );
@@ -608,7 +613,7 @@ void MainComponent::manualFileImport()
             if(fileToTest.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
             if(!fileToTest.existsAsFile())throw TRANS("No file selected");
             
-            auto* valueTree = &m_valueTree.m_audioLibraryTree;
+            auto* valueTree = &m_mainApp.m_valueTree.m_audioLibraryTree;
             
             if (valueTree->isValid())
             {
@@ -621,7 +626,7 @@ void MainComponent::manualFileImport()
                 }
             }
             
-            auto fileReader = m_table.m_formatManager.createReaderFor(fileToTest);
+            auto fileReader = m_formatManager.createReaderFor(fileToTest);
             if(fileReader == nullptr) throw TRANS("Error Loading the File");
             auto sampleRate =fileReader->sampleRate;
             double fileLength = std::round( fileReader->lengthInSamples / sampleRate);
@@ -629,7 +634,7 @@ void MainComponent::manualFileImport()
             juce::String filePath = fileToTest.getFullPathName();
             
             
-            m_valueTree.AddFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
+            m_mainApp.m_valueTree.AddFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
             delete fileReader;
 
             
@@ -640,8 +645,6 @@ void MainComponent::manualFileImport()
         
         
     } );
-    
-    
 }
 
 void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
@@ -779,40 +782,9 @@ int CategoryListModel::numCategories()
     return static_cast<int>(m_uniqueCategories.size());
 }
 
-void MainComponent::AddNewCategory(juce::String newCategory)
-{
-    m_categoryModel.addCategoryToList(newCategory);
-    m_categories.updateContent();
-}
-
 void CategoryListModel::labelTextChanged(juce::Label* labelThatHasChanged)
 {
     auto newCategory = labelThatHasChanged->getText();
     addCategoryToList(newCategory);
 }
 
-
-/*
- 
- 
- 
- THIS SECTION IS FOR THE DATA STRUCTURE
- 
- 
- 
- 
- */
-
-
-void MainComponent::printXmlContent()
-{
-    auto xmlString = m_audioLibrary->toString();
-    DBG("**************");
-    DBG(xmlString);
-    DBG("**************");
-}
-
-void MainComponent::loadXmlContent()
-{
-    m_audioLibrary = juce::XmlDocument::parse(m_saveFile);
-}
