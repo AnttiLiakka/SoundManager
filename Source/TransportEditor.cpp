@@ -36,7 +36,7 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     m_thumbnail.addChangeListener(this);
     
 
-    m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::playInactive_svg, BinaryData::playInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playHover_svg, BinaryData::playHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
+    m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::playInactive_svg, BinaryData::playInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playHover_svg, BinaryData::playHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
     
     m_stopButton.setImages(juce::Drawable::createFromImageData(BinaryData::stopInactive_svg, BinaryData::stopInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::stopHover_svg, BinaryData::stopHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::stopActive_svg, BinaryData::stopActive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::stopActive_svg, BinaryData::stopActive_svgSize).get());
     
@@ -46,7 +46,6 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     
     m_playheadPosition.setEditable(false);
     m_playheadPosition.setFont(juce::Font(20));
-    //m_playheadPosition.setText("00:00:00", juce::NotificationType::dontSendNotification);
 
     m_playButton.setTooltip(TRANS("Play"));
     m_stopButton.setTooltip(TRANS("Stop"));
@@ -139,7 +138,6 @@ void TransportEditor::setFileToPlay(juce::File file)
         m_relocateButton.setAlpha(1);
         m_fileIsValid = false;
         m_thumbnail.clear();
-        stopTimer();
     } else
     {
         m_relocateButton.setEnabled(false);
@@ -147,7 +145,6 @@ void TransportEditor::setFileToPlay(juce::File file)
         loadAudioFile(file);
         m_thumbnail.setSource(new juce::FileInputSource(file));
         m_fileIsValid = true;
-        if(!isTimerRunning()) startTimer(40);
     }
 }
 
@@ -158,9 +155,9 @@ void TransportEditor::paintLoadedFile(juce::Graphics& g, const juce::Rectangle<i
     m_thumbnail.drawChannels(g, bounds, 0, audioLenght, 1.0f);
     g.setColour(juce::Colours::darkred);
     auto audioPosition = (float) m_player.m_playPosSeconds;
+    //auto audioPosition = (float) m_player.m_playPosition / 512;
     auto drawPosition = (audioPosition / audioLenght) * (float) bounds.getWidth() + (float) bounds.getX();
     g.drawLine(drawPosition, (float) bounds.getY(), drawPosition, (float) bounds.getBottom(), 2.0f);
-    DBG(drawPosition);
 }
 
 void TransportEditor::changePlayState(PlayState newPlayState)
@@ -172,12 +169,14 @@ void TransportEditor::changePlayState(PlayState newPlayState)
         switch (playState)
         {
             case Starting:
+                if(!isTimerRunning()) startTimer(10);
                 m_player.startPlayback();
                 changePlayState(Playing);
                 break;
                 
             case Playing:
                 m_stopButton.setEnabled(true);
+                changePlayToPause();
                 break;
                 
             case Pausing:
@@ -186,7 +185,7 @@ void TransportEditor::changePlayState(PlayState newPlayState)
                 break;
                 
             case Paused:
-
+                changePauseToPlay();
                 break;
                 
             case Stopping:
@@ -196,6 +195,8 @@ void TransportEditor::changePlayState(PlayState newPlayState)
                 
             case Stopped:
                 m_stopButton.setEnabled(false);
+                changePauseToPlay();
+                stopTimer();
                 
                 break;
                 
@@ -242,7 +243,6 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
         if (!m_isLooping) m_player.m_playing = false;
         m_player.m_playPosSeconds = 0;
         changePlayState(Stopped);
-        DBG("Playback Ended");
     }
     
 }
@@ -251,12 +251,19 @@ void TransportEditor::timerCallback()
 {
     repaint();
     m_playheadPosition.setText(juce::String(m_player.m_playPosSeconds), juce::NotificationType::dontSendNotification);
+    //m_playheadPosition.setText(juce::String(m_player.m_playPosition), juce::NotificationType::dontSendNotification);
 }
 
 void TransportEditor::mouseDown(const juce::MouseEvent& event)
 {
     auto controlBounds = getLocalBounds().removeFromBottom(30);
     if(controlBounds.contains(event.getPosition())) return;
+    if(!event.mods.isCommandDown())
+    {
+        //auto newPlayPos = getMouseXYRelative().getX() * 512;
+        //m_player.m_playPosition = newPlayPos;
+        //DBG(newPlayPos);
+    }
 }
 
 void TransportEditor::mouseDrag(const juce::MouseEvent& event)
@@ -317,4 +324,14 @@ void TransportEditor::stopButtonClicked()
 void TransportEditor::loopButtonClicked()
 {
     m_isLooping = !m_isLooping;
+}
+
+void TransportEditor::changePlayToPause()
+{
+    m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::pauseInactive_svg, BinaryData::pauseInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseHover_svg, BinaryData::pauseHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::pauseActive_svg, BinaryData::pauseActive_svgSize).get());
+}
+
+void TransportEditor::changePauseToPlay()
+{
+    m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::playInactive_svg, BinaryData::playInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playHover_svg, BinaryData::playHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
 }

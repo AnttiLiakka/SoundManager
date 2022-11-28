@@ -385,6 +385,10 @@ juce::Component* SoundTableModel::refreshComponentForCell(int rowNumber, int col
                 m_valueTreeToListen.updateDescription(newDescription, label->row);
             };
         }
+        if(rowNumber != label->row)
+        {
+            label->setRow(rowNumber);
+        }
         label->setText(m_valueTreeToListen.getInformationAtIndex(label->row, 5), juce::NotificationType::dontSendNotification);
         //existingComponentToUpdate = label;
         return label;

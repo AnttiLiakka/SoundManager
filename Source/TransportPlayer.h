@@ -48,13 +48,12 @@ private:
     
     juce::AudioSourcePlayer m_player;
     
-    int m_playPosition = 0;
-    
+    std::atomic<int> m_playPosition { 0 };
     double m_sampleRate;
     
-    float m_playPosSeconds = 0;
+    std::atomic<float> m_playPosSeconds { 0 };
     
-    bool m_playing = false;
+    std::atomic<bool> m_playing { false };
     
 };
 

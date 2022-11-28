@@ -49,6 +49,10 @@ public:
     
     void loadAudioFile(juce::File file);
     
+    void changePlayToPause();
+    
+    void changePauseToPlay();
+    
     
     
 private:
