@@ -1,13 +1,14 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent() : juce::AudioAppComponent(m_audioDeviceManager),
+MainComponent::MainComponent() :
                                  m_tableModel(*this, m_valueTree),
                                  m_table(*this),
                                  m_valueTree(*this),
                                  m_categories("categories", nullptr),
                                  m_categoryModel(*this, m_valueTree),
-                                 m_transport(m_tableModel),
+                                 m_transport(m_tableModel, *this, m_player),
+                                 m_player(m_transport),
                                  m_searchButton("Search", juce::DrawableButton::ButtonStyle::ImageRaw),
                                  m_audioLibrary(std::make_unique<juce::XmlElement>("audiolibrary")),
                                  m_saveFile(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
@@ -45,9 +46,7 @@ MainComponent::MainComponent() : juce::AudioAppComponent(m_audioDeviceManager),
     }
     
     m_table.m_formatManager.registerBasicFormats();
-    m_audioDeviceManager.initialise(0, 2, nullptr, true);
     
-    m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, true);
     
     m_table.setModel(&m_tableModel);
     m_table.setOutlineThickness(1);
@@ -110,7 +109,7 @@ MainComponent::MainComponent() : juce::AudioAppComponent(m_audioDeviceManager),
 #endif
     
     setSize (900, 600);
-
+/*
     // Some platforms require permissions to open input channels so request that here
     if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
         && ! juce::RuntimePermissions::isGranted (juce::RuntimePermissions::recordAudio))
@@ -122,8 +121,10 @@ MainComponent::MainComponent() : juce::AudioAppComponent(m_audioDeviceManager),
     {
         // Specify the number of input and output channels that we want to open
         setAudioChannels (2, 2);
-    }    
+    }
+ */
 }
+ 
 
 MainComponent::~MainComponent()
 {
@@ -135,61 +136,9 @@ MainComponent::~MainComponent()
     
     m_table.setModel(nullptr);
     m_categories.setModel(nullptr);
-    shutdownAudio();
+    //shutdownAudio();
 }
 
-//==============================================================================
-void MainComponent::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
-{
-    // This function will be called when the audio device is started, or when
-    // its settings (i.e. sample rate, block size, etc) are changed.
-
-    // You can use this function to initialise any resources you might need,
-    // but be careful - it will be called on the audio thread, not the GUI thread.
-
-    // For more details, see the help for AudioProcessor::prepareToPlay()
-}
-
-void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
-{
-    // Your audio-processing code goes here!
-
-    // For more details, see the help for AudioProcessor::getNextAudioBlock()
-
-    // Right now we are not producing any data, in which case we need to clear the buffer
-    // (to prevent the output of random noise)
-    
-    /*
-    bufferToFill.clearActiveBufferRegion();
-    
-    if(!m_playSoundFile) return;
-    
-    auto numSamples = bufferToFill.numSamples;
-    float* leftChannel = bufferToFill.buffer->getWritePointer(0);
-    float* rightChannel = bufferToFill.buffer->getWritePointer(1);
-    
-    for(int n = 0 ; n < numSamples; ++n)
-    {
-        leftChannel[n] = m_sampleBuffer.getSample(0, m_playPosition);
-        rightChannel[n] = m_sampleBuffer.getSample(1, m_playPosition);
-        
-        
-        ++m_playPosition;
-        if(m_playPosition >= m_sampleBuffer.getNumSamples())m_playPosition = 0;
-        
-    }
-     */
-}
-
-void MainComponent::releaseResources()
-{
-    // This will be called when the audio device stops, or when it is being
-    // restarted due to a setting change.
-
-    // For more details, see the help for AudioProcessor::releaseResources()
-}
-
-//==============================================================================
 void MainComponent::paint (juce::Graphics& g)
 {
     g.fillAll(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
@@ -569,10 +518,7 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
         //Open Audio device manager
         if( menuItemID == 2)
         {
-            m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, false);
-            m_audioSettings->setSize(400, 600);
-            juce::DialogWindow::showDialog("Audio settings",m_audioSettings.get() , this, juce::Colours::black, true);
-            
+            m_transport.openAudioSettings();
         }
         //Print Tree
         if (menuItemID == 3)

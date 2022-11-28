@@ -141,6 +141,7 @@
     <Lib/>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\TransportPlayer.cpp"/>
     <ClCompile Include="..\..\Source\TransportEditor.cpp"/>
     <ClCompile Include="..\..\Source\SoundManager.cpp"/>
     <ClCompile Include="..\..\Source\Main.cpp"/>
@@ -2283,6 +2284,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\TransportPlayer.h"/>
     <ClInclude Include="..\..\Source\TransportEditor.h"/>
     <ClInclude Include="..\..\Source\SoundTableModel.h"/>
     <ClInclude Include="..\..\Source\SoundManager.h"/>

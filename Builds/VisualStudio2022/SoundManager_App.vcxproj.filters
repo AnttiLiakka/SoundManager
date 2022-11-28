@@ -571,6 +571,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\TransportPlayer.cpp">
+      <Filter>SoundManager\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\TransportEditor.cpp">
       <Filter>SoundManager\Source</Filter>
     </ClCompile>
@@ -2868,6 +2871,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\TransportPlayer.h">
+      <Filter>SoundManager\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\TransportEditor.h">
       <Filter>SoundManager\Source</Filter>
     </ClInclude>

@@ -4,6 +4,10 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="lnwp9Q" name="SoundManager">
     <GROUP id="{D65428B4-3F6E-CFBE-F6B7-982CFB2BBC25}" name="Source">
+      <FILE id="WkIJDS" name="TransportPlayer.cpp" compile="1" resource="0"
+            file="Source/TransportPlayer.cpp"/>
+      <FILE id="Sx5dWi" name="TransportPlayer.h" compile="0" resource="0"
+            file="Source/TransportPlayer.h"/>
       <FILE id="enuA6T" name="TransportEditor.cpp" compile="1" resource="0"
             file="Source/TransportEditor.cpp"/>
       <FILE id="umtElV" name="TransportEditor.h" compile="0" resource="0"

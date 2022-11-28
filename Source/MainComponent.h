@@ -6,10 +6,11 @@
 #include "SoundTableModel.h"
 #include "TransportEditor.h"
 #include "SoundManager.h"
+#include "TransportPlayer.h"
 
 class TransportEditor;
 
-class MainComponent  : public juce::AudioAppComponent, public juce::MenuBarModel
+class MainComponent  : public juce::Component, public juce::MenuBarModel
 {
     friend class DragAndDropTable;
     friend class CategoryListModel;
@@ -23,9 +24,7 @@ public:
     ~MainComponent() override;
 
     //==============================================================================
-    void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override;
-    void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
-    void releaseResources() override;
+   
 
     //==============================================================================
     void paint (juce::Graphics& g) override;
@@ -56,8 +55,7 @@ private:
     ///The transport editor
     class TransportEditor m_transport;
     
-    juce::AudioDeviceManager m_audioDeviceManager;
-    std::unique_ptr<juce::AudioDeviceSelectorComponent> m_audioSettings;
+    class TransportPlayer m_player;
     
     ///Buttons for transport control and search function.
     juce::DrawableButton m_searchButton;

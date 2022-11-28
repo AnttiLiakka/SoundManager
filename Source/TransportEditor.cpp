@@ -10,10 +10,12 @@
 
 #include "MainComponent.h"
 
-TransportEditor::TransportEditor(class SoundTableModel& tableModel) :
+TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainComponent& mainApp, class TransportPlayer& player) :
                  m_tableModel(tableModel),
+                 m_mainApp(mainApp),
+                 m_player(player),
                  m_thumbnailCache(5),
-                 m_thumbnail(1024,
+                 m_thumbnail(512,
                  m_formatManager, m_thumbnailCache),
                  m_playButton(TRANS("Play"), juce::DrawableButton::ButtonStyle::ImageFitted),
                  m_stopButton(TRANS("Stop"), juce::DrawableButton::ButtonStyle::ImageFitted),
@@ -23,6 +25,12 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel) :
 {
     
     m_formatManager.registerBasicFormats();
+    
+    m_audioDeviceManager.initialise(0, 2, nullptr, true);
+    
+    
+    
+    m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, true);
     
     m_thumbnail.addChangeListener(this);
     
@@ -46,21 +54,15 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel) :
     m_relocateButton.setAlpha(0);
     
     m_playButton.onClick = [&](){
-        if(playState == Playing)
-        {
-            changePlayState(Pausing);
-        } else
-        {
-            changePlayState(Starting);
-        }
+        playButtonClicked();
     };
 
     m_stopButton.onClick = [&](){
-        changePlayState(Stopping);
+        stopButtonClicked();
     };
     
     m_loopButton.onClick = [&](){
-        m_isLooping = !m_isLooping;
+        loopButtonClicked();
     };
     
     m_relocateButton.onClick = [&]()
@@ -117,6 +119,7 @@ void TransportEditor::resized()
 
 void TransportEditor::setFileToPlay(juce::File file)
 {
+    m_player.prepForNewFile();
     m_fileSelected = true;
     m_fileToPlay = file;
     if (playState != Stopped)
@@ -135,6 +138,7 @@ void TransportEditor::setFileToPlay(juce::File file)
     {
         m_relocateButton.setEnabled(false);
         m_relocateButton.setAlpha(0);
+        loadAudioFile(file);
         m_thumbnail.setSource(new juce::FileInputSource(file));
         m_fileIsValid = true;
         if(!isTimerRunning()) startTimer(40);
@@ -144,8 +148,12 @@ void TransportEditor::setFileToPlay(juce::File file)
 void TransportEditor::paintLoadedFile(juce::Graphics& g, const juce::Rectangle<int>& bounds)
 {
     g.setColour(juce::Colours::white);
-    m_thumbnail.drawChannel(g, bounds, 0, m_thumbnail.getTotalLength(), m_thumbnail.getNumChannels(), 1.0f);
-    m_thumbnail.drawChannels(g, bounds, 0, m_thumbnail.getTotalLength(), 1.0f);
+    auto audioLenght = (float) m_thumbnail.getTotalLength();
+    m_thumbnail.drawChannels(g, bounds, 0, audioLenght, 1.0f);
+    g.setColour(juce::Colours::darkred);
+    auto audioPosition = (float) m_player.m_playPosition;
+    auto drawPosition = (audioPosition / audioLenght) * (float) bounds.getWidth() + (float) bounds.getX();
+    g.drawLine(drawPosition, (float) bounds.getY(), drawPosition, (float) bounds.getBottom(), 2.0f);
 }
 
 void TransportEditor::changePlayState(PlayState newPlayState)
@@ -156,16 +164,12 @@ void TransportEditor::changePlayState(PlayState newPlayState)
         
         switch (playState)
         {
-            case Stopped:
-                m_stopButton.setEnabled(false);
-                
-                break;
-                
             case Starting:
-                
+            
                 break;
                 
             case Playing:
+                m_player.m_playing = true;
                 m_stopButton.setEnabled(true);
                 break;
                 
@@ -174,11 +178,16 @@ void TransportEditor::changePlayState(PlayState newPlayState)
                 break;
                 
             case Paused:
-                m_stopButton.setEnabled(true);
+
                 break;
                 
             case Stopping:
     
+                break;
+                
+            case Stopped:
+                m_stopButton.setEnabled(false);
+                
                 break;
                 
             default:
@@ -219,6 +228,13 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
     {
         repaint();
     }
+    if(source == &m_player)
+    {
+        if (!m_isLooping) m_player.m_playing = false;
+        changePlayState(Stopped);
+        DBG("Playback Ended");
+    }
+    
 }
 
 void TransportEditor::timerCallback()
@@ -250,4 +266,44 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
             });
         }
     }
+}
+
+void TransportEditor::openAudioSettings()
+{
+    
+    m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, false);
+    m_audioSettings->setSize(400, 600);
+    juce::DialogWindow::showDialog("Audio settings",m_audioSettings.get() , &m_mainApp, juce::Colours::black, true);
+
+}
+
+void TransportEditor::loadAudioFile(juce::File file)
+{
+    auto fileReader = m_formatManager.createReaderFor(file);
+    
+    m_player.m_buffer.setSize(2, static_cast<int>(fileReader->lengthInSamples));
+    fileReader->read(&m_player.m_buffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, true);    
+    delete fileReader;
+}
+
+void TransportEditor::playButtonClicked()
+{
+    if(!m_fileSelected || !m_fileIsValid) return;
+    if(playState == Playing)
+    {
+        changePlayState(Pausing);
+    } else
+    {
+        changePlayState(Playing);
+    }
+}
+
+void TransportEditor::stopButtonClicked()
+{
+    changePlayState(Stopping);
+}
+
+void TransportEditor::loopButtonClicked()
+{
+    m_isLooping = !m_isLooping;
 }
