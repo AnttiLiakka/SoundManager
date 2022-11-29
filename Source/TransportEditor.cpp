@@ -152,10 +152,9 @@ void TransportEditor::paintLoadedFile(juce::Graphics& g, const juce::Rectangle<i
 {
     g.setColour(juce::Colours::white);
     auto audioLenght = (float) m_thumbnail.getTotalLength();
+    auto audioPosition = (float) m_player.m_playPosSeconds;
     m_thumbnail.drawChannels(g, bounds, 0, audioLenght, 1.0f);
     g.setColour(juce::Colours::darkred);
-    auto audioPosition = (float) m_player.m_playPosSeconds;
-    //auto audioPosition = (float) m_player.m_playPosition / 512;
     auto drawPosition = (audioPosition / audioLenght) * (float) bounds.getWidth() + (float) bounds.getX();
     g.drawLine(drawPosition, (float) bounds.getY(), drawPosition, (float) bounds.getBottom(), 2.0f);
 }
@@ -194,10 +193,10 @@ void TransportEditor::changePlayState(PlayState newPlayState)
                 break;
                 
             case Stopped:
+                m_playheadPosition.setText("0", juce::NotificationType::dontSendNotification);
                 m_stopButton.setEnabled(false);
                 changePauseToPlay();
                 stopTimer();
-                
                 break;
                 
             default:
@@ -240,9 +239,12 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
     }
     if(source == &m_player)
     {
-        if (!m_isLooping) m_player.m_playing = false;
-        m_player.m_playPosSeconds = 0;
-        changePlayState(Stopped);
+        if (!m_player.m_isLooping)
+        {
+            m_player.m_playing = false;
+            m_player.m_playPosSeconds = 0;
+            changePlayState(Stopped);
+        }
     }
     
 }
@@ -256,14 +258,14 @@ void TransportEditor::timerCallback()
 
 void TransportEditor::mouseDown(const juce::MouseEvent& event)
 {
+    //DBG(event.getMouseDownX());
+    /*
     auto controlBounds = getLocalBounds().removeFromBottom(30);
     if(controlBounds.contains(event.getPosition())) return;
-    if(!event.mods.isCommandDown())
+    if(!event.mods.isCommandDown() && m_fileIsValid)
     {
-        //auto newPlayPos = getMouseXYRelative().getX() * 512;
-        //m_player.m_playPosition = newPlayPos;
-        //DBG(newPlayPos);
-    }
+        DBG("click");
+    } */
 }
 
 void TransportEditor::mouseDrag(const juce::MouseEvent& event)
@@ -323,7 +325,15 @@ void TransportEditor::stopButtonClicked()
 
 void TransportEditor::loopButtonClicked()
 {
-    m_isLooping = !m_isLooping;
+    m_player.m_isLooping = !m_player.m_isLooping;
+    
+    if(m_player.m_isLooping)
+    {
+        m_loopButton.setImages(juce::Drawable::createFromImageData(BinaryData::LoopActive_svg, BinaryData::LoopActive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::LoopHover_svg, BinaryData::LoopHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::LoopInactive_svg, BinaryData::LoopInactive_svgSize).get());
+    } else
+    {
+        m_loopButton.setImages(juce::Drawable::createFromImageData(BinaryData::LoopInactive_svg, BinaryData::LoopInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::LoopHover_svg, BinaryData::LoopHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::LoopActive_svg, BinaryData::LoopActive_svgSize).get());
+    }
 }
 
 void TransportEditor::changePlayToPause()

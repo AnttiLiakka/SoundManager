@@ -55,6 +55,8 @@ private:
     
     std::atomic<bool> m_playing { false };
     
+    std::atomic<bool> m_isLooping { false };
+    
 };
 
 

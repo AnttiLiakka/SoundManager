@@ -53,8 +53,6 @@ public:
     
     void changePauseToPlay();
     
-    
-    
 private:
     
     class SoundTableModel& m_tableModel;
@@ -77,7 +75,7 @@ private:
     
     juce::Label m_playheadPosition;
     
-    bool m_fileSelected = false, m_fileIsValid = false, m_isLooping = false, m_canDragFile = true;
+    bool m_fileSelected = false, m_fileIsValid = false, m_canDragFile = true;
 
     juce::File m_fileToPlay;
     
