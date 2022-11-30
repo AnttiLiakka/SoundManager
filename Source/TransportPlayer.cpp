@@ -57,8 +57,8 @@ void TransportPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& buf
     
     for(int i = 0; i < numSamples; ++i)
     {
-        leftChannel[i] = m_buffer.getSample(0, m_playPosition);
-        rightChannel[i] = m_buffer.getSample(1, m_playPosition);
+        leftChannel[i] = m_buffer.getSample(0, m_playPosition) * m_volume;
+        rightChannel[i] = m_buffer.getSample(1, m_playPosition) * m_volume;
         
         ++m_playPosition;
         m_playPosSeconds = m_playPosition / m_sampleRate;
@@ -113,4 +113,16 @@ void TransportPlayer::stopPlayback()
     m_playing = false;
     m_playPosition = 0;
     m_playPosSeconds = 0;
+}
+
+void TransportPlayer::sliderValueChanged(juce::Slider* slider)
+{
+    if (slider == &m_editor.m_volumeSlider)
+    {
+       auto volume = slider->getValue();
+        if(volume <= 1)
+        {
+            m_volume = volume;
+        }
+    }
 }

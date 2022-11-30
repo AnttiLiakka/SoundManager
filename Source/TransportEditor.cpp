@@ -22,15 +22,14 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
                  m_loopButton(TRANS("Loop"), juce::DrawableButton::ButtonStyle::ImageFitted),
                  m_relocateButton(TRANS("Locate File"), juce::DrawableButton::ButtonStyle::ImageFitted),
                  m_playheadPosition("PlayheadPosition"),
+                 m_volumeSlider(juce::Slider::SliderStyle::LinearHorizontal, juce::Slider::NoTextBox),
                  playState(Stopped)
 {
     
     m_formatManager.registerBasicFormats();
     
     m_audioDeviceManager.initialise(0, 2, nullptr, true);
-    
-    
-    
+
     m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, true);
     
     m_thumbnail.addChangeListener(this);
@@ -47,6 +46,14 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     m_playheadPosition.setEditable(false);
     m_playheadPosition.setFont(juce::Font(20));
 
+    m_volumeSlider.setRange(0.0f, 1.0f);
+    m_volumeSlider.setTooltip(TRANS("Volume"));
+    m_volumeSlider.setValue(0.5);
+    m_volumeSlider.addListener(&m_player);
+    
+    m_volumeSlider.setColour(juce::Slider::trackColourId, juce::Colours::darkred);
+    m_volumeSlider.setColour(juce::Slider::thumbColourId, juce::Colours::white);
+    
     m_playButton.setTooltip(TRANS("Play"));
     m_stopButton.setTooltip(TRANS("Stop"));
     m_loopButton.setTooltip(TRANS("Loop"));
@@ -81,6 +88,7 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     addAndMakeVisible(m_loopButton);
     addAndMakeVisible(m_relocateButton);
     addAndMakeVisible(m_playheadPosition);
+    addAndMakeVisible(m_volumeSlider);
 }
 
 
@@ -112,6 +120,7 @@ void TransportEditor::resized()
     auto controls = bounds.removeFromBottom(30);
     auto buttonMargin = controls.removeFromBottom(4);
     auto sliders = controls.removeFromLeft(getWidth() / 2 - 52.5);
+    auto sliderMargin = sliders.removeFromRight(10);
     auto relocateButtonBottonMargin = bounds.removeFromBottom(getLocalBounds().getHeight() / 3.5);
     auto relocateButtonTopMargin = bounds.removeFromTop(getLocalBounds().getHeight() / 3.5);
     m_relocateButton.setBounds(bounds.removeFromRight(bounds.getWidth() / 2.5));
@@ -119,7 +128,8 @@ void TransportEditor::resized()
     m_playButton.setBounds(controls.removeFromLeft(35));
     m_stopButton.setBounds(controls.removeFromLeft(35));
     m_loopButton.setBounds(controls.removeFromLeft(35));
-    m_playheadPosition.setBounds(controls.removeFromLeft(100));
+    m_playheadPosition.setBounds(controls.removeFromLeft(bounds.getWidth() / 3));
+    m_volumeSlider.setBounds(sliders.removeFromRight(bounds.getWidth() / 3));
 }
 
 void TransportEditor::setFileToPlay(juce::File file)
@@ -258,7 +268,7 @@ void TransportEditor::timerCallback()
 
 void TransportEditor::mouseDown(const juce::MouseEvent& event)
 {
-    //DBG(event.getMouseDownX());
+    DBG(event.getMouseDownX());
     /*
     auto controlBounds = getLocalBounds().removeFromBottom(30);
     if(controlBounds.contains(event.getPosition())) return;

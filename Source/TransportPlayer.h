@@ -12,7 +12,7 @@
 #include <JuceHeader.h>
 #include "TransportEditor.h"
 
-class TransportPlayer : public juce::AudioSource, public juce::ChangeBroadcaster
+class TransportPlayer : public juce::AudioSource, public juce::ChangeBroadcaster, public juce::Slider::Listener
 {
     friend class TransportEditor;
 public:
@@ -26,6 +26,8 @@ public:
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
     
     void releaseResources() override;
+    
+    void sliderValueChanged(juce::Slider *slider) override;
     
     void playTestSound();
     
@@ -47,6 +49,8 @@ private:
     //juce::SoundPlayer m_player;
     
     juce::AudioSourcePlayer m_player;
+    
+    double m_volume = 0.5;
     
     std::atomic<int> m_playPosition { 0 };
     double m_sampleRate;

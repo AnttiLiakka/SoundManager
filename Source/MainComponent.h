@@ -68,7 +68,8 @@ private:
     int m_playPosition = 0;
     ///The menubar Component
     juce::MenuBarComponent m_menuBar;
-    //For save data
+    
+    juce::TooltipWindow m_tooltipWindow;
     ///The xml element holding the applications save data
     std::unique_ptr<juce::XmlElement> m_audioLibrary;
     ///The file where the xml data is stored

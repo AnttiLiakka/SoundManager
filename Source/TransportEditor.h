@@ -75,6 +75,8 @@ private:
     
     juce::Label m_playheadPosition;
     
+    juce::Slider m_volumeSlider;
+    
     bool m_fileSelected = false, m_fileIsValid = false, m_canDragFile = true;
 
     juce::File m_fileToPlay;

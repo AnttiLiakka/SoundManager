@@ -10,6 +10,7 @@ MainComponent::MainComponent() :
                                  m_transport(m_tableModel, *this, m_player),
                                  m_player(m_transport),
                                  m_searchButton("Search", juce::DrawableButton::ButtonStyle::ImageRaw),
+                                 m_tooltipWindow(this),
                                  m_audioLibrary(std::make_unique<juce::XmlElement>("audiolibrary")),
                                  m_saveFile(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
 {
