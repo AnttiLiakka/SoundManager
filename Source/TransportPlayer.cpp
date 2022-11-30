@@ -126,3 +126,8 @@ void TransportPlayer::sliderValueChanged(juce::Slider* slider)
         }
     }
 }
+
+void TransportPlayer::setPlayPosition(int newPosition)
+{
+    m_playPosition = newPosition;
+}

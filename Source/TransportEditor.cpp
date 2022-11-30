@@ -57,7 +57,6 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     m_playButton.setTooltip(TRANS("Play"));
     m_stopButton.setTooltip(TRANS("Stop"));
     m_loopButton.setTooltip(TRANS("Loop"));
-    m_relocateButton.setTooltip(TRANS("Locate File"));
     
     m_stopButton.setEnabled(false);
     m_relocateButton.setEnabled(false);
@@ -112,6 +111,7 @@ void TransportEditor::paint(juce::Graphics &g)
     {
         paintLoadedFile(g, waveformBounds);
     }
+    
 }
 
 void TransportEditor::resized()
@@ -153,7 +153,6 @@ void TransportEditor::setFileToPlay(juce::File file)
         m_relocateButton.setEnabled(false);
         m_relocateButton.setAlpha(0);
         loadAudioFile(file);
-        m_thumbnail.setSource(new juce::FileInputSource(file));
         m_fileIsValid = true;
     }
 }
@@ -161,9 +160,9 @@ void TransportEditor::setFileToPlay(juce::File file)
 void TransportEditor::paintLoadedFile(juce::Graphics& g, const juce::Rectangle<int>& bounds)
 {
     g.setColour(juce::Colours::white);
-    auto audioLenght = (float) m_thumbnail.getTotalLength();
-    auto audioPosition = (float) m_player.m_playPosSeconds;
-    m_thumbnail.drawChannels(g, bounds, 0, audioLenght, 1.0f);
+    auto audioLenght = (float) m_numBufferSamples;
+    auto audioPosition = (float) m_player.m_playPosition;
+    m_thumbnail.drawChannels(g, bounds, 0, m_thumbnail.getTotalLength(), 1.0f);
     g.setColour(juce::Colours::darkred);
     auto drawPosition = (audioPosition / audioLenght) * (float) bounds.getWidth() + (float) bounds.getX();
     g.drawLine(drawPosition, (float) bounds.getY(), drawPosition, (float) bounds.getBottom(), 2.0f);
@@ -263,27 +262,27 @@ void TransportEditor::timerCallback()
 {
     repaint();
     m_playheadPosition.setText(juce::String(m_player.m_playPosSeconds), juce::NotificationType::dontSendNotification);
-    //m_playheadPosition.setText(juce::String(m_player.m_playPosition), juce::NotificationType::dontSendNotification);
 }
 
 void TransportEditor::mouseDown(const juce::MouseEvent& event)
 {
-    DBG(event.getMouseDownX());
-    /*
+    
     auto controlBounds = getLocalBounds().removeFromBottom(30);
-    if(controlBounds.contains(event.getPosition())) return;
-    if(!event.mods.isCommandDown() && m_fileIsValid)
+    if(controlBounds.contains(event.getPosition()) || !m_fileIsValid) return;
+    if(!event.mods.isCommandDown())
     {
-        DBG("click");
-    } */
+        auto ratio = m_numBufferSamples / getLocalBounds().getWidth();
+        m_player.setPlayPosition(event.getMouseDownX() * ratio);
+        repaint();
+    }
 }
 
 void TransportEditor::mouseDrag(const juce::MouseEvent& event)
 {
     auto controlBounds = getLocalBounds().removeFromBottom(30);
-    if(controlBounds.contains(event.getPosition())) return;
+    if(controlBounds.contains(event.getPosition()) || !m_fileIsValid ) return;
     
-    if(event.mods.isCommandDown() && m_fileIsValid)
+    if(event.mods.isCommandDown())
     {
         if(m_canDragFile)
         {
@@ -295,6 +294,13 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
                 m_tableModel.allowFIleImport();
             });
         }
+    } else
+    {
+        changePlayState(Pausing);
+        auto ratio = m_numBufferSamples / getLocalBounds().getWidth();
+        m_player.setPlayPosition(event.getMouseDownX() * ratio + event.getDistanceFromDragStartX() * ratio);
+        repaint();
+        DBG(m_player.m_playPosition);
     }
 }
 
@@ -312,7 +318,9 @@ void TransportEditor::loadAudioFile(juce::File file)
     auto fileReader = m_formatManager.createReaderFor(file);
     
     m_player.m_buffer.setSize(2, static_cast<int>(fileReader->lengthInSamples));
-    fileReader->read(&m_player.m_buffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, true);    
+    fileReader->read(&m_player.m_buffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, true);
+    m_thumbnail.setSource(new juce::FileInputSource(file));
+    m_numBufferSamples = m_player.m_buffer.getNumSamples();
     delete fileReader;
 }
 

@@ -40,6 +40,8 @@ public:
     void pausePlayback();
     
     void stopPlayback();
+    
+    void setPlayPosition(int newPosition);
 private:
     
     class TransportEditor& m_editor;
