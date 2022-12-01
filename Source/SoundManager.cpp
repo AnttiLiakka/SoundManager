@@ -316,6 +316,7 @@ void SoundManager::labelTextChanged(juce::Label* labelThatHasChanged)
     
     if (newText.isNotEmpty())
     {
+        m_mainApp.m_categories.deselectAllRows();
         filterBySearch(newText);
     } else
     {

@@ -277,6 +277,13 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
             m_player.m_playPosSeconds = 0;
             changePlayState(Stopped);
         }
+        if(!m_sectionSelected)
+        {
+            m_player.setPlayPosition(0);
+        } else
+        {
+            setSelectionPlay();
+        }
     }
     
 }

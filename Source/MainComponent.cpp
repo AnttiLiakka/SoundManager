@@ -357,7 +357,7 @@ void SoundTableModel::cellClicked(int rowNumber, int columnId, const juce::Mouse
 void DragAndDropTable::backgroundClicked (const juce::MouseEvent&)
 {
     deselectAllRows();
-    //m_mainApp.m_categories.deselectAllRows();
+    m_mainApp.m_categories.deselectAllRows();
     m_mainApp.m_transport.noFileSelected();
 }
 
@@ -687,7 +687,8 @@ void CategoryListModel::paintListBoxItem(int rowNumber, juce::Graphics &g, int w
 void CategoryListModel::listBoxItemClicked(int row, const juce::MouseEvent& mouseEvent)
 {
     m_selectedRow = row;
-    
+    m_mainApp.m_table.deselectAllRows();
+    m_mainApp.m_transport.noFileSelected();
     juce::String categoryName = m_uniqueCategories[m_selectedRow];
     m_mainApp.m_valueTree.filterByCategory(categoryName);
     
@@ -705,7 +706,7 @@ void CategoryListModel::listBoxItemClicked(int row, const juce::MouseEvent& mous
     
     if(mouseEvent.mods.isCommandDown())
     {
-        //m_mainApp.m_categories.deselectRow(row);
+        m_mainApp.m_categories.deselectAllRows();
         m_mainApp.m_valueTree.setAllVisible();
     }
 }
@@ -714,6 +715,8 @@ void CategoryListModel::selectedRowsChanged(int lastRowSelected)
 {
     m_mainApp.m_valueTree.setAllVisible();
     m_selectedRow = lastRowSelected;
+    //If no row is selected m_selectedRow is set to -1 so we need to check whether this is the case, else the vector will crash
+    if(m_selectedRow < 0) return;
     juce::String categoryName = m_uniqueCategories[lastRowSelected];
     m_mainApp.m_valueTree.filterByCategory(categoryName);
 }

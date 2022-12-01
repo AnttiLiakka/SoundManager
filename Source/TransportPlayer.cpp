@@ -63,10 +63,10 @@ void TransportPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& buf
         ++m_playPosition;
         m_playPosSeconds = m_playPosition / m_sampleRate;
         
-        if(m_playPosition >= m_endPosition.load())
+        if(m_playPosition >= m_endPosition.load() || m_playPosition >= m_buffer.getNumSamples())
         {
-            sendChangeMessage();
             m_playPosition = 0;
+            sendChangeMessage();
         }
     }
 
@@ -78,16 +78,6 @@ void TransportPlayer::releaseResources()
     // restarted due to a setting change.
 
     // For more details, see the help for AudioProcessor::releaseResources()
-}
-
-void TransportPlayer::playTestSound()
-{
-    //m_player.playTestSound();
-}
-
-void TransportPlayer::playBuffer()
-{
-    //m_player.play(&m_buffer);
 }
 
 void TransportPlayer::prepForNewFile()
