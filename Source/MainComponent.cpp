@@ -357,14 +357,20 @@ void SoundTableModel::cellClicked(int rowNumber, int columnId, const juce::Mouse
 void DragAndDropTable::backgroundClicked (const juce::MouseEvent&)
 {
     deselectAllRows();
-    m_mainApp.m_categories.deselectAllRows();
+    //m_mainApp.m_categories.deselectAllRows();
+    m_mainApp.m_transport.noFileSelected();
 }
 
 void SoundTableModel::selectedRowsChanged(int lastRowSelected)
 {
     m_lastSelectedRow = lastRowSelected;
-
-    m_mainApp.m_transport.setFileToPlay(m_valueTreeToListen.getFileOnRow(m_lastSelectedRow));
+    if(getNumRows() > 0)
+    {
+        m_mainApp.m_transport.setFileToPlay(m_valueTreeToListen.getFileOnRow(m_lastSelectedRow));
+    } else
+    {
+        m_mainApp.m_transport.noFileSelected();
+    }
 }
 
 juce::Component* SoundTableModel::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component *existingComponentToUpdate)

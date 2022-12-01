@@ -34,6 +34,12 @@ public:
     
     void paintRelocateFile(juce::Graphics& g, const juce::Rectangle<int>& bounds);
     
+    void paintSelection(juce::Graphics& g, int startPos, int endPos);
+    
+    void resetSelection();
+    
+    void setSelectionPlay();
+    
     bool isFileValid(juce::File fileToTest);
     
     void playButtonClicked();
@@ -52,6 +58,8 @@ public:
     void changePlayToPause();
     
     void changePauseToPlay();
+    
+    void noFileSelected();
     
 private:
     
@@ -77,9 +85,9 @@ private:
     
     juce::Slider m_volumeSlider;
     
-    bool m_fileSelected = false, m_fileIsValid = false, m_canDragFile = true;
+    bool m_fileSelected = false, m_fileIsValid = false, m_canDragFile = true, m_sectionSelected = false;
     
-    int m_numBufferSamples;
+    int m_numBufferSamples, m_mouseDragStartPos, m_mouseDragDistance, m_mouseDragEndPos;
 
     juce::File m_fileToPlay;
     

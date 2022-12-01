@@ -63,7 +63,7 @@ void TransportPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& buf
         ++m_playPosition;
         m_playPosSeconds = m_playPosition / m_sampleRate;
         
-        if(m_playPosition >= m_buffer.getNumSamples())
+        if(m_playPosition >= m_endPosition.load())
         {
             sendChangeMessage();
             m_playPosition = 0;
@@ -111,7 +111,6 @@ void TransportPlayer::pausePlayback()
 void TransportPlayer::stopPlayback()
 {
     m_playing = false;
-    m_playPosition = 0;
     m_playPosSeconds = 0;
 }
 
@@ -130,4 +129,9 @@ void TransportPlayer::sliderValueChanged(juce::Slider* slider)
 void TransportPlayer::setPlayPosition(int newPosition)
 {
     m_playPosition = newPosition;
+}
+
+void TransportPlayer::setEndPosition(int newEndPosition)
+{
+    m_endPosition = newEndPosition;
 }

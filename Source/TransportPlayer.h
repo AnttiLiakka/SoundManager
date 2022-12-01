@@ -42,6 +42,8 @@ public:
     void stopPlayback();
     
     void setPlayPosition(int newPosition);
+    
+    void setEndPosition(int newEndPosition);
 private:
     
     class TransportEditor& m_editor;
@@ -62,6 +64,8 @@ private:
     std::atomic<bool> m_playing { false };
     
     std::atomic<bool> m_isLooping { false };
+    
+    std::atomic<int> m_endPosition { 0 };
     
 };
 

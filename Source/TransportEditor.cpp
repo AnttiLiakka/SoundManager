@@ -112,6 +112,10 @@ void TransportEditor::paint(juce::Graphics &g)
         paintLoadedFile(g, waveformBounds);
     }
     
+    if(m_sectionSelected)
+    {
+        paintSelection(g, m_mouseDragStartPos, m_mouseDragDistance);
+    }
 }
 
 void TransportEditor::resized()
@@ -137,6 +141,7 @@ void TransportEditor::setFileToPlay(juce::File file)
     m_player.prepForNewFile();
     m_fileSelected = true;
     m_fileToPlay = file;
+    resetSelection();
     if (playState != Stopped)
     {
         changePlayState(Stopping);
@@ -168,6 +173,23 @@ void TransportEditor::paintLoadedFile(juce::Graphics& g, const juce::Rectangle<i
     g.drawLine(drawPosition, (float) bounds.getY(), drawPosition, (float) bounds.getBottom(), 2.0f);
 }
 
+void TransportEditor::paintSelection(juce::Graphics& g, int startPos, int endPos)
+{
+    g.setColour(juce::Colours::darkred.withAlpha(0.5f));
+    auto height = getLocalBounds().getHeight();
+    juce::Rectangle<int> selectionBounds(startPos, getLocalBounds().getY(), endPos, height - 30);
+    g.fillRect(selectionBounds);
+}
+
+void TransportEditor::resetSelection()
+{
+    m_sectionSelected = false;
+    m_mouseDragStartPos = 0;
+    m_mouseDragDistance = 0;
+    m_player.setEndPosition(m_numBufferSamples);
+    repaint();
+}
+
 void TransportEditor::changePlayState(PlayState newPlayState)
 {
     if (playState != newPlayState)
@@ -178,6 +200,7 @@ void TransportEditor::changePlayState(PlayState newPlayState)
         {
             case Starting:
                 if(!isTimerRunning()) startTimer(10);
+                if(m_sectionSelected) setSelectionPlay();
                 m_player.startPlayback();
                 changePlayState(Playing);
                 break;
@@ -266,9 +289,9 @@ void TransportEditor::timerCallback()
 
 void TransportEditor::mouseDown(const juce::MouseEvent& event)
 {
-    
     auto controlBounds = getLocalBounds().removeFromBottom(30);
     if(controlBounds.contains(event.getPosition()) || !m_fileIsValid) return;
+    resetSelection();
     if(!event.mods.isCommandDown())
     {
         auto ratio = m_numBufferSamples / getLocalBounds().getWidth();
@@ -294,13 +317,20 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
                 m_tableModel.allowFIleImport();
             });
         }
+    } else if(event.mods.isAltDown())
+    {
+        m_sectionSelected = true;
+        m_mouseDragStartPos = event.getMouseDownX();
+        m_mouseDragDistance = event.getDistanceFromDragStartX();
+        m_mouseDragEndPos = m_mouseDragStartPos + m_mouseDragDistance;
+        repaint();
+        
     } else
     {
         changePlayState(Pausing);
         auto ratio = m_numBufferSamples / getLocalBounds().getWidth();
         m_player.setPlayPosition(event.getMouseDownX() * ratio + event.getDistanceFromDragStartX() * ratio);
         repaint();
-        DBG(m_player.m_playPosition);
     }
 }
 
@@ -321,6 +351,7 @@ void TransportEditor::loadAudioFile(juce::File file)
     fileReader->read(&m_player.m_buffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, true);
     m_thumbnail.setSource(new juce::FileInputSource(file));
     m_numBufferSamples = m_player.m_buffer.getNumSamples();
+    m_player.setEndPosition(m_numBufferSamples);
     delete fileReader;
 }
 
@@ -362,4 +393,25 @@ void TransportEditor::changePlayToPause()
 void TransportEditor::changePauseToPlay()
 {
     m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::playInactive_svg, BinaryData::playInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playHover_svg, BinaryData::playHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
+}
+
+void TransportEditor::setSelectionPlay()
+{
+    auto ratio = m_numBufferSamples / getLocalBounds().getWidth();
+    if (m_mouseDragEndPos < m_mouseDragStartPos)
+    {
+        m_player.setPlayPosition(m_mouseDragEndPos * ratio);
+        m_player.setEndPosition(m_mouseDragStartPos * ratio);
+    } else
+    {
+        m_player.setPlayPosition(m_mouseDragStartPos * ratio);
+        m_player.setEndPosition(m_mouseDragEndPos * ratio);
+    }
+}
+
+void TransportEditor::noFileSelected()
+{
+    m_fileSelected = false;
+    m_relocateButton.setAlpha(0);
+    m_thumbnail.clear();
 }

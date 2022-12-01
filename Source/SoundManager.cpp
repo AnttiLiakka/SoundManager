@@ -80,6 +80,7 @@ int SoundManager::getNumFileTrees()
             ++numVisibleFileInfos;
         }
     }
+    if(numVisibleFileInfos == 0) m_mainApp.m_transport.noFileSelected();
 
     return numVisibleFileInfos;
 }
@@ -149,6 +150,7 @@ void SoundManager::AddFile(juce::File& file, double length,double sampleRate, in
     };
     
     m_audioLibraryTree.appendChild(fileInfo, nullptr);
+    setAllVisible();
 }
 
 void SoundManager::updateDescription(juce::String newString, int rowNum)
