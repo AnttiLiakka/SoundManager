@@ -27,6 +27,9 @@
             file="Source/MainComponent.cpp"/>
     </GROUP>
     <GROUP id="{17CEF6AA-94B8-812C-CAA0-0E5CCD29C50F}" name="Icons">
+      <FILE id="CDgdRY" name="Logo.png" compile="0" resource="1" file="Resources/Icons/Logo.png"/>
+      <FILE id="Lzcbjx" name="playInactive.svg" compile="0" resource="1"
+            file="Resources/Icons/playInactive.svg"/>
       <FILE id="SAHJjH" name="LocateActive.svg" compile="0" resource="1"
             file="Resources/Icons/LocateActive.svg"/>
       <FILE id="lKjJ2m" name="LocateHover.svg" compile="0" resource="1" file="Resources/Icons/LocateHover.svg"/>
@@ -48,8 +51,6 @@
             file="Resources/Icons/pauseInactive.svg"/>
       <FILE id="Vu22AN" name="playActive.svg" compile="0" resource="1" file="Resources/Icons/playActive.svg"/>
       <FILE id="JgURfh" name="playHover.svg" compile="0" resource="1" file="Resources/Icons/playHover.svg"/>
-      <FILE id="Lzcbjx" name="playInactive.svg" compile="0" resource="1"
-            file="Resources/Icons/playInactive.svg"/>
       <FILE id="bwd1IF" name="stopActive.svg" compile="0" resource="1" file="Resources/Icons/stopActive.svg"/>
       <FILE id="Emdfxv" name="stopHover.svg" compile="0" resource="1" file="Resources/Icons/stopHover.svg"/>
       <FILE id="pwIM5J" name="stopInactive.svg" compile="0" resource="1"
@@ -58,7 +59,7 @@
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
   <EXPORTFORMATS>
-    <VS2022 targetFolder="Builds/VisualStudio2022">
+    <VS2022 targetFolder="Builds/VisualStudio2022" smallIcon="CDgdRY" bigIcon="CDgdRY">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="SoundManager"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="SoundManager"/>
@@ -77,7 +78,8 @@
         <MODULEPATH id="juce_gui_extra" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </VS2022>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" applicationCategory="public.app-category.music"
+               smallIcon="CDgdRY" bigIcon="CDgdRY">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="SoundManager"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="SoundManager"/>

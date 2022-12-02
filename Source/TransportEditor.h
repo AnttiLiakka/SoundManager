@@ -87,7 +87,7 @@ private:
     ///Volume slider that the user can interact with to control the volume of the playback
     juce::Slider m_volumeSlider;
     ///Various booleans used to control what is drawn by the paint function, prevent exported files to be dropped back into the application and control section play functionality
-    bool m_fileSelected = false, m_fileIsValid = false, m_canDragFile = true, m_sectionSelected = false;
+    bool m_fileSelected = false, m_fileIsValid = false, m_canDragFile = true, m_sectionSelected = false,  m_sectionPlayActive = false;
     ///Various integers that represent the size of the audio buffer and which section of the sound file has been selected
     int m_numBufferSamples, m_mouseDragStartPos, m_mouseDragDistance, m_mouseDragEndPos;
     ///File that has been selected for playback

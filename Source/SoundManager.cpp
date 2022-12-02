@@ -64,7 +64,6 @@ void SoundManager::getTreeFromXml(juce::XmlElement* xmlelement)
 
 int SoundManager::getNumFileTrees()
 {
-    jassert(m_audioLibraryTree.isValid());
     int numFileInfos = m_audioLibraryTree.getNumChildren();
     
     int numVisibleFileInfos = 0;
@@ -120,9 +119,7 @@ juce::String SoundManager::getInformationAtIndex(int index, int property)
 }
 
 juce::String SoundManager::printValueTree()
-{
-    jassert(m_audioLibraryTree.isValid());
-    
+{    
     juce::String valueTreeString;
     valueTreeString = m_audioLibraryTree.toXmlString();
     return valueTreeString;
@@ -130,8 +127,6 @@ juce::String SoundManager::printValueTree()
 
 void SoundManager::saveTreeToXml()
 {
-    jassert(m_audioLibraryTree.isValid());
-    
     m_mainApp.m_audioLibrary = m_audioLibraryTree.createXml();
     
     m_mainApp.m_audioLibrary->writeTo(m_mainApp.m_saveFile);
@@ -155,7 +150,6 @@ void SoundManager::AddFile(juce::File& file, double length,double sampleRate, in
 
 void SoundManager::updateDescription(juce::String newString, int rowNum)
 {
-    jassert(m_audioLibraryTree.isValid());
     auto fileInfo = m_audioLibraryTree.getChild(rowNum);
     auto information = fileInfo.getChildWithName(m_information);
     information.setProperty(m_description, newString, nullptr);
@@ -163,9 +157,7 @@ void SoundManager::updateDescription(juce::String newString, int rowNum)
 
 void SoundManager::removeFileInfoTree(int index)
 {
-    jassert(m_audioLibraryTree.isValid());
     m_audioLibraryTree.removeChild(index, nullptr);
-    
 }
 
 void SoundManager::addCategory(juce::String name, int rowNumber)
@@ -176,12 +168,10 @@ void SoundManager::addCategory(juce::String name, int rowNumber)
     
     //get the filepath of the tree that was clicked
     juce::ValueTree child = m_currentTable[rowNumber];
-    jassert(child.isValid());
     juce::String filepath = child.getProperty(m_filePath);
     
     //get a child from m_audioLibrarytree with the same filepath. This is the tree the category needs to be added
     auto correctFileInfo = m_audioLibraryTree.getChildWithProperty(m_filePath, filepath);
-    jassert(correctFileInfo.isValid());
     
     //get the categories child of the tree
     auto categories = correctFileInfo.getChildWithName(m_categories);
@@ -399,7 +389,7 @@ void SoundManager::changeFilepath(juce::String newPath, juce::String oldPath)
     auto newFilename = newFile.getFileName();
     
     auto fileinfo = m_audioLibraryTree.getChildWithProperty(m_filePath, oldPath);
-    jassert(fileinfo.isValid());
+    if(!fileinfo.isValid()) return;
     auto information = fileinfo.getChildWithName(m_information);
     if(information.getProperty(m_fileName) != newFilename)
     {

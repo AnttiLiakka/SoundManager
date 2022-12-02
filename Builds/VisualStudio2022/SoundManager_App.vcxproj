@@ -3182,6 +3182,8 @@
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h"/>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Resources\Icons\Logo.png"/>
+    <None Include="..\..\Resources\Icons\playInactive.svg"/>
     <None Include="..\..\Resources\Icons\LocateActive.svg"/>
     <None Include="..\..\Resources\Icons\LocateHover.svg"/>
     <None Include="..\..\Resources\Icons\LocateInactive.svg"/>
@@ -3196,7 +3198,6 @@
     <None Include="..\..\Resources\Icons\pauseInactive.svg"/>
     <None Include="..\..\Resources\Icons\playActive.svg"/>
     <None Include="..\..\Resources\Icons\playHover.svg"/>
-    <None Include="..\..\Resources\Icons\playInactive.svg"/>
     <None Include="..\..\Resources\Icons\stopActive.svg"/>
     <None Include="..\..\Resources\Icons\stopHover.svg"/>
     <None Include="..\..\Resources\Icons\stopInactive.svg"/>
@@ -3218,6 +3219,7 @@
     <None Include="C:\JUCE\modules\juce_core\native\java\README.txt"/>
     <None Include="C:\JUCE\modules\juce_graphics\image_formats\jpglib\changes to libjpeg for JUCE.txt"/>
     <None Include="C:\JUCE\modules\juce_graphics\image_formats\pnglib\libpng_readme.txt"/>
+    <None Include=".\icon.ico"/>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include=".\resources.rc"/>

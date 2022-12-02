@@ -14,7 +14,6 @@
 TransportPlayer::TransportPlayer(class TransportEditor& editor) : m_editor(editor)
 {
     m_player.setSource(this);
-    //m_deviceManager.addAudioCallback(&m_player);
     m_editor.m_audioDeviceManager.addAudioCallback(&m_player);
     addChangeListener(&m_editor);
 }
@@ -22,6 +21,8 @@ TransportPlayer::TransportPlayer(class TransportEditor& editor) : m_editor(edito
 TransportPlayer::~TransportPlayer()
 {
     //Something Something, Shutdown Audio, Something
+    m_editor.m_audioDeviceManager.removeAudioCallback(&m_player);
+    m_editor.m_audioDeviceManager.closeAudioDevice();
 }
 
 void TransportPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
@@ -39,15 +40,6 @@ void TransportPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleR
 
 void TransportPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
 {
-    // Your audio-processing code goes here!
-
-    // For more details, see the help for AudioProcessor::getNextAudioBlock()
-
-    // Right now we are not producing any data, in which case we need to clear the buffer
-    // (to prevent the output of random noise)
-    
-    
-    
     bufferToFill.clearActiveBufferRegion();
     if(!m_playing) return;
     
@@ -102,6 +94,7 @@ void TransportPlayer::stopPlayback()
 {
     m_playing = false;
     m_playPosSeconds = 0;
+    m_playPosition = 0;
 }
 
 void TransportPlayer::sliderValueChanged(juce::Slider* slider)

@@ -14,9 +14,7 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
                  m_tableModel(tableModel),
                  m_mainApp(mainApp),
                  m_player(player),
-                 m_thumbnailCache(5),
-                 m_thumbnail(512,
-                 m_formatManager, m_thumbnailCache),
+                 m_thumbnailCache(5), m_thumbnail(512, m_formatManager, m_thumbnailCache),
                  m_playButton(TRANS("Play"), juce::DrawableButton::ButtonStyle::ImageFitted),
                  m_stopButton(TRANS("Stop"), juce::DrawableButton::ButtonStyle::ImageFitted),
                  m_loopButton(TRANS("Loop"), juce::DrawableButton::ButtonStyle::ImageFitted),
@@ -81,6 +79,7 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     };
     
     m_playButton.addShortcut(juce::KeyPress(juce::KeyPress::spaceKey));
+    m_stopButton.addShortcut(juce::KeyPress(juce::KeyPress::returnKey));
     
     addAndMakeVisible(m_playButton);
     addAndMakeVisible(m_stopButton);
@@ -188,6 +187,7 @@ void TransportEditor::resetSelection()
     m_mouseDragDistance = 0;
     m_player.setEndPosition(m_numBufferSamples);
     repaint();
+    m_sectionPlayActive = false;
 }
 
 void TransportEditor::changePlayState(PlayState newPlayState)
@@ -282,6 +282,7 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
             m_player.setPlayPosition(0);
         } else
         {
+            m_sectionPlayActive = false;
             setSelectionPlay();
         }
     }
@@ -404,16 +405,37 @@ void TransportEditor::changePauseToPlay()
 
 void TransportEditor::setSelectionPlay()
 {
+    if(m_sectionPlayActive) return;
     auto ratio = m_numBufferSamples / getLocalBounds().getWidth();
-    if (m_mouseDragEndPos < m_mouseDragStartPos)
+    auto startPos = m_mouseDragStartPos * ratio;
+    auto endPos = m_mouseDragEndPos * ratio;
+    
+    if(endPos < 0)
     {
-        m_player.setPlayPosition(m_mouseDragEndPos * ratio);
-        m_player.setEndPosition(m_mouseDragStartPos * ratio);
+        endPos = 0;
+    } else if(endPos > m_numBufferSamples)
+    {
+        endPos = m_numBufferSamples;
+    }
+    
+    if(startPos < 0)
+    {
+        startPos = 0;
+    } else if(startPos > m_numBufferSamples)
+    {
+        startPos = m_numBufferSamples;
+    }
+    
+    if (endPos < startPos)
+    {
+        m_player.setPlayPosition(endPos);
+        m_player.setEndPosition(startPos);
     } else
     {
         m_player.setPlayPosition(m_mouseDragStartPos * ratio);
         m_player.setEndPosition(m_mouseDragEndPos * ratio);
     }
+    m_sectionPlayActive = true;
 }
 
 void TransportEditor::noFileSelected()

@@ -59,7 +59,7 @@ public:
     ///Virtual function inherited from Juce TableListBoxModel. This function is used to create or update a component to go in a cell. It is overridden to create and update the description label on column five.
     juce::Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component*                                             existingComponentToUpdate) override;
     ///This function is used to handle popupmenu action for category adding and item deletion.
-    void cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent);
+    void cellPopupAction(int selection, int rowNumber, int columnId);
     ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the Listener when a child is added to m_valueTreeToListen. It is overridden to update the table when a child is added.
     void valueTreeChildAdded(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenAdded) override;
     ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the Listener when a property is changed in m_valueTreeToListen. It is overridden to update the table when visibility or categories of the tree changes,

@@ -24,6 +24,7 @@
 		67C360984118BF579C62784B /* include_juce_audio_basics.mm */ = {isa = PBXBuildFile; fileRef = 4AA0D14391796531E3E08904; };
 		6BC8532AAF038D5EFBBA5230 /* DiscRecording.framework */ = {isa = PBXBuildFile; fileRef = 987845157B276D3D85A245A1; };
 		7C4DB4EEFC7DE80E9FACBB57 /* RecentFilesMenuTemplate.nib */ = {isa = PBXBuildFile; fileRef = 8F64DC7379A207E9F349CEF4; };
+		8CA300CAE5DD5154359F04A0 /* Icon.icns */ = {isa = PBXBuildFile; fileRef = 4DE9DFD8FAB2A4DC7C4845E6; };
 		930533EC5744762057ABE97B /* Foundation.framework */ = {isa = PBXBuildFile; fileRef = E44F4ADE8BD88A74C5ED4FF2; };
 		AD5303B1EB17563D74A69126 /* TransportEditor.cpp */ = {isa = PBXBuildFile; fileRef = E23ACD521B130491EE9DC4B2; };
 		B6FDB3AC52D95C65509A70F9 /* include_juce_audio_devices.mm */ = {isa = PBXBuildFile; fileRef = C6DE27E7967D31E82ED4A9F1; };
@@ -66,6 +67,7 @@
 		47CDAC159EA649ED3F92125C /* MagGlassInactive.svg */ /* MagGlassInactive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = MagGlassInactive.svg; path = ../../Resources/Icons/MagGlassInactive.svg; sourceTree = SOURCE_ROOT; };
 		4834BAF369D165041E4B1B2D /* LoopHover.svg */ /* LoopHover.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = LoopHover.svg; path = ../../Resources/Icons/LoopHover.svg; sourceTree = SOURCE_ROOT; };
 		4AA0D14391796531E3E08904 /* include_juce_audio_basics.mm */ /* include_juce_audio_basics.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_basics.mm; path = ../../JuceLibraryCode/include_juce_audio_basics.mm; sourceTree = SOURCE_ROOT; };
+		4DE9DFD8FAB2A4DC7C4845E6 /* Icon.icns */ /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = file.icns; name = Icon.icns; path = Icon.icns; sourceTree = SOURCE_ROOT; };
 		4F9142935314AB2D5C519C1C /* CoreMIDI.framework */ /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
 		4FAD22E1D72145DD1F959618 /* playInactive.svg */ /* playInactive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = playInactive.svg; path = ../../Resources/Icons/playInactive.svg; sourceTree = SOURCE_ROOT; };
 		5014E4B1F4E0093E8BFA96AE /* juce_audio_utils */ /* juce_audio_utils */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_utils; path = /Users/anna/Documents/Juce/JUCE/modules/juce_audio_utils; sourceTree = "<absolute>"; };
@@ -104,6 +106,7 @@
 		D1CD52CCBA5D6701E1011585 /* MagGlassActive.svg */ /* MagGlassActive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = MagGlassActive.svg; path = ../../Resources/Icons/MagGlassActive.svg; sourceTree = SOURCE_ROOT; };
 		DA2D35A2E0AD89BA9BF120A4 /* stopInactive.svg */ /* stopInactive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = stopInactive.svg; path = ../../Resources/Icons/stopInactive.svg; sourceTree = SOURCE_ROOT; };
 		DF4714F265A625902394306F /* include_juce_events.mm */ /* include_juce_events.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_events.mm; path = ../../JuceLibraryCode/include_juce_events.mm; sourceTree = SOURCE_ROOT; };
+		DF72C271CB442FEAC59A7CCD /* Logo.png */ /* Logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Logo.png; path = ../../Resources/Icons/Logo.png; sourceTree = SOURCE_ROOT; };
 		E23ACD521B130491EE9DC4B2 /* TransportEditor.cpp */ /* TransportEditor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = TransportEditor.cpp; path = ../../Source/TransportEditor.cpp; sourceTree = SOURCE_ROOT; };
 		E319ECEE399F42A1014B93C4 /* JuceHeader.h */ /* JuceHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = JuceHeader.h; path = ../../JuceLibraryCode/JuceHeader.h; sourceTree = SOURCE_ROOT; };
 		E4089103F91263108EBE65A6 /* AudioToolbox.framework */ /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -212,6 +215,8 @@
 		9C59DAABB3EC05967C5F330B /* Icons */ = {
 			isa = PBXGroup;
 			children = (
+				DF72C271CB442FEAC59A7CCD,
+				4FAD22E1D72145DD1F959618,
 				72E6BD367268C6399F534F22,
 				978AFDADB60763B67BD4F943,
 				09E489AACB3767878F8D0C09,
@@ -226,7 +231,6 @@
 				EE6D4FD652FB855CF77CF299,
 				2BE7B0A543901F4A72741A96,
 				3C4E4A7FE7CE97C54F79409D,
-				4FAD22E1D72145DD1F959618,
 				303257474A1D8AADEC6D6868,
 				0EF7D135A77D5BDCC69D4B84,
 				DA2D35A2E0AD89BA9BF120A4,
@@ -239,6 +243,7 @@
 			children = (
 				874B05530178FAE299A95754,
 				8F64DC7379A207E9F349CEF4,
+				4DE9DFD8FAB2A4DC7C4845E6,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -354,6 +359,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7C4DB4EEFC7DE80E9FACBB57,
+				8CA300CAE5DD5154359F04A0,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -348,7 +348,7 @@ void SoundTableModel::cellClicked(int rowNumber, int columnId, const juce::Mouse
         
         cellMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
                                {
-                                    cellPopupAction(selection, m_lastSelectedRow, columnId, mouseEvent);
+                                    cellPopupAction(selection, m_lastSelectedRow, columnId);
                                 });
         }
     }
@@ -594,29 +594,20 @@ void DragAndDropTable::manualFileImport()
             m_mainApp.m_valueTree.AddFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
             delete fileReader;
 
-            
         } catch (juce::String message){
             juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,fileToTest.getFileName() , message);
         }
-        
-        
-        
     } );
 }
 
-void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId, const juce::MouseEvent& mouseEvent)
+void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId)
 {
-    // 1 = Delete
-    // 2 = New Category
-    // 3 = Ambiance
-    // 4 = Impact
-    // 5 = Gunshot
-    
-   //int numCategories = m_mainApp.m_categoryModel.numCategories();
+   //Delete item
    if(selection == 1)
    {
        m_valueTreeToListen.removeFileInfoTree(rowNumber);
    }
+   //New Category
    else if(selection == 2)
    {
        auto categoryTextEditor = std::make_unique<juce::Label>(TRANS("Category Name"));
@@ -629,21 +620,19 @@ void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId
        
        juce::CallOutBox::launchAsynchronously(std::move(categoryTextEditor), textEditorPos, &m_mainApp);
    }
+   //This checks the selection and selects a category to add to the item
    else
    {
        for (int i = 0; i < m_mainApp.m_categoryModel.numCategories(); ++i )
        {
+           //Since 0, 1, 2 selections are already taken, we need to add 3 to i
            if(selection == i + 3)
            {
                auto categoryToAdd = m_mainApp.m_categoryModel.m_uniqueCategories[i];
                m_valueTreeToListen.addCategory(categoryToAdd, m_lastSelectedRow);
-               
            }
        }
-       
    }
-       
-    
 }
 
 void CategoryListModel::listPopupAction()
