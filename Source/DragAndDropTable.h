@@ -20,12 +20,14 @@ class DragAndDropTable : public juce::TableListBox, public
     friend class CategoryListModel;
     friend class SoundTableModel;
     friend class SoundManager;
+    friend class TransportEditor;
     
 public:
     ///The constructor, takes a reference to the MainComponent
-    DragAndDropTable(class MainComponent& mainApp) :
+    DragAndDropTable(class MainComponent& mainApp, juce::File& saveLocation) :
                      TableListBox("table", nullptr),
-                     m_mainApp(mainApp)
+                     m_mainApp(mainApp),
+                     m_saveLocation(saveLocation)
     {
         
 
@@ -43,8 +45,12 @@ private:
     
     ///Reference to the MainComponent
     class MainComponent& m_mainApp;
+    
+    juce::File& m_saveLocation;
     ///States whether the table is currently accepting imported files. This member is initialised to true
     bool m_acceptingfiles = true;
+    
+    bool m_copyOnImport;
     ///The font used to write the text in the cells
     juce::Font m_font = (15.0f);
     ///The  audio format manager needed to test whether audio files are valid

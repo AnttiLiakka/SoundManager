@@ -25,14 +25,12 @@ juce::Identifier SoundManager::m_id = juce::Identifier("id");
 
 
 SoundManager::SoundManager(MainComponent& mainApp) : m_mainApp(mainApp),
-                                                           m_audioLibraryTree(
-                                                                                {"audiolibrary", {},
-                                                                                    {
-                                                                                     }
-                                                                                 }
-                                                                              )
-
-
+                                                     m_audioLibraryTree(
+                                                                         {"audiolibrary", {},
+                                                                             {
+                                                                              }
+                                                                          }
+                                                                         )
 {
     m_audioLibraryTree.addListener(&m_mainApp.m_tableModel);
 }

@@ -49,7 +49,8 @@ public:
     
     enum CommandIDs
     {
-        CopyOnImport = 1,
+        CopyOnImportYes = 1,
+        CopyOnImportNo,
         ImportFile,
         SaveData,
         AddCategory,
@@ -93,8 +94,13 @@ private:
     juce::ApplicationCommandManager m_commandManager;
     ///The xml element holding the applications save data
     std::unique_ptr<juce::XmlElement> m_audioLibrary;
+    
+    juce::File m_saveFolder;
     ///The file where the xml data is stored
     juce::File m_saveFile;
     
+    juce::File m_savedAudioFiles;
+    
+    juce::File m_tempAudioFiles;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

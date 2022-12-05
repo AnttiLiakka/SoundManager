@@ -3,7 +3,7 @@
 //==============================================================================
 MainComponent::MainComponent() :
                                  m_tableModel(*this, m_valueTree),
-                                 m_table(*this),
+                                 m_table(*this, m_savedAudioFiles),
                                  m_valueTree(*this),
                                  m_categories("categories", nullptr),
                                  m_categoryModel(*this, m_valueTree),
@@ -12,21 +12,21 @@ MainComponent::MainComponent() :
                                  m_searchButton("Search", juce::DrawableButton::ButtonStyle::ImageRaw),
                                  m_tooltipWindow(this),
                                  m_audioLibrary(std::make_unique<juce::XmlElement>("audiolibrary")),
-                                 m_saveFile(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
+                                 m_saveFolder(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
 {
     // Make sure you set the size of the component after
     // you add any child components
     
     //Check whether application folder already exists in application data directory
-    if(!m_saveFile.exists())
+    if(!m_saveFolder.exists())
     {
         {
             //if not, create one
-            m_saveFile.createDirectory();
+            m_saveFolder.createDirectory();
         }
     }
     //check whether a save file already exists
-    m_saveFile = m_saveFile.getChildFile("audiolibrary.xml");
+    m_saveFile = m_saveFolder.getChildFile("audiolibrary.xml");
     
     if(!m_saveFile.exists())
     {
@@ -46,9 +46,22 @@ MainComponent::MainComponent() :
         m_valueTree.setAllVisible();
     }
     
-    m_table.m_formatManager.registerBasicFormats();
+    m_savedAudioFiles = m_saveFolder.getChildFile("SavedFiles");
     
-    m_commandManager.registerAllCommandsForTarget(&m_transport);
+    if(!m_savedAudioFiles.exists())
+    {
+        m_savedAudioFiles.createDirectory();
+    }
+    
+    m_tempAudioFiles = m_saveFolder.getChildFile("TempFiles");
+    
+    if(!m_tempAudioFiles.exists())
+    {
+        m_tempAudioFiles.createDirectory();
+    }
+    
+    m_table.m_formatManager.registerBasicFormats();
+
     m_commandManager.registerAllCommandsForTarget(this);
     m_commandManager.getKeyMappings()->resetToDefaultMappings();
     addKeyListener(m_commandManager.getKeyMappings());
@@ -171,7 +184,8 @@ juce::ApplicationCommandTarget* MainComponent::getNextCommandTarget()
 
 void MainComponent::getAllCommands(juce::Array<juce::CommandID> &commands)
 {
-    juce::Array<juce::CommandID> commandArray { CommandIDs::CopyOnImport,
+    juce::Array<juce::CommandID> commandArray { CommandIDs::CopyOnImportYes,
+                                                CommandIDs::CopyOnImportNo,
                                                 CommandIDs::ImportFile,
                                                 CommandIDs::SaveData,
                                                 CommandIDs::AddCategory,
@@ -184,8 +198,14 @@ void MainComponent::getCommandInfo(juce::CommandID commandID, juce::ApplicationC
 {
     switch (commandID)
     {
-        case CommandIDs::CopyOnImport:
-            result.setInfo("Copy On Import", "Option to copy audio file on import", "Option Menu", 0);
+        case CommandIDs::CopyOnImportYes:
+            result.setInfo("Copy On Import", "Application copies audio files on import", "Option Menu", 0);
+            result.setTicked(m_table.m_copyOnImport);
+            break;
+            
+        case CommandIDs::CopyOnImportNo:
+            result.setInfo("Do Not Copy On Import", "Application does not copy audio files on improt", "Option Menu", 0);
+            result.setTicked(!m_table.m_copyOnImport);
             break;
             
         case CommandIDs::ImportFile:
@@ -219,7 +239,13 @@ bool MainComponent::perform (const juce::ApplicationCommandTarget::InvocationInf
 {
     switch (info.commandID)
     {
-        case CommandIDs::CopyOnImport:
+        case CommandIDs::CopyOnImportYes:
+            m_table.m_copyOnImport = true;
+            
+            break;
+            
+        case CommandIDs::CopyOnImportNo:
+            m_table.m_copyOnImport = false;
             break;
             
         case CommandIDs::ImportFile:
@@ -314,8 +340,26 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                 auto sampleRate =fileReader->sampleRate;
                 double fileLength = std::round( fileReader->lengthInSamples / sampleRate);
                 int numChannels = fileReader->numChannels;
-                juce::String filePath = fileToTest.getFullPathName();
-                
+                juce::String filePath;
+                if(!m_copyOnImport)
+                {
+                    filePath = fileToTest.getFullPathName();
+                } else
+                {
+                    auto newFile = m_saveLocation.getChildFile(fileToTest.getFileName());
+                    if(!newFile.existsAsFile())
+                    {
+                        newFile.create();
+                    } else
+                    {
+                        //Lets prevent a leak
+                        delete fileReader;
+                        //And lets also prevent the creation of dublicate files
+                        throw TRANS("This File Already Exists In Save Folder");
+                    }
+                    if(!fileToTest.copyFileTo(newFile)) throw TRANS("Error Coping the File");
+                    filePath = newFile.getFullPathName();
+                }
                 
                 m_mainApp.m_valueTree.AddFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
                 delete fileReader;
@@ -505,6 +549,13 @@ void SoundTableModel::valueTreePropertyChanged(juce::ValueTree& parentTree, cons
 void SoundTableModel::valueTreeChildRemoved(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved)
 {
     m_mainApp.m_table.updateContent();
+    juce::String filename = childWhichHasBeenRemoved.getProperty(m_valueTreeToListen.m_filePath);
+    juce::File removedFile(filename);
+    if(removedFile.getParentDirectory() == m_mainApp.m_table.m_saveLocation)
+    {
+        removedFile.deleteFile();
+    }
+    m_mainApp.m_transport.noFileSelected();
 }
 
 void SoundTableModel::locateFile(juce::File file)
@@ -564,9 +615,11 @@ juce::PopupMenu MainComponent::getMenuForIndex (int menuIndex, const juce::Strin
     }
     else if (menuIndex == 2)
     {
-        //menu.addItem (2, "Audio Settings");
+        juce::PopupMenu copyMenu;
         menu.addCommandItem(&m_commandManager, CommandIDs::AudioSettings);
-        menu.addCommandItem(&m_commandManager, CommandIDs::CopyOnImport);
+        copyMenu.addCommandItem(&m_commandManager, CommandIDs::CopyOnImportYes);
+        copyMenu.addCommandItem(&m_commandManager, CommandIDs::CopyOnImportNo);
+        menu.addSubMenu(TRANS("Copy On Import"), copyMenu);
     }
     else if (menuIndex == 3)
     {

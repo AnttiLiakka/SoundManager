@@ -81,7 +81,6 @@ private:
     juce::String m_oldFilepath;
     ///The juce filechooser used in the filepath change functionality
     std::unique_ptr<juce::FileChooser> m_fileChooser;
-    
     ///A static juce Identifier for the fileinfo tree.
     static juce::Identifier m_fileInfo;
     ///A static juce Identifier for the information tree.

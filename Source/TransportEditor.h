@@ -14,14 +14,16 @@
 
 class SoundTableModel;
 ///This class is the component user interacts with to controls the TransportPlayer.
-class TransportEditor : public juce::Component, public juce::ChangeListener, private juce::Timer, public juce::ApplicationCommandTarget
+class TransportEditor : public juce::Component, public juce::ChangeListener, private juce::Timer /*public juce::ApplicationCommandTarget*/
 {
     friend class MainComponent;
     friend class TransportPlayer;
+    friend class DragAndDropTable;
     
 public:
     ///The constructor, takes in references to the  SoundTableModel, MainComponent and TransportPlayer.
     TransportEditor(class SoundTableModel& tableModel, class MainComponent& mainApp, class TransportPlayer& player);
+    ~TransportEditor();
     ///This virtual function is inherited from Juce Component and it is overridden to paint the waveform and the playhead or any error texts.
     void paint(juce::Graphics& g) override;
     ///This virtual functon is inherted from Juce Component and it is overridden to place all buttons, sliders etc. onto the component.
@@ -29,13 +31,13 @@ public:
     ///This pure virtual function is inherited from Juce changeListener and it is overriden to listen when the TransportPlayer has reached the end of the playback and when that happens, this class tells it to stop playback.
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
     
-    juce::ApplicationCommandTarget* getNextCommandTarget() override;
+    //juce::ApplicationCommandTarget* getNextCommandTarget() override;
     
-    void getAllCommands(juce::Array<juce::CommandID> &commands) override;
+    //void getAllCommands(juce::Array<juce::CommandID> &commands) override;
     
-    void getCommandInfo(juce::CommandID commandID, juce::ApplicationCommandInfo &result) override;
+    //void getCommandInfo(juce::CommandID commandID, juce::ApplicationCommandInfo &result) override;
     
-    bool perform (const juce::ApplicationCommandTarget::InvocationInfo &info) override;
+    //bool perform (const juce::ApplicationCommandTarget::InvocationInfo &info) override;
     ///This function is called by the SoundTableModel and it is used to load to selected audiofile into the TransportPlayers audiobuffer.
     void setFileToPlay(juce::File file);
     ///This function is called by the paint function and it is used to paint the waveform and playhead of the selected file.
@@ -60,6 +62,8 @@ public:
     void mouseDown(const juce::MouseEvent& event) override;
     ///Virtual function inherted from Juce Component. This function is called when the component is dragged with a mouse. This function is overridden to control which section of the soundfile is played and drag export.
     void mouseDrag(const juce::MouseEvent& event) override;
+    
+    void mouseUp(const juce::MouseEvent& event) override;
     ///This function is called to open the audiosettings.
     void openAudioSettings();
     ///This function is called if isFileValid returns true and it loads the audiofile into the TransportPlayers audiobuffer.
@@ -70,6 +74,10 @@ public:
     void changePauseToPlay();
     ///This function is called when the user deselects all rows, for example by clicking the table background. it clears the audio thumbnail and makes sure that the locate button is hidden.
     void noFileSelected();
+    
+    void prepSelectionBuffer();
+    
+    void createFileFromSelection();
     
     enum CommandIDs
     {
@@ -102,7 +110,7 @@ private:
     ///Volume slider that the user can interact with to control the volume of the playback
     juce::Slider m_volumeSlider;
     ///Various booleans used to control what is drawn by the paint function, prevent exported files to be dropped back into the application and control section play functionality
-    bool m_fileSelected = false, m_fileIsValid = false, m_canDragFile = true, m_sectionSelected = false,  m_sectionPlayActive = false;
+    bool m_fileSelected = false, m_fileIsValid = false, m_canDragFile = true, m_sectionSelected = false, m_sectionPlayActive = false;
     ///Various integers that represent the size of the audio buffer and which section of the sound file has been selected
     int m_numBufferSamples, m_mouseDragStartPos, m_mouseDragDistance, m_mouseDragEndPos;
     ///File that has been selected for playback
@@ -119,6 +127,10 @@ private:
     };
         
     PlayState playState;
+    
+    juce::File m_tempFile;
+    
+    juce::AudioBuffer<float> m_selectionBuffer;
     ///This funtion is used to change the state of playback
     void changePlayState (TransportEditor::PlayState newPlayState);
     ///This virtual function is inherited from Juce Timer and it is overridden to repaint the component at regular intervals. This makes sure that the playhead is drawn into a correct position.
