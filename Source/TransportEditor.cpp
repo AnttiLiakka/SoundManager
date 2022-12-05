@@ -446,3 +446,23 @@ void TransportEditor::noFileSelected()
     m_relocateButton.setAlpha(0);
     m_thumbnail.clear();
 }
+
+juce::ApplicationCommandTarget* TransportEditor::getNextCommandTarget()
+{
+    return this;
+}
+
+void TransportEditor::getAllCommands(juce::Array<juce::CommandID> &commands)
+{
+    
+}
+
+void TransportEditor::getCommandInfo(juce::CommandID commandID, juce::ApplicationCommandInfo &result)
+{
+    
+}
+
+bool TransportEditor::perform(const juce::ApplicationCommandTarget::InvocationInfo &info)
+{
+    return false;
+}

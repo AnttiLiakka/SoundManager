@@ -14,7 +14,7 @@
 
 class SoundTableModel;
 ///This class is the component user interacts with to controls the TransportPlayer.
-class TransportEditor : public juce::Component, public juce::ChangeListener, private juce::Timer
+class TransportEditor : public juce::Component, public juce::ChangeListener, private juce::Timer, public juce::ApplicationCommandTarget
 {
     friend class MainComponent;
     friend class TransportPlayer;
@@ -28,6 +28,14 @@ public:
     void resized() override;
     ///This pure virtual function is inherited from Juce changeListener and it is overriden to listen when the TransportPlayer has reached the end of the playback and when that happens, this class tells it to stop playback.
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
+    
+    juce::ApplicationCommandTarget* getNextCommandTarget() override;
+    
+    void getAllCommands(juce::Array<juce::CommandID> &commands) override;
+    
+    void getCommandInfo(juce::CommandID commandID, juce::ApplicationCommandInfo &result) override;
+    
+    bool perform (const juce::ApplicationCommandTarget::InvocationInfo &info) override;
     ///This function is called by the SoundTableModel and it is used to load to selected audiofile into the TransportPlayers audiobuffer.
     void setFileToPlay(juce::File file);
     ///This function is called by the paint function and it is used to paint the waveform and playhead of the selected file.
@@ -62,6 +70,13 @@ public:
     void changePauseToPlay();
     ///This function is called when the user deselects all rows, for example by clicking the table background. it clears the audio thumbnail and makes sure that the locate button is hidden.
     void noFileSelected();
+    
+    enum CommandIDs
+    {
+        Looping = 0,
+        PlaybuttonActive = 0,
+        StopbuttonActive = 0
+    };
     
 private:
     ///Reference to the SoundTableModel.

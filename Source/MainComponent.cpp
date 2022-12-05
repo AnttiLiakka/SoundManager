@@ -48,6 +48,11 @@ MainComponent::MainComponent() :
     
     m_table.m_formatManager.registerBasicFormats();
     
+    m_commandManager.registerAllCommandsForTarget(&m_transport);
+    m_commandManager.registerAllCommandsForTarget(this);
+    m_commandManager.getKeyMappings()->resetToDefaultMappings();
+    addKeyListener(m_commandManager.getKeyMappings());
+    
     
     m_table.setModel(&m_tableModel);
     m_table.setOutlineThickness(1);
@@ -75,6 +80,7 @@ MainComponent::MainComponent() :
     getLookAndFeel().setColour(juce::ScrollBar::ColourIds::thumbColourId, juce::Colours::darkred);
     
     m_menuBar.setModel(this);
+    setApplicationCommandManagerToWatch(&m_commandManager);
     
     m_searchBar.setEditable(false, true, false);
     m_searchBar.addListener(&m_valueTree);
@@ -110,34 +116,18 @@ MainComponent::MainComponent() :
 #endif
     
     setSize (900, 600);
-/*
-    // Some platforms require permissions to open input channels so request that here
-    if (juce::RuntimePermissions::isRequired (juce::RuntimePermissions::recordAudio)
-        && ! juce::RuntimePermissions::isGranted (juce::RuntimePermissions::recordAudio))
-    {
-        juce::RuntimePermissions::request (juce::RuntimePermissions::recordAudio,
-                                           [&] (bool granted) { setAudioChannels (granted ? 2 : 0, 2); });
-    }
-    else
-    {
-        // Specify the number of input and output channels that we want to open
-        setAudioChannels (2, 2);
-    }
- */
+
 }
  
 
 MainComponent::~MainComponent()
 {
-    // This shuts down the audio device and clears the audio source.
-    
 #if JUCE_MAC
    juce::MenuBarModel::setMacMainMenu(nullptr);
 #endif
     
     m_table.setModel(nullptr);
     m_categories.setModel(nullptr);
-    //shutdownAudio();
 }
 
 void MainComponent::paint (juce::Graphics& g)
@@ -162,6 +152,106 @@ void MainComponent::resized()
     m_searchBar.setBounds(searchArea);
     m_transport.setBounds(transport);
     
+}
+
+/*
+ 
+ 
+ 
+ THIS SECTION IS FOR COMMANDS
+ 
+ 
+ 
+ */
+
+juce::ApplicationCommandTarget* MainComponent::getNextCommandTarget()
+{
+    return this;
+}
+
+void MainComponent::getAllCommands(juce::Array<juce::CommandID> &commands)
+{
+    juce::Array<juce::CommandID> commandArray { CommandIDs::CopyOnImport,
+                                                CommandIDs::ImportFile,
+                                                CommandIDs::SaveData,
+                                                CommandIDs::AddCategory,
+                                                CommandIDs::AudioSettings,
+                                                CommandIDs::Features };
+    commands.addArray(commandArray);
+}
+
+void MainComponent::getCommandInfo(juce::CommandID commandID, juce::ApplicationCommandInfo &result)
+{
+    switch (commandID)
+    {
+        case CommandIDs::CopyOnImport:
+            result.setInfo("Copy On Import", "Option to copy audio file on import", "Option Menu", 0);
+            break;
+            
+        case CommandIDs::ImportFile:
+            result.setInfo("Import File", "Imports selected audio file", "File Menu", 0);
+            break;
+            
+        case CommandIDs::SaveData:
+            result.setInfo("Save Data", "Saves data to the xml element", "File Menu", 0);
+            result.addDefaultKeypress('s', juce::ModifierKeys::commandModifier);
+            break;
+            
+        case CommandIDs::AddCategory:
+            result.setInfo("Add Category", "Adds category to the category list", "Category Menu", 0);
+            break;
+            
+        case CommandIDs::AudioSettings:
+            result.setInfo("Audio Settings", "Opens audio device settings dialog window", "Options Menu", 0);
+            break;
+            
+        case CommandIDs::Features:
+            result.setInfo("Features", "Opens a file containing info about this application", "Features Menu", 0);
+            break;
+            
+        default:
+            DBG("Meh");
+            break;
+    }
+}
+
+bool MainComponent::perform (const juce::ApplicationCommandTarget::InvocationInfo &info)
+{
+    switch (info.commandID)
+    {
+        case CommandIDs::CopyOnImport:
+            break;
+            
+        case CommandIDs::ImportFile:
+            m_table.manualFileImport();
+            break;
+            
+        case CommandIDs::SaveData:
+            m_valueTree.saveTreeToXml();
+            DBG("Saved");
+            break;
+            
+        case CommandIDs::AddCategory:
+            m_categoryModel.openCategoryTextEditor();
+            break;
+            
+        case CommandIDs::AudioSettings:
+            m_transport.openAudioSettings();
+            break;
+            
+        case CommandIDs::Features:
+            break;
+            
+        default:
+            return false;
+    }
+    return true;
+}
+
+bool MainComponent::keyPressed (const juce::KeyPress &key, juce::Component* originatingComponent)
+{
+    DBG("Key Pressed");
+    return false;
 }
 
 /*
@@ -383,7 +473,6 @@ juce::Component* SoundTableModel::refreshComponentForCell(int rowNumber, int col
         {
             label = new SoundTableModel::CellLabel();
             label->setRow(rowNumber);
-            //DBG(juce::String(rowNumber));
             label->setEditable(false, true, false);
             label->onTextChange = [&,label]()
             {
@@ -462,29 +551,33 @@ juce::PopupMenu MainComponent::getMenuForIndex (int menuIndex, const juce::Strin
     
     if (menuIndex == 0)
     {
-        menu.addItem(1,"Import Audio File");
-        menu.addItem(2, "Save Data");
+        //menu.addItem(1,"Import Audio File");
+        menu.addCommandItem(&m_commandManager, CommandIDs::ImportFile);
+        //menu.addItem(2, "Save Data");
+        menu.addCommandItem(&m_commandManager, CommandIDs::SaveData);
     }
     
     if (menuIndex == 1)
     {
-        menu.addItem (2, "Add New Category");
+        //menu.addItem (2, "Add New Category");
+        menu.addCommandItem(&m_commandManager, CommandIDs::AddCategory);
     }
     else if (menuIndex == 2)
     {
-        menu.addItem (2, "Audio Settings");
-        menu.addItem (3, "Print Tree");
-        menu.addItem (4, "Print XML Data");
+        //menu.addItem (2, "Audio Settings");
+        menu.addCommandItem(&m_commandManager, CommandIDs::AudioSettings);
+        menu.addCommandItem(&m_commandManager, CommandIDs::CopyOnImport);
     }
     else if (menuIndex == 3)
     {
-        menu.addItem (3, "Readme");
+        //menu.addItem (3, "Readme");
+        menu.addCommandItem(&m_commandManager, CommandIDs::Features);
     }
     return menu;
 }
 
 void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
-{
+{ /*
     juce::PopupMenu menu;
     //File has been clicked
     if (topLevelMenuIndex == 0)
@@ -552,7 +645,7 @@ void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
         {
             
         }
-    }
+    } */
 }
 
 void DragAndDropTable::manualFileImport()
@@ -737,3 +830,17 @@ void CategoryListModel::labelTextChanged(juce::Label* labelThatHasChanged)
     addCategoryToList(newCategory);
 }
 
+void CategoryListModel::openCategoryTextEditor()
+{
+    auto categoryTextEditor = std::make_unique<juce::Label>();
+    
+    auto headerPos = m_mainApp.getLocalBounds().removeFromTop(20);
+    
+    auto textEditorPos = headerPos.removeFromLeft(20);
+    
+    categoryTextEditor->setEditable(true, false, true);
+    categoryTextEditor->setSize(200, 50);
+    categoryTextEditor->addListener(this);
+    
+    juce::CallOutBox::launchAsynchronously(std::move(categoryTextEditor), textEditorPos, &m_mainApp);
+}

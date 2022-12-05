@@ -49,6 +49,8 @@ public:
     ///Pure virtual function inherited from Juce Label Listener. This function responds to changes in Labels this class is listening to and it is overridden to add categories to the list.
     void labelTextChanged(juce::Label* labelThatHasChanged) override;
     
+    void openCategoryTextEditor();
+    
     
     
 private:

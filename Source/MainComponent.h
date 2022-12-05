@@ -11,7 +11,7 @@
 class TransportEditor;
 
 ///This class is the main component of the application, it brings all the classes together in a single window. It also contains the menubar.
-class MainComponent  : public juce::Component, public juce::MenuBarModel
+class MainComponent  : public juce::Component, public juce::MenuBarModel, public juce::KeyListener, public juce::ApplicationCommandTarget
 {
     friend class DragAndDropTable;
     friend class CategoryListModel;
@@ -36,7 +36,27 @@ public:
     juce::PopupMenu getMenuForIndex (int menuIndex, const juce::String& menuName) override;
     ///Pure virtual function inherited from Juce MenuBarModel. This function is used to decide what to do once user has clicked an option on the Juce PopupMenu created with getMenuForIndex.
     void menuItemSelected(int menuItemID, int topLevelMenuIndex) override;
-   
+    
+    bool keyPressed (const juce::KeyPress &key, juce::Component* originatingComponent) override;
+    
+    juce::ApplicationCommandTarget* getNextCommandTarget() override;
+    
+    void getAllCommands(juce::Array<juce::CommandID> &commands) override;
+    
+    void getCommandInfo(juce::CommandID commandID, juce::ApplicationCommandInfo &result) override;
+    
+    bool perform (const juce::ApplicationCommandTarget::InvocationInfo &info) override;
+    
+    enum CommandIDs
+    {
+        CopyOnImport = 1,
+        ImportFile,
+        SaveData,
+        AddCategory,
+        AudioSettings,
+        Features
+        
+    };
 
 private:
     //==============================================================================
@@ -67,8 +87,10 @@ private:
     int m_playPosition = 0;
     ///The menubar Component
     juce::MenuBarComponent m_menuBar;
-    
+    ///This member enables tooltips for the application
     juce::TooltipWindow m_tooltipWindow;
+    
+    juce::ApplicationCommandManager m_commandManager;
     ///The xml element holding the applications save data
     std::unique_ptr<juce::XmlElement> m_audioLibrary;
     ///The file where the xml data is stored
