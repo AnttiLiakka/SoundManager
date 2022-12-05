@@ -40,13 +40,13 @@ class SoundTableModel : public juce::TableListBoxModel, public juce::ValueTree::
     
 public:
     
-    ///The constructor, takes in a reference to the main application and the juce ValueTree this class is a listener to
+    ///The constructor, takes in a reference to the main application and the SoundManager this class is a listener to
     SoundTableModel(class MainComponent& mainApp, SoundManager& valueTree) : m_mainApp(mainApp),
                                                                                    m_valueTreeToListen(valueTree)
     {
         
     }
-    ///Pure vitual function inherited from Juce TableListBoxModel. This functon is used to paint the background and it is overridden to paint the background black.
+    ///Pure virtual function inherited from Juce TableListBoxModel. This functon is used to paint the background and it is overridden to paint the background black.
     void paintRowBackground(juce::Graphics& p, int rowNumber, int width, int height, bool rowIsSelected) override;
     ///Pure virtual function inherited from Juce TableListBoxModel. This function is used  to paint the cells and it is overriden to paint the cells  with the information got from visible childen on the ValueTree it is listening.
     void paintCell(juce::Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) override;
@@ -62,13 +62,13 @@ public:
     void cellPopupAction(int selection, int rowNumber, int columnId);
     ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the Listener when a child is added to m_valueTreeToListen. It is overridden to update the table when a child is added.
     void valueTreeChildAdded(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenAdded) override;
-    ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the Listener when a property is changed in m_valueTreeToListen. It is overridden to update the table when visibility or categories of the tree changes,
+    ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the Listener when a property is changed in m_valueTreeToListen. It is overridden to update the table when visibility or categories of the tree changes.
     void valueTreePropertyChanged(juce::ValueTree& parentTree, const juce::Identifier& property) override;
-    ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the Listener when a child is removed from m_valueTreeToListen. It is overridden to update the table when visibility or categories of the tree changes,
+    ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the Listener when a child is removed from m_valueTreeToListen. It is overridden to update the table when visibility or categories of the tree changes.
     void valueTreeChildRemoved(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved) override;
-    ///This function is called when the user clicks the locate button in the TransportEditor and it is calling the setNewFilePath function of the m_valueTreeToListen
+    ///This function is called when the user clicks the locate button in the TransportEditor and it is calling the setNewFilePath function of the m_valueTreeToListen.
     void locateFile(juce::File file);
-    ///This functon is called by m_valueTreeToListen if user successfully locates a file. It calls the TransportEditors setFileToPlay function so that user does not have to click the row again to get the waveform to show up.
+    ///This function is called by m_valueTreeToListen if user successfully locates a file. It calls the TransportEditors setFileToPlay function so that user does not have to click the row again to get the waveform to show up.
     void reloadWaveform();
     ///This function is called when a file is being exported via dragging from the TransportEditor. It sets the DragAndDropTables m_acceptingFiles boolean to false and therefore prevents dragged files from being imported back into the application.
     void preventFileImport();

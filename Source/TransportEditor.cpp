@@ -79,7 +79,8 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     };
     
     m_playButton.addShortcut(juce::KeyPress(juce::KeyPress::spaceKey));
-    m_stopButton.addShortcut(juce::KeyPress(juce::KeyPress::returnKey));
+    m_stopButton.addShortcut(juce::KeyPress(juce::KeyPress::backspaceKey));
+    m_loopButton.addShortcut(juce::KeyPress(('l')));
     
     addAndMakeVisible(m_playButton);
     addAndMakeVisible(m_stopButton);
@@ -221,6 +222,7 @@ void TransportEditor::changePlayState(PlayState newPlayState)
                 
             case Stopping:
                 m_player.stopPlayback();
+                resetSelection();
                 changePlayState(Stopped);
                 break;
                 
@@ -432,8 +434,8 @@ void TransportEditor::setSelectionPlay()
         m_player.setEndPosition(startPos);
     } else
     {
-        m_player.setPlayPosition(m_mouseDragStartPos * ratio);
-        m_player.setEndPosition(m_mouseDragEndPos * ratio);
+        m_player.setPlayPosition(startPos);
+        m_player.setEndPosition(endPos);
     }
     m_sectionPlayActive = true;
 }

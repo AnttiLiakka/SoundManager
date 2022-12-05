@@ -13,7 +13,7 @@
 #include "MainComponent.h"
 
 class SoundManager;
-/// This class is the model for the MainComponents m_categoryList member. It updates the ListBox when new categories are added to it or removed from it.
+/// This class is the model for the MainComponents m_categoryList member. It updates the MainCompnents ListBox when a new categories are added to it or removed from it.
 class CategoryListModel: public juce::ListBoxModel, public juce::Label::Listener
 {
     
@@ -36,17 +36,17 @@ public:
     int getNumRows () override;
     ///Virtual function inherited from juce ListBoxModel. This function is called when a row is clicked and it is overridden to filter and unfilter the table when categories are selected and unselected.
     void listBoxItemClicked(int row, const juce::MouseEvent& mouseEvent) override;
-    ///Virtual function inherited from juce ListBoxMode. This function is called whenever a row is selected or deselected and it is overridden to update m_selectedRow to make sure that correct category is used to filter the table
+    ///Virtual function inherited from juce ListBoxMode. This function is called whenever a row is selected or deselected and it is overridden to update m_selectedRow to make sure that correct category is used to filter the table.
     void selectedRowsChanged(int lastRowSelected) override ;
-    ///This function adds a category into the listbox if it does not already exist in it
+    ///This function adds a category into the listbox if it does not already exist in it.
     void addCategoryToList(juce::String name);
-    ///Returns true if a category already exists in the list
+    ///This function returns true if a category already exists in the list.
     bool categoryExists(juce::String category);
-    ///Returns the number of categories in the list
+    ///This function returns the number of categories in the list.
     int numCategories();
-    ///Function used to delete a category(row) from the list
+    ///This function is used to delete a category(row) from the list.
     void listPopupAction();
-    ///Pure virtual function inherited from Juce Label Listener. This function responds to changes in Labels this class is listening to and it is overridden to add categories to the list
+    ///Pure virtual function inherited from Juce Label Listener. This function responds to changes in Labels this class is listening to and it is overridden to add categories to the list.
     void labelTextChanged(juce::Label* labelThatHasChanged) override;
     
     

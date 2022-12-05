@@ -17,50 +17,50 @@ class TransportPlayer : public juce::AudioSource, public juce::ChangeBroadcaster
 {
     friend class TransportEditor;
 public:
-    ///The constructor, takes in a reference to the TransportEditor controlling it
+    ///The constructor, takes in a reference to the TransportEditor controlling it.
     TransportPlayer(class TransportEditor& editor);
-    ///The destructor
+    ///The destructor.
     ~TransportPlayer();
-    ///Pure virtual function inherited from juce AudioSource. This function tells the source to prepare for playing. It is used to set the m_sampleRate member so that the m_playPosSeconds has the correct value
+    ///Pure virtual function inherited from juce AudioSource. This function tells the source to prepare for playing. It is used to set the m_sampleRate member so that the m_playPosSeconds has the correct value.
     void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override;
-    ///Pure virtual function inherited from juce AudioSource. This function fetches blocks of audio data and it is used to apply effects such as volume alteration on the m_buffer
+    ///Pure virtual function inherited from juce AudioSource. This function fetches blocks of audio data and it is used to apply effects such as volume alteration on the m_buffer.
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
     ///Pure virtual function inherited from juce AudioSource. This function allows the source to release anything it no longer needs after playback has stopped.
     void releaseResources() override;
-    ///Pure virtual function inherited from juce Slider Listener. This function is called when the user interacts with the volume slider and it updates m_volume accordingly
+    ///Pure virtual function inherited from juce Slider Listener. This function is called when the user interacts with the volume slider and it updates m_volume accordingly.
     void sliderValueChanged(juce::Slider *slider) override;
-    ///This function is called when a new sound file is selected on the table. It sets m_playing to false, clears the m_buffer and sets the m_playPosition to 0
+    ///This function is called when a new sound file is selected on the table. It sets m_playing to false, clears the m_buffer and sets the m_playPosition to 0.
     void prepForNewFile();
-    ///This function is called when the TransportEditors playbutton is pressed.  it sets m_playing to true;
+    ///This function is called when the TransportEditors playbutton is pressed.  it sets m_playing to true.
     void startPlayback();
-    ///This functon is called when the TransportEditors pausebutton is pressed.  it sets m_playing to false
+    ///This function is called when the TransportEditors pausebutton is pressed.  it sets m_playing to false.
     void pausePlayback();
-    ///This function is called when the TransportEditors stopbutton is pressed. it sets m_playing to false and m_playPosSeconds to 0
+    ///This function is called when the TransportEditors stopbutton is pressed. it sets m_playing to false and m_playPosSeconds to 0.
     void stopPlayback();
-    ///This functon is used to set new value to m_playPosition
+    ///This function is used to set new value to m_playPosition.
     void setPlayPosition(int newPosition);
-    ///This function is used to set new value to m_endPosition
+    ///This function is used to set new value to m_endPosition.
     void setEndPosition(int newEndPosition);
 private:
-    ///Reference to the TransportEditor controlling this class
+    ///Reference to the TransportEditor controlling this class.
     class TransportEditor& m_editor;
-    ///The audiobuffer containing the information of the selected audio file
+    ///The audiobuffer containing the information of the selected audio file.
     juce::AudioBuffer<float> m_buffer;
-    /// This member is used to stream audio from this class to the soundcard
+    /// This member is used to stream audio from this class to the soundcard.
     juce::AudioSourcePlayer m_player;
-    ///The volume, this is controlled by the TransportEditors volume slider. Defaulted to 0.5
+    ///The volume, this is controlled by the TransportEditors volume slider. Defaulted to 0.5.
     double m_volume = 0.5;
     ///Current play position. Defaulted to 0.
     std::atomic<int> m_playPosition { 0 };
     ///Sample rate
     double m_sampleRate;
-    ///Current play position in seconds, This member is displayed in the TransportEditors playbackPosition label
+    ///Current play position in seconds, This member is displayed in the TransportEditors playbackPosition label.
     std::atomic<float> m_playPosSeconds { 0 };
-    ///Whether audio should be playing or not. Defaulted to false
+    ///Whether audio should be playing or not. Defaulted to false.
     std::atomic<bool> m_playing { false };
-    ///Whether audio should be looping or not. Defaulted to false;
+    ///Whether audio should be looping or not. Defaulted to false.
     std::atomic<bool> m_isLooping { false };
-    ///This int represets what sample the playback should stop. Defaulted to 0
+    ///This int represets what sample the playback should stop. Defaulted to 0.
     std::atomic<int> m_endPosition { 0 };
     
 };

@@ -35,9 +35,6 @@ SoundManager::SoundManager(MainComponent& mainApp) : m_mainApp(mainApp),
 
 {
     m_audioLibraryTree.addListener(&m_mainApp.m_tableModel);
-    
-    
-    
 }
 
 SoundManager::~SoundManager()
@@ -146,6 +143,7 @@ void SoundManager::AddFile(juce::File& file, double length,double sampleRate, in
     
     m_audioLibraryTree.appendChild(fileInfo, nullptr);
     setAllVisible();
+    saveTreeToXml();
 }
 
 void SoundManager::updateDescription(juce::String newString, int rowNum)
@@ -153,11 +151,13 @@ void SoundManager::updateDescription(juce::String newString, int rowNum)
     auto fileInfo = m_audioLibraryTree.getChild(rowNum);
     auto information = fileInfo.getChildWithName(m_information);
     information.setProperty(m_description, newString, nullptr);
+    saveTreeToXml();
 }
 
 void SoundManager::removeFileInfoTree(int index)
 {
     m_audioLibraryTree.removeChild(index, nullptr);
+    saveTreeToXml();
 }
 
 void SoundManager::addCategory(juce::String name, int rowNumber)
@@ -177,6 +177,7 @@ void SoundManager::addCategory(juce::String name, int rowNumber)
     auto categories = correctFileInfo.getChildWithName(m_categories);
    //add new category as a child
     categories.appendChild(newCategory, nullptr);
+    saveTreeToXml();
     
 }
 
@@ -373,6 +374,7 @@ void SoundManager::setNewFilepath(juce::File fileToRelocate)
             delete fileReader;
             
             changeFilepath(newFilepath, m_oldFilepath);
+            saveTreeToXml();
             
         } catch (juce::String message){
             juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,fileToTest.getFileName() , message);

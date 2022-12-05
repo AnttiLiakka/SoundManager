@@ -10,6 +10,7 @@
 
 class TransportEditor;
 
+///This class is the main component of the application, it brings all the classes together in a single window. It also contains the menubar.
 class MainComponent  : public juce::Component, public juce::MenuBarModel
 {
     friend class DragAndDropTable;
@@ -29,13 +30,11 @@ public:
     //==============================================================================
     void paint (juce::Graphics& g) override;
     void resized() override;
-    
-    //Menu functions
-    ///Pure virtual function inherited from Juce MenuBarModel. This fuction returns the names for the different bars in the menu
+    ///Pure virtual function inherited from Juce MenuBarModel. This fuction returns the names for the different bars in the menu.
     juce::StringArray getMenuBarNames() override;
-    ///Pure virtual function inherited from Juce MenuBarModel. This function creates a juce PopupMenu based on which bar was clicked
+    ///Pure virtual function inherited from Juce MenuBarModel. This function creates a juce PopupMenu based on which bar was clicked.
     juce::PopupMenu getMenuForIndex (int menuIndex, const juce::String& menuName) override;
-    ///Pure virtual function inherited from Juce MenuBarModel. This function is used to decide what to do once user has clicked an option on the Juce PopupMenu created with getMenuForIndex
+    ///Pure virtual function inherited from Juce MenuBarModel. This function is used to decide what to do once user has clicked an option on the Juce PopupMenu created with getMenuForIndex.
     void menuItemSelected(int menuItemID, int topLevelMenuIndex) override;
    
 
