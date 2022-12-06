@@ -8,6 +8,9 @@
     <Filter Include="SoundManager\Icons">
       <UniqueIdentifier>{5311E8C3-48B2-B08D-AB03-72B56062168F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SoundManager\Files">
+      <UniqueIdentifier>{740897B0-641B-737F-7558-40F244C3D8DC}</UniqueIdentifier>
+    </Filter>
     <Filter Include="SoundManager">
       <UniqueIdentifier>{7B5FD58A-706C-BC8F-7439-ECE38D058D31}</UniqueIdentifier>
     </Filter>
@@ -5617,6 +5620,9 @@
     </None>
     <None Include="..\..\Resources\Icons\stopInactive.svg">
       <Filter>SoundManager\Icons</Filter>
+    </None>
+    <None Include="..\..\Resources\Files\help.txt">
+      <Filter>SoundManager\Files</Filter>
     </None>
     <None Include="C:\JUCE\modules\juce_audio_devices\native\oboe\CMakeLists.txt">
       <Filter>JUCE Modules\juce_audio_devices\native\oboe</Filter>

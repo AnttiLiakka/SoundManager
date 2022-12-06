@@ -37,6 +37,8 @@ public:
     ///Pure virtual function inherited from Juce MenuBarModel. This function is used to decide what to do once user has clicked an option on the Juce PopupMenu created with getMenuForIndex.
     void menuItemSelected(int menuItemID, int topLevelMenuIndex) override;
     
+    void openHelpFile();
+    
     bool keyPressed (const juce::KeyPress &key, juce::Component* originatingComponent) override;
     
     juce::ApplicationCommandTarget* getNextCommandTarget() override;
@@ -82,6 +84,8 @@ private:
     ///The search bar
     juce::Label m_searchBar;
     
+    juce::TextEditor m_helpText;
+    
     ///True if a soundfile should be currently playing. defaults to false.
     bool m_playSoundFile = false;
     ///The current position in the buffer, defaulted to zero so that the playback starts from the beginning of the audio file
@@ -102,5 +106,6 @@ private:
     juce::File m_savedAudioFiles;
     
     juce::File m_tempAudioFiles;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

@@ -59,7 +59,7 @@ MainComponent::MainComponent() :
     {
         m_tempAudioFiles.createDirectory();
     }
-    
+
     m_table.m_formatManager.registerBasicFormats();
 
     m_commandManager.registerAllCommandsForTarget(this);
@@ -98,6 +98,13 @@ MainComponent::MainComponent() :
     m_searchBar.setEditable(false, true, false);
     m_searchBar.addListener(&m_valueTree);
     
+    m_helpText.setColour(juce::TextEditor::ColourIds::backgroundColourId, juce::Colours::black);
+    m_helpText.setColour(juce::TextEditor::ColourIds::textColourId, juce::Colours::white);
+    m_helpText.setFont(juce::Font(20));
+    m_helpText.setMultiLine(true);
+    m_helpText.setReadOnly(true);
+    m_helpText.setCaretVisible(false);
+    m_helpText.setSize(650, 800);
     
     m_searchButton.setImages(juce::Drawable::createFromImageData(BinaryData::MagGlassInactive_svg, BinaryData::MagGlassInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::MagGlassHover_svg, BinaryData::MagGlassHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::MagGlassActive_svg, BinaryData::MagGlassActive_svgSize).get());
     
@@ -109,6 +116,7 @@ MainComponent::MainComponent() :
     };
     
     m_searchButton.setTooltip("Search");
+    
     
     addAndMakeVisible(m_table);
     addAndMakeVisible(m_categories);
@@ -141,6 +149,8 @@ MainComponent::~MainComponent()
     
     m_table.setModel(nullptr);
     m_categories.setModel(nullptr);
+    //Deleteing the tempFiles folder to clean up just incase audiofile were left there
+    if(m_tempAudioFiles.isDirectory()) m_tempAudioFiles.deleteRecursively();
 }
 
 void MainComponent::paint (juce::Graphics& g)
@@ -266,6 +276,7 @@ bool MainComponent::perform (const juce::ApplicationCommandTarget::InvocationInf
             break;
             
         case CommandIDs::Features:
+            openHelpFile();
             break;
             
         default:
@@ -276,8 +287,20 @@ bool MainComponent::perform (const juce::ApplicationCommandTarget::InvocationInf
 
 bool MainComponent::keyPressed (const juce::KeyPress &key, juce::Component* originatingComponent)
 {
-    DBG("Key Pressed");
     return false;
+}
+
+void MainComponent::openHelpFile()
+{
+    std::unique_ptr<juce::MemoryInputStream> input;
+    
+    input.reset(new juce::MemoryInputStream(BinaryData::help_txt, BinaryData::help_txtSize, false));
+    
+    juce::String text = input->readEntireStreamAsString();
+    
+    m_helpText.setText(text);
+    
+    juce::DialogWindow::showDialog(TRANS("Features"), &m_helpText, this, juce::Colours::white, true);
 }
 
 /*

@@ -56,6 +56,10 @@
       <FILE id="pwIM5J" name="stopInactive.svg" compile="0" resource="1"
             file="Resources/Icons/stopInactive.svg"/>
     </GROUP>
+    <GROUP id="{53BFB4D6-E88F-93E8-1EBF-3D90E2F23A4E}" name="Files">
+      <FILE id="MH5Ww7" name="help.txt" compile="0" resource="1" file="Resources/Files/help.txt"
+            xcodeResource="0"/>
+    </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
   <EXPORTFORMATS>

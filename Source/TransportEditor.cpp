@@ -385,7 +385,7 @@ void TransportEditor::openAudioSettings()
     
     m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, false);
     m_audioSettings->setSize(400, 600);
-    juce::DialogWindow::showDialog("Audio settings",m_audioSettings.get() , &m_mainApp, juce::Colours::black, true);
+    juce::DialogWindow::showDialog(TRANS("Audio settings"),m_audioSettings.get() , &m_mainApp, juce::Colours::black, true);
 
 }
 
@@ -486,7 +486,6 @@ void TransportEditor::noFileSelected()
 void TransportEditor::prepSelectionBuffer()
 {
     auto buffer = m_player.m_buffer;
-    DBG(buffer.getNumChannels());
     m_selectionBuffer.setSize(buffer.getNumChannels(), m_player.m_endPosition - m_player.m_playPosition);
     m_selectionBuffer.copyFrom(0, 0, buffer, 0, m_player.m_playPosition, m_selectionBuffer.getNumSamples());
     m_selectionBuffer.copyFrom(1, 0, buffer, 1, m_player.m_playPosition, m_selectionBuffer.getNumSamples());

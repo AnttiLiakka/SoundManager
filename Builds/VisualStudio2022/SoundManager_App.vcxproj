@@ -3201,6 +3201,7 @@
     <None Include="..\..\Resources\Icons\stopActive.svg"/>
     <None Include="..\..\Resources\Icons\stopHover.svg"/>
     <None Include="..\..\Resources\Icons\stopInactive.svg"/>
+    <None Include="..\..\Resources\Files\help.txt"/>
     <None Include="C:\JUCE\modules\juce_audio_devices\native\oboe\CMakeLists.txt"/>
     <None Include="C:\JUCE\modules\juce_audio_devices\native\oboe\README.md"/>
     <None Include="C:\JUCE\modules\juce_audio_formats\codecs\flac\Flac Licence.txt"/>

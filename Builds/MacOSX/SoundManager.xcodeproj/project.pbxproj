@@ -75,6 +75,7 @@
 		55B864DAFA6A4F59899D2B83 /* juce_audio_formats */ /* juce_audio_formats */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_formats; path = /Users/anna/Documents/Juce/JUCE/modules/juce_audio_formats; sourceTree = "<absolute>"; };
 		56D65C1E367F5AE4D0EB98E7 /* CategoryListModel.h */ /* CategoryListModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CategoryListModel.h; path = ../../Source/CategoryListModel.h; sourceTree = SOURCE_ROOT; };
 		57D3821F7E80FF2EE4A685F8 /* juce_events */ /* juce_events */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_events; path = /Users/anna/Documents/Juce/JUCE/modules/juce_events; sourceTree = "<absolute>"; };
+		5C44B9D6FD7B30C812A30855 /* help.txt */ /* help.txt */ = {isa = PBXFileReference; lastKnownFileType = text.txt; name = help.txt; path = ../../Resources/Files/help.txt; sourceTree = SOURCE_ROOT; };
 		5CE34F974EBBDEF5E1BAE090 /* juce_data_structures */ /* juce_data_structures */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_data_structures; path = /Users/anna/Documents/Juce/JUCE/modules/juce_data_structures; sourceTree = "<absolute>"; };
 		62D6933CA0E83306A8B751EC /* SoundTableModel.h */ /* SoundTableModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SoundTableModel.h; path = ../../Source/SoundTableModel.h; sourceTree = SOURCE_ROOT; };
 		642150DAA3D1E7C182CBC2E9 /* Accelerate.framework */ /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
@@ -187,8 +188,17 @@
 			children = (
 				11701249D1E49875029BCF82,
 				9C59DAABB3EC05967C5F330B,
+				3C852B322492A0CCBE78C4EC,
 			);
 			name = SoundManager;
+			sourceTree = "<group>";
+		};
+		3C852B322492A0CCBE78C4EC /* Files */ = {
+			isa = PBXGroup;
+			children = (
+				5C44B9D6FD7B30C812A30855,
+			);
+			name = Files;
 			sourceTree = "<group>";
 		};
 		5E63ACA93BF8132C1C641DA2 /* Source */ = {
