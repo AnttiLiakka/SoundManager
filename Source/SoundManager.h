@@ -49,6 +49,8 @@ public:
     void addCategory(juce::String name, int rowNumber);
     ///This function removes a category from a fileinfo
     void deleteCategory(juce::String name, int rowNumber);
+    ///This function is called when a category is removed from the list and it removes that category from all fileinfos
+    void categoryDeleted(juce::String categoryName);
     ///This function is used to filter the table based on selected category. It goes through all fileinfos in the tree and checks whether they have the given category. If they do, it sets them visible and vice versa
     void filterByCategory(juce::String categoryName);
     ///This function is used to filter the table based on the string written in the search box. It goes through all fileInfos in the tree and checks whether they contain the given string. if they do, it sets them visible and vice versa

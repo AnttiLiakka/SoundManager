@@ -562,11 +562,13 @@ juce::Component* SoundTableModel::refreshComponentForCell(int rowNumber, int col
 void SoundTableModel::valueTreeChildAdded(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenAdded)
 {
     m_mainApp.m_table.updateContent();
+    m_valueTreeToListen.saveTreeToXml();
 }
 
 void SoundTableModel::valueTreePropertyChanged(juce::ValueTree& parentTree, const juce::Identifier& property)
 {
-   m_mainApp.m_table.updateContent();
+    m_mainApp.m_table.updateContent();
+    m_valueTreeToListen.saveTreeToXml();
 }
 
 void SoundTableModel::valueTreeChildRemoved(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenRemoved, int indexFromWhichChildWasRemoved)
@@ -579,6 +581,7 @@ void SoundTableModel::valueTreeChildRemoved(juce::ValueTree& parentTree, juce::V
         removedFile.deleteFile();
     }
     m_mainApp.m_transport.noFileSelected();
+    m_valueTreeToListen.saveTreeToXml();
 }
 
 void SoundTableModel::locateFile(juce::File file)
@@ -806,6 +809,8 @@ void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId
 
 void CategoryListModel::listPopupAction()
 {
+    juce::String categoryToDelete = m_uniqueCategories[m_selectedRow];
+    m_valueTreeToListen.categoryDeleted(categoryToDelete);
     m_uniqueCategories.erase(m_uniqueCategories.begin() + m_selectedRow);
     m_mainApp.m_categories.updateContent();
 }

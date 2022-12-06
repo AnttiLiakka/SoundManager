@@ -123,8 +123,9 @@ juce::String SoundManager::printValueTree()
 void SoundManager::saveTreeToXml()
 {
     m_mainApp.m_audioLibrary = m_audioLibraryTree.createXml();
-    
     m_mainApp.m_audioLibrary->writeTo(m_mainApp.m_saveFile);
+    
+    DBG("Saved");
 }
 
 void SoundManager::AddFile(juce::File& file, double length,double sampleRate, int numChannels, juce::String filePath, juce::String description)
@@ -141,7 +142,6 @@ void SoundManager::AddFile(juce::File& file, double length,double sampleRate, in
     
     m_audioLibraryTree.appendChild(fileInfo, nullptr);
     setAllVisible();
-    saveTreeToXml();
 }
 
 void SoundManager::updateDescription(juce::String newString, int rowNum)
@@ -149,13 +149,11 @@ void SoundManager::updateDescription(juce::String newString, int rowNum)
     auto fileInfo = m_audioLibraryTree.getChild(rowNum);
     auto information = fileInfo.getChildWithName(m_information);
     information.setProperty(m_description, newString, nullptr);
-    saveTreeToXml();
 }
 
 void SoundManager::removeFileInfoTree(int index)
 {
     m_audioLibraryTree.removeChild(index, nullptr);
-    saveTreeToXml();
 }
 
 void SoundManager::addCategory(juce::String name, int rowNumber)
@@ -175,8 +173,6 @@ void SoundManager::addCategory(juce::String name, int rowNumber)
     auto categories = correctFileInfo.getChildWithName(m_categories);
    //add new category as a child
     categories.appendChild(newCategory, nullptr);
-    saveTreeToXml();
-    
 }
 
 void SoundManager::deleteCategory(juce::String name, int rowNumber)
@@ -190,6 +186,25 @@ void SoundManager::deleteCategory(juce::String name, int rowNumber)
     if(category.isValid())
     {
         categories.removeChild(category, nullptr);
+    }
+}
+
+void SoundManager::categoryDeleted(juce::String categoryName)
+{
+    auto deletedCategory = categoryName;
+    for(int i = 0; i < m_audioLibraryTree.getNumChildren(); ++i)
+    {
+        auto fileInfo = m_audioLibraryTree.getChild(i);
+        
+        auto categories = fileInfo.getChildWithName(m_categories);
+        
+        auto categoryToRemove = categories.getChildWithProperty(m_id, deletedCategory);
+        
+        if(categoryToRemove.isValid())
+        {
+            categories.removeChild(categoryToRemove, nullptr);
+        }
+        
     }
 }
 
@@ -372,7 +387,6 @@ void SoundManager::setNewFilepath(juce::File fileToRelocate)
             delete fileReader;
             
             changeFilepath(newFilepath, m_oldFilepath);
-            saveTreeToXml();
             
         } catch (juce::String message){
             juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,fileToTest.getFileName() , message);
