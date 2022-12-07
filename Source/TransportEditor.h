@@ -14,7 +14,7 @@
 
 class SoundTableModel;
 ///This class is the component user interacts with to controls the TransportPlayer.
-class TransportEditor : public juce::Component, public juce::ChangeListener, private juce::Timer /*public juce::ApplicationCommandTarget*/
+class TransportEditor : public juce::Component, public juce::ChangeListener, private juce::Timer,                       public juce::ApplicationCommandTarget
 {
     friend class MainComponent;
     friend class TransportPlayer;
@@ -24,20 +24,20 @@ public:
     ///The constructor, takes in references to the  SoundTableModel, MainComponent and TransportPlayer.
     TransportEditor(class SoundTableModel& tableModel, class MainComponent& mainApp, class TransportPlayer& player);
     ~TransportEditor();
-    ///This virtual function is inherited from Juce Component and it is overridden to paint the waveform and the playhead or any error texts.
+    ///Virtual function inherited from Juce Component and it is overridden to paint the waveform and the playhead or any error texts.
     void paint(juce::Graphics& g) override;
-    ///This virtual functon is inherted from Juce Component and it is overridden to place all buttons, sliders etc. onto the component.
+    ///Virtual functon inherted from Juce Component and it is overridden to place all buttons, sliders etc. onto the component.
     void resized() override;
-    ///This pure virtual function is inherited from Juce changeListener and it is overriden to listen when the TransportPlayer has reached the end of the playback and when that happens, this class tells it to stop playback.
+    ///Pure virtual function inherited from Juce changeListener and it is overriden to listen when the TransportPlayer has reached the end of the playback and when that happens, this class tells it to stop playback.
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
-    
-    //juce::ApplicationCommandTarget* getNextCommandTarget() override;
-    
-    //void getAllCommands(juce::Array<juce::CommandID> &commands) override;
-    
-    //void getCommandInfo(juce::CommandID commandID, juce::ApplicationCommandInfo &result) override;
-    
-    //bool perform (const juce::ApplicationCommandTarget::InvocationInfo &info) override;
+    ///Pure virtual function inherited from Juce ApplicationCommandTarget and it is overridden to return m_mainApp.
+    juce::ApplicationCommandTarget* getNextCommandTarget() override;
+    ///Pure virtual function inherited from Juce ApplicationCommandTarget and it is overridden to add all command IDs into the array that is passed-in.
+    void getAllCommands(juce::Array<juce::CommandID> &commands) override;
+    ///Pure virtual function inherited from Juce ApplicationCommandTarget and it is overridden to provide the keyboard shortcuts for all commands
+    void getCommandInfo(juce::CommandID commandID, juce::ApplicationCommandInfo &result) override;
+    ///Pure virtual function inherited from Juce ApplicationCommandTarget and it is overridden to perform the action associated with a keypress. For example, if L is pressed, this function will press the loop button by calling the loop buttons triggerClicked() function
+    bool perform (const juce::ApplicationCommandTarget::InvocationInfo &info) override;
     ///This function is called by the SoundTableModel and it is used to load to selected audiofile into the TransportPlayers audiobuffer.
     void setFileToPlay(juce::File file);
     ///This function is called by the paint function and it is used to paint the waveform and playhead of the selected file.
@@ -62,7 +62,7 @@ public:
     void mouseDown(const juce::MouseEvent& event) override;
     ///Virtual function inherted from Juce Component. This function is called when the component is dragged with a mouse. This function is overridden to control which section of the soundfile is played and drag export.
     void mouseDrag(const juce::MouseEvent& event) override;
-    
+    ///Virtual function inherited from Juce Component. This function is called when a mouse button is released. This function is overridden to call prepSelectionBuffer() if a section is selected
     void mouseUp(const juce::MouseEvent& event) override;
     ///This function is called to open the audiosettings.
     void openAudioSettings();
@@ -74,16 +74,16 @@ public:
     void changePauseToPlay();
     ///This function is called when the user deselects all rows, for example by clicking the table background. it clears the audio thumbnail and makes sure that the locate button is hidden.
     void noFileSelected();
-    
+    ///This function copies the selected area from the TransportPlayer's buffer into m_selectionbuffer and calls createFileFromSelection().
     void prepSelectionBuffer();
-    
+    ///This function writes a new audio file from the m_selectionbuffer into the tempFiles folder. This function also deletes the previously written file to keep the folder a bit more tidy.
     void createFileFromSelection();
-    
-    enum CommandIDs
+    ///CommandIDs for the keypresses
+    enum KeyPressCommandIDs
     {
-        Looping = 0,
-        PlaybuttonActive = 0,
-        StopbuttonActive = 0
+        Loop = 8,
+        PlayPause,
+        Stop
     };
     
 private:
@@ -127,9 +127,9 @@ private:
     };
         
     PlayState playState;
-    
+    ///Temporary audio file written from m_selectionBuffer
     juce::File m_tempFile;
-    
+    ///Audiobuffer containing the samples in current selection area
     juce::AudioBuffer<float> m_selectionBuffer;
     ///This funtion is used to change the state of playback
     void changePlayState (TransportEditor::PlayState newPlayState);

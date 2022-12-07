@@ -45,11 +45,11 @@ private:
     
     ///Reference to the MainComponent
     class MainComponent& m_mainApp;
-    
+    ///Reference to the folder to which audio files are saved if m_copyOnImport is true;
     juce::File& m_saveLocation;
     ///States whether the table is currently accepting imported files. This member is initialised to true
     bool m_acceptingfiles = true;
-    
+    ///States whether the application should copy imported audio files into the savedAudiofiles folder
     bool m_copyOnImport;
     ///The font used to write the text in the cells
     juce::Font m_font = (15.0f);

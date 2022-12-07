@@ -78,9 +78,7 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
          m_tableModel.locateFile(m_fileToPlay);
     };
     
-    m_playButton.addShortcut(juce::KeyPress(juce::KeyPress::spaceKey));
-    m_stopButton.addShortcut(juce::KeyPress(juce::KeyPress::backspaceKey));
-    m_loopButton.addShortcut(juce::KeyPress(('l')));
+    //m_stopButton.addShortcut(juce::KeyPress(juce::KeyPress::backspaceKey));
     
     addAndMakeVisible(m_playButton);
     addAndMakeVisible(m_stopButton);
@@ -504,24 +502,59 @@ void TransportEditor::createFileFromSelection()
     
     if(writer != nullptr) writer->writeFromAudioSampleBuffer(m_selectionBuffer, 0, m_selectionBuffer.getNumSamples());
 }
-/*
+
 juce::ApplicationCommandTarget* TransportEditor::getNextCommandTarget()
 {
-    return this;
+    return &m_mainApp;
 }
 
 void TransportEditor::getAllCommands(juce::Array<juce::CommandID> &commands)
 {
-    
+    juce::Array<juce::CommandID> ids {KeyPressCommandIDs::Loop, KeyPressCommandIDs::PlayPause,
+                                      KeyPressCommandIDs::Stop
+                                        };
+    commands.addArray(ids);
 }
 
 void TransportEditor::getCommandInfo(juce::CommandID commandID, juce::ApplicationCommandInfo &result)
 {
-    
+    switch (commandID)
+    {
+        case KeyPressCommandIDs::Loop:
+            result.setInfo("Loop", "Toggle loop button", "Transport", 0);
+            result.addDefaultKeypress('l', 0);
+            break;
+        case KeyPressCommandIDs::PlayPause:
+            result.setInfo("Play/Pause", "Toggle PlayPause", "Transport", 0);
+            result.addDefaultKeypress(juce::KeyPress::spaceKey, 0);
+            break;
+        case KeyPressCommandIDs::Stop:
+            result.setInfo("Stop", "Press Stop", "Transport", 0);
+            result.addDefaultKeypress(juce::KeyPress::backspaceKey, 0);
+            break;
+        default:
+            break;
+    }
 }
 
 bool TransportEditor::perform(const juce::ApplicationCommandTarget::InvocationInfo &info)
 {
-    return false;
+    switch (info.commandID)
+    {
+        case KeyPressCommandIDs::Loop:
+            m_loopButton.triggerClick();
+            break;
+        case KeyPressCommandIDs::PlayPause:
+            m_playButton.triggerClick();
+            break;
+        case KeyPressCommandIDs::Stop:
+            DBG("STOP");
+            if(m_stopButton.isEnabled()) m_stopButton.triggerClick();
+            break;
+        default:
+            return false;
+            break;
+    }
+    return true;
 }
-*/
+

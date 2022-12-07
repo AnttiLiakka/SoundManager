@@ -124,8 +124,6 @@ void SoundManager::saveTreeToXml()
 {
     m_mainApp.m_audioLibrary = m_audioLibraryTree.createXml();
     m_mainApp.m_audioLibrary->writeTo(m_mainApp.m_saveFile);
-    
-    DBG("Saved");
 }
 
 void SoundManager::AddFile(juce::File& file, double length,double sampleRate, int numChannels, juce::String filePath, juce::String description)

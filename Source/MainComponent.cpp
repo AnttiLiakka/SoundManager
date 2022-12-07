@@ -63,6 +63,7 @@ MainComponent::MainComponent() :
     m_table.m_formatManager.registerBasicFormats();
 
     m_commandManager.registerAllCommandsForTarget(this);
+    m_commandManager.registerAllCommandsForTarget(&m_transport);
     m_commandManager.getKeyMappings()->resetToDefaultMappings();
     addKeyListener(m_commandManager.getKeyMappings());
     
@@ -189,7 +190,7 @@ void MainComponent::resized()
 
 juce::ApplicationCommandTarget* MainComponent::getNextCommandTarget()
 {
-    return this;
+    return &m_transport;
 }
 
 void MainComponent::getAllCommands(juce::Array<juce::CommandID> &commands)
@@ -283,11 +284,6 @@ bool MainComponent::perform (const juce::ApplicationCommandTarget::InvocationInf
             return false;
     }
     return true;
-}
-
-bool MainComponent::keyPressed (const juce::KeyPress &key, juce::Component* originatingComponent)
-{
-    return false;
 }
 
 void MainComponent::openHelpFile()
@@ -656,75 +652,8 @@ juce::PopupMenu MainComponent::getMenuForIndex (int menuIndex, const juce::Strin
 }
 
 void MainComponent::menuItemSelected(int menuItemID, int topLevelMenuIndex)
-{ /*
-    juce::PopupMenu menu;
-    //File has been clicked
-    if (topLevelMenuIndex == 0)
-    {
-        //Import Audio File
-        if (menuItemID == 1)
-        {
-            m_table.manualFileImport();
-        }
-        //Save Data
-        if(menuItemID == 2)
-        {
-            m_valueTree.saveTreeToXml();
-            DBG("Data Saved To XML");
-        }
-    }
-    //Category has been clicked
-    else if (topLevelMenuIndex == 1)
-    {
-        //Add new category
-        if (menuItemID == 2)
-        {
-            auto categoryTextEditor = std::make_unique<juce::Label>(TRANS("Category Name"));
-            
-            auto headerPos = getLocalBounds().removeFromTop(20);
-            
-            auto textEditorPos = headerPos.removeFromLeft(20);
-            
-            categoryTextEditor->setEditable(true, false, true);
-            categoryTextEditor->setSize(200, 50);
-            categoryTextEditor->addListener(&m_categoryModel);
-            
-            juce::CallOutBox::launchAsynchronously(std::move(categoryTextEditor), textEditorPos, this);
-            
-            
-        }
-        
-    }
-    //Options has been clicked
-    else if (topLevelMenuIndex == 2)
-    {
-        //Open Audio device manager
-        if( menuItemID == 2)
-        {
-            m_transport.openAudioSettings();
-        }
-        //Print Tree
-        if (menuItemID == 3)
-        {
-            DBG(m_valueTree.printValueTree());
-        }
-        //Print XML Data
-        if (menuItemID == 4)
-        {
-            repaint();
-            m_table.updateContent();
-            DBG("Repaint");
-        }
-    }
-    //Help has been clicked
-    else if (topLevelMenuIndex == 3)
-    {
-        //Open readme
-        if (menuItemID == 3)
-        {
-            
-        }
-    } */
+{
+    
 }
 
 void DragAndDropTable::manualFileImport()
