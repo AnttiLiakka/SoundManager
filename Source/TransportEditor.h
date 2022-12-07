@@ -13,7 +13,7 @@
 #include "TransportPlayer.h"
 
 class SoundTableModel;
-///This class is the component user interacts with to controls the TransportPlayer.
+///This class is the component user interacts with to control the TransportPlayer.
 class TransportEditor : public juce::Component, public juce::ChangeListener, private juce::Timer,                       public juce::ApplicationCommandTarget
 {
     friend class MainComponent;
@@ -21,7 +21,7 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
     friend class DragAndDropTable;
     
 public:
-    ///The constructor, takes in references to the  SoundTableModel, MainComponent and TransportPlayer.
+    ///The constructor, takes in references to the SoundTableModel, MainComponent and TransportPlayer.
     TransportEditor(class SoundTableModel& tableModel, class MainComponent& mainApp, class TransportPlayer& player);
     ~TransportEditor();
     ///Virtual function inherited from Juce Component and it is overridden to paint the waveform and the playhead or any error texts.

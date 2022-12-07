@@ -13,7 +13,7 @@
 #include "MainComponent.h"
 
 class SoundManager;
-/// This class is the model for the MainComponents m_categoryList member. It updates the MainCompnents ListBox when a new categories are added to it or removed from it.
+/// This class is the model for the MainComponents m_categoryList member. It updates the MainComponents ListBox when new categories are added to it or removed from it.
 class CategoryListModel: public juce::ListBoxModel, public juce::Label::Listener
 {
     

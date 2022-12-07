@@ -35,7 +35,7 @@ public:
     void startPlayback();
     ///This function is called when the TransportEditors pausebutton is pressed.  it sets m_playing to false.
     void pausePlayback();
-    ///This function is called when the TransportEditors stopbutton is pressed. it sets m_playing to false and m_playPosSeconds to 0.
+    ///This function is called when the TransportEditors stopbutton is pressed. it sets m_playing to false, m_playPosition to 0 and m_playPosSeconds to 0.
     void stopPlayback();
     ///This function is used to set new value to m_playPosition.
     void setPlayPosition(int newPosition);
