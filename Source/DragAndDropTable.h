@@ -29,8 +29,6 @@ public:
                      m_mainApp(mainApp),
                      m_saveLocation(saveLocation)
     {
-        
-
     }
     ///Pure virtual function inherited from juce FileDragAndDropTarget. This function is used to check whether the target is interested in the files dragged over it and it is overridden to return true if the files are .wav or .aiff audiofiles.
     bool isInterestedInFileDrag(const juce::StringArray& files) override;
@@ -40,6 +38,8 @@ public:
     void backgroundClicked (const juce::MouseEvent&) override;
     ///This function is used for manual file import. The functionality is very similar to the filesDropped function.
     void manualFileImport();
+    ///This function is used to handle popupmenu action for category adding and item deletion.
+    void cellPopupAction(int selection, int rowNumber, int columnId);
     
 private:
     

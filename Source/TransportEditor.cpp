@@ -15,10 +15,11 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
                  m_mainApp(mainApp),
                  m_player(player),
                  m_thumbnailCache(5), m_thumbnail(512, m_formatManager, m_thumbnailCache),
-                 m_playButton(TRANS("Play"), juce::DrawableButton::ButtonStyle::ImageFitted),
-                 m_stopButton(TRANS("Stop"), juce::DrawableButton::ButtonStyle::ImageFitted),
-                 m_loopButton(TRANS("Loop"), juce::DrawableButton::ButtonStyle::ImageFitted),
-                 m_relocateButton(TRANS("Locate File"), juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_playButton("Play", juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_stopButton("Stop", juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_loopButton("Loop", juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_relocateButton("Locate File", juce::DrawableButton::ButtonStyle::ImageFitted),
+                 m_renderButton("Render", juce::DrawableButton::ButtonStyle::ImageFitted),
                  m_playheadPosition("PlayheadPosition"),
                  m_volumeSlider(juce::Slider::SliderStyle::LinearHorizontal, juce::Slider::NoTextBox),
                  playState(Stopped)
@@ -41,6 +42,9 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     
     m_relocateButton.setImages(juce::Drawable::createFromImageData(BinaryData::LocateInactive_svg, BinaryData::LocateInactive_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::LocateHover_svg, BinaryData::LocateHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::LocateActive_svg, BinaryData::LocateActive_svgSize).get());
     
+    m_renderButton.setImages(juce::Drawable::createFromImageData(BinaryData::RenderInactive_svg, BinaryData::RenderInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::RenderHover_svg, BinaryData::RenderHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::RenderActive_svg, BinaryData::RenderActive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::RenderActive_svg, BinaryData::RenderActive_svgSize).get());
+
+    
     m_playheadPosition.setEditable(false);
     m_playheadPosition.setFont(juce::Font(20));
 
@@ -55,6 +59,7 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     m_playButton.setTooltip(TRANS("Play"));
     m_stopButton.setTooltip(TRANS("Stop"));
     m_loopButton.setTooltip(TRANS("Loop"));
+    m_renderButton.setTooltip(TRANS("Render Selected Section"));
     
     m_stopButton.setEnabled(false);
     m_relocateButton.setEnabled(false);
@@ -78,12 +83,16 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
          m_tableModel.locateFile(m_fileToPlay);
     };
     
-    //m_stopButton.addShortcut(juce::KeyPress(juce::KeyPress::backspaceKey));
+    m_renderButton.onClick = [&]()
+    {
+        if(m_sectionSelected) prepSelectionBuffer();
+    };
     
     addAndMakeVisible(m_playButton);
     addAndMakeVisible(m_stopButton);
     addAndMakeVisible(m_loopButton);
     addAndMakeVisible(m_relocateButton);
+    addAndMakeVisible(m_renderButton);
     addAndMakeVisible(m_playheadPosition);
     addAndMakeVisible(m_volumeSlider);
 }
@@ -133,20 +142,23 @@ void TransportEditor::resized()
     auto relocateButtonBottonMargin = bounds.removeFromBottom(getLocalBounds().getHeight() / 3.5);
     auto relocateButtonTopMargin = bounds.removeFromTop(getLocalBounds().getHeight() / 3.5);
     m_relocateButton.setBounds(bounds.removeFromRight(bounds.getWidth() / 2.5));
-    
     m_playButton.setBounds(controls.removeFromLeft(35));
     m_stopButton.setBounds(controls.removeFromLeft(35));
     m_loopButton.setBounds(controls.removeFromLeft(35));
+    m_renderButton.setBounds(controls.removeFromLeft(35));
     m_playheadPosition.setBounds(controls.removeFromLeft(bounds.getWidth() / 3));
     m_volumeSlider.setBounds(sliders.removeFromRight(bounds.getWidth() / 3));
 }
 
 void TransportEditor::setFileToPlay(juce::File file)
 {
+    //Stops audio playback and clears the buffer
     m_player.prepForNewFile();
     m_fileSelected = true;
     m_fileToPlay = file;
+    //Removes the selected section drawing
     resetSelection();
+    //Changes playState to correct state if needed
     if (playState != Stopped)
     {
         changePlayState(Stopping);
@@ -195,6 +207,8 @@ void TransportEditor::resetSelection()
     m_player.setEndPosition(m_numBufferSamples);
     repaint();
     m_sectionPlayActive = false;
+    m_renderButton.setEnabled(true);
+    m_renderButton.setTooltip(TRANS("Render Selected Section"));
 }
 
 void TransportEditor::changePlayState(PlayState newPlayState)
@@ -262,7 +276,7 @@ bool TransportEditor::isFileValid(juce::File fileToTest)
         return false;
     }
     auto fileReader = m_formatManager.createReaderFor(fileToTest);
-    if (fileReader== nullptr)
+    if (fileReader == nullptr)
     {
         delete fileReader;
         return false;
@@ -328,7 +342,7 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
     {
         if(m_canDragFile)
         {
-            if(m_sectionSelected)
+            if(m_sectionSelected && m_tempFileRendered)
             {
                 bool copy = m_mainApp.m_table.m_copyOnImport;
                 if(!copy) m_mainApp.m_table.m_copyOnImport = true;
@@ -359,7 +373,6 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
         m_mouseDragDistance = event.getDistanceFromDragStartX();
         m_mouseDragEndPos = m_mouseDragStartPos + m_mouseDragDistance;
         repaint();
-        
     }
     else
     {
@@ -375,7 +388,7 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
 
 void TransportEditor::mouseUp(const juce::MouseEvent &event)
 {
-    if(m_sectionSelected) prepSelectionBuffer();
+    
 }
 
 void TransportEditor::openAudioSettings()
@@ -493,6 +506,7 @@ void TransportEditor::prepSelectionBuffer()
 void TransportEditor::createFileFromSelection()
 {
     if (m_tempFile.existsAsFile()) m_tempFile.deleteFile();
+    m_tempFileRendered = false;
     m_tempFile = m_mainApp.m_tempAudioFiles.getChildFile(m_fileToPlay.getFileName());
     
     juce::WavAudioFormat format;
@@ -500,7 +514,13 @@ void TransportEditor::createFileFromSelection()
 
     writer.reset(format.createWriterFor(new juce::FileOutputStream(m_tempFile), 44100, m_selectionBuffer.getNumChannels(), 24, {}, 0));
     
-    if(writer != nullptr) writer->writeFromAudioSampleBuffer(m_selectionBuffer, 0, m_selectionBuffer.getNumSamples());
+    if(writer != nullptr)
+    {
+        writer->writeFromAudioSampleBuffer(m_selectionBuffer, 0, m_selectionBuffer.getNumSamples());
+        m_tempFileRendered = true;
+        m_renderButton.setEnabled(false);
+        m_renderButton.setTooltip(TRANS("Render complete, exporting now exports selected section"));
+    }
 }
 
 juce::ApplicationCommandTarget* TransportEditor::getNextCommandTarget()
@@ -531,6 +551,7 @@ void TransportEditor::getCommandInfo(juce::CommandID commandID, juce::Applicatio
         case KeyPressCommandIDs::Stop:
             result.setInfo("Stop", "Press Stop", "Transport", 0);
             result.addDefaultKeypress(juce::KeyPress::backspaceKey, 0);
+            result.addDefaultKeypress(juce::KeyPress::returnKey, 0);
             break;
         default:
             break;
@@ -548,7 +569,6 @@ bool TransportEditor::perform(const juce::ApplicationCommandTarget::InvocationIn
             m_playButton.triggerClick();
             break;
         case KeyPressCommandIDs::Stop:
-            DBG("STOP");
             if(m_stopButton.isEnabled()) m_stopButton.triggerClick();
             break;
         default:

@@ -22,10 +22,9 @@ select the category to be removed.
 
                                         Filtering
 
-The table can be filtered by category or by name. To filter by category, select a category
-and only files assigned to that category are visible. To remove the filtering, command click
+The table can be filtered by category or by name. To filter by category, select a category and only files assigned to that category are visible. To remove the filtering, command click
 the category.
-To filter by text, click the magnifying glass (shortcut F) and type the text and press Enter
+To filter by text, click the magnifying glass (shortcut F), type the text and press Enter.
 To remove the filtering, remove all text from the search bar.
 Please note that category and name filtering cannot be used at the same time.
 
@@ -33,13 +32,9 @@ Please note that category and name filtering cannot be used at the same time.
 
 The transport offers standard playback features. Here are the shortcuts for the transport Control:
 Play/Pause 'Spacebar'
-Stop 'Backspace'
+Stop 'Backspace' or 'Enter'
 Loop 'L'
 
-To select a section of the audio file to playback, alt+left mouse click the waveform and drag to select the section.
+To select a section of the audio file to playback, alt+left click the waveform and drag to select the section.
 
-Audio files can be exported directly from the application. To do this, command+left mouse click the waveform and drag
-the waveform. You can also only export a specific section of the audio file by doing the export drag
-while a section of the audio file is selected. These sections can be exported back into the application but they 
-keep their original filename so if you want to change the name of the file it is better to export the section somewhere else
-(like desktop) first, change the name and then import it to the application.
+Audio files can be exported directly from the application. To do this, command+left click and drag the waveform. You can also export a specific section of the audio file by clicking the render button (located next to the loop button) while having a section selected. After the icon turns red, the rendered audio file can be exported from the application while the section is selected by using the usual export functionality. These exported sections can be imported directly back into the application but they keep their original filename so if you want to change the name of the file it is better to export the section somewhere else (like desktop) first, change the name and then import it to the application.

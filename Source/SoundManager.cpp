@@ -126,7 +126,7 @@ void SoundManager::saveTreeToXml()
     m_mainApp.m_audioLibrary->writeTo(m_mainApp.m_saveFile);
 }
 
-void SoundManager::AddFile(juce::File& file, double length,double sampleRate, int numChannels, juce::String filePath, juce::String description)
+void SoundManager::addFile(juce::File& file, double length,double sampleRate, int numChannels, juce::String filePath, juce::String description)
 {
     auto fileInfo = juce::ValueTree
     { m_fileInfo, {{m_filePath, filePath}, {m_isVisible, 1}},

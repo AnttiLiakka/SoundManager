@@ -55,7 +55,8 @@ public:
         SaveData,
         AddCategory,
         AudioSettings,
-        Features
+        Features,
+        Search
         
     };
 

@@ -109,14 +109,12 @@ MainComponent::MainComponent() :
     
     m_searchButton.setImages(juce::Drawable::createFromImageData(BinaryData::MagGlassInactive_svg, BinaryData::MagGlassInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::MagGlassHover_svg, BinaryData::MagGlassHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::MagGlassActive_svg, BinaryData::MagGlassActive_svgSize).get());
     
-    m_searchButton.addShortcut(juce::KeyPress('f'));
-    
     m_searchButton.onClick = [&]()
     {
         m_searchBar.showEditor();
     };
     
-    m_searchButton.setTooltip("Search");
+    m_searchButton.setTooltip(TRANS("Search, 'F'"));
     
     
     addAndMakeVisible(m_table);
@@ -201,7 +199,8 @@ void MainComponent::getAllCommands(juce::Array<juce::CommandID> &commands)
                                                 CommandIDs::SaveData,
                                                 CommandIDs::AddCategory,
                                                 CommandIDs::AudioSettings,
-                                                CommandIDs::Features };
+                                                CommandIDs::Features,
+                                                CommandIDs::Search };
     commands.addArray(commandArray);
 }
 
@@ -238,6 +237,11 @@ void MainComponent::getCommandInfo(juce::CommandID commandID, juce::ApplicationC
             
         case CommandIDs::Features:
             result.setInfo("Features", "Opens a file containing info about this application", "Features Menu", 0);
+            break;
+            
+        case CommandIDs::Search:
+            result.setInfo("Search", "Button for search bar", "Search Bar", 0);
+            result.addDefaultKeypress('f', 0);
             break;
             
         default:
@@ -280,6 +284,9 @@ bool MainComponent::perform (const juce::ApplicationCommandTarget::InvocationInf
             openHelpFile();
             break;
             
+        case CommandIDs::Search:
+            m_searchButton.triggerClick();
+            break;
         default:
             return false;
     }
@@ -380,7 +387,7 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                     filePath = newFile.getFullPathName();
                 }
                 
-                m_mainApp.m_valueTree.AddFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
+                m_mainApp.m_valueTree.addFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
                 delete fileReader;
 
                 
@@ -501,7 +508,7 @@ void SoundTableModel::cellClicked(int rowNumber, int columnId, const juce::Mouse
         
         cellMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
                                {
-                                    cellPopupAction(selection, m_lastSelectedRow, columnId);
+                                    m_mainApp.m_table.cellPopupAction(selection, m_lastSelectedRow, columnId);
                                 });
         }
     }
@@ -692,7 +699,7 @@ void DragAndDropTable::manualFileImport()
             juce::String filePath = fileToTest.getFullPathName();
             
             
-            m_mainApp.m_valueTree.AddFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
+            m_mainApp.m_valueTree.addFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
             delete fileReader;
 
         } catch (juce::String message){
@@ -701,19 +708,19 @@ void DragAndDropTable::manualFileImport()
     } );
 }
 
-void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId)
+void DragAndDropTable::cellPopupAction(int selection, int rowNumber, int columnId)
 {
    //Delete item
    if(selection == 1)
    {
-       m_valueTreeToListen.removeFileInfoTree(rowNumber);
+       m_mainApp.m_valueTree.removeFileInfoTree(rowNumber);
    }
    //New Category
    else if(selection == 2)
    {
        auto categoryTextEditor = std::make_unique<juce::Label>(TRANS("Category Name"));
        
-       auto textEditorPos = m_mainApp.m_table.getHeader().getColumnPosition(columnId);
+       auto textEditorPos = getHeader().getColumnPosition(columnId);
        
        categoryTextEditor->setEditable(true, false, true);
        categoryTextEditor->setSize(200, 50);
@@ -730,7 +737,7 @@ void SoundTableModel::cellPopupAction(int selection, int rowNumber, int columnId
            if(selection == i + 3)
            {
                auto categoryToAdd = m_mainApp.m_categoryModel.m_uniqueCategories[i];
-               m_valueTreeToListen.addCategory(categoryToAdd, m_lastSelectedRow);
+               m_mainApp.m_valueTree.addCategory(categoryToAdd, m_mainApp.m_tableModel.m_lastSelectedRow);
            }
        }
    }

@@ -3182,6 +3182,9 @@
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h"/>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Resources\Icons\RenderActive.svg"/>
+    <None Include="..\..\Resources\Icons\RenderHover.svg"/>
+    <None Include="..\..\Resources\Icons\RenderInactive.svg"/>
     <None Include="..\..\Resources\Icons\Logo.png"/>
     <None Include="..\..\Resources\Icons\playInactive.svg"/>
     <None Include="..\..\Resources\Icons\LocateActive.svg"/>

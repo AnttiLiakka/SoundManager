@@ -27,6 +27,11 @@
             file="Source/MainComponent.cpp"/>
     </GROUP>
     <GROUP id="{17CEF6AA-94B8-812C-CAA0-0E5CCD29C50F}" name="Icons">
+      <FILE id="Fd7dGA" name="RenderActive.svg" compile="0" resource="1"
+            file="Resources/Icons/RenderActive.svg"/>
+      <FILE id="DfAAAF" name="RenderHover.svg" compile="0" resource="1" file="Resources/Icons/RenderHover.svg"/>
+      <FILE id="qOqQvg" name="RenderInactive.svg" compile="0" resource="1"
+            file="Resources/Icons/RenderInactive.svg"/>
       <FILE id="CDgdRY" name="Logo.png" compile="0" resource="1" file="Resources/Icons/Logo.png"/>
       <FILE id="Lzcbjx" name="playInactive.svg" compile="0" resource="1"
             file="Resources/Icons/playInactive.svg"/>
