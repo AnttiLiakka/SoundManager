@@ -345,13 +345,12 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
         {
             if(m_sectionSelected && m_tempFileRendered)
             {
-                bool copy = m_mainApp.m_table.m_copyOnImport;
-                if(!copy) m_mainApp.m_table.m_copyOnImport = true;
                 m_canDragFile = false;
-                juce::DragAndDropContainer::performExternalDragDropOfFiles(m_tempFile.getFullPathName(), true, this, [&]()
+                m_tableModel.preventFileImport();
+                juce::DragAndDropContainer::performExternalDragDropOfFiles(m_tempFile.getFullPathName(), false, this, [&]()
                 {
                     m_canDragFile = true;
-                    if(!copy) m_mainApp.m_table.m_copyOnImport = false;
+                    m_tableModel.allowFIleImport();
                 });
             }
             
@@ -408,22 +407,23 @@ void TransportEditor::loadAudioFile(juce::File file)
     
     auto duration = fileReader->lengthInSamples / fileReader->sampleRate;
     
-    if (duration > 600)
+    if (duration > 0)
     {
-        m_renderWindow = std::make_unique<RenderAlertWindow>(fileReader, m_player.m_buffer);
+        m_renderWindow = std::make_unique<RenderAlertWindow>(m_player.m_buffer);
         m_renderWindow->setOwner(this);
         m_renderWindow->launchThread();
         m_thumbnail.setSource(new juce::FileInputSource(file));
         m_numBufferSamples = m_player.m_buffer.getNumSamples();
         m_player.setEndPosition(m_numBufferSamples);
+        delete fileReader;
         
     } else
     {
-    fileReader->read(&m_player.m_buffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, true);
-    m_thumbnail.setSource(new juce::FileInputSource(file));
-    m_numBufferSamples = m_player.m_buffer.getNumSamples();
-    m_player.setEndPosition(m_numBufferSamples);
-    delete fileReader;
+        fileReader->read(&m_player.m_buffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, true);
+        m_thumbnail.setSource(new juce::FileInputSource(file));
+        m_numBufferSamples = m_player.m_buffer.getNumSamples();
+        m_player.setEndPosition(m_numBufferSamples);
+        delete fileReader;
     }
 }
 
@@ -548,6 +548,11 @@ void TransportEditor::createFileFromSelection()
         m_renderButton.setEnabled(false);
         m_renderButton.setTooltip(TRANS("Render complete, exporting now exports selected section"));
     }
+}
+
+void TransportEditor::setBuffer(juce::AudioBuffer<float> newBuffer)
+{
+    m_player.m_buffer = newBuffer;
 }
 
 juce::ApplicationCommandTarget* TransportEditor::getNextCommandTarget()

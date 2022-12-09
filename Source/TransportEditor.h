@@ -22,21 +22,27 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
     
     struct RenderAlertWindow : public juce::ThreadWithProgressWindow
     {
-        RenderAlertWindow(juce::AudioFormatReader* reader, juce::AudioBuffer<float> buffer) :
+        RenderAlertWindow(juce::AudioBuffer<float> buffer) :
                           juce::ThreadWithProgressWindow("busy...", true, true),
-                          m_reader(reader),
                           m_audioBuffer(buffer),
                           m_owner(nullptr)
         {
-            
+            m_formatManager.registerBasicFormats();
         }
         
         void run() override
         {
+            auto fileToRead = m_owner->m_fileToPlay;
+            auto m_reader = m_formatManager.createReaderFor(fileToRead);
+            jassert(m_reader != nullptr);
             int length = static_cast<int>(m_reader->lengthInSamples);
             int blockSize = 512;
             int numBlocks = length / blockSize;
-            
+            m_audioBuffer.clear();
+            m_audioBuffer.setSize(2, length);
+            //if (!m_reader->read(&m_audioBuffer, 0, length, 0, true, true)) jassertfalse;
+            //m_owner->m_player.m_buffer = m_audioBuffer;
+            ///*
             for(int i = 0; i < numBlocks; ++i)
             {
                 if (threadShouldExit()) break;
@@ -46,12 +52,13 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
                 
                 if(i != numBlocks - i)
                 {
-                    m_reader->read(&m_audioBuffer, startPosition, blockSize, 0, true, true);
+                    m_reader->read(&m_audioBuffer, startPosition, blockSize, startPosition, true, true);
                 } else
                 {
-                    m_reader->read(&m_audioBuffer, startPosition, length - blockSize * i, 0, true, true);
+                    m_reader->read(&m_audioBuffer, startPosition, length - blockSize * i, startPosition, true, true);
                 }
-            }
+            } //*/
+            delete m_reader;
         }
         
         void threadComplete (bool userPressedCancel) override
@@ -61,7 +68,7 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
                 m_owner->noFileSelected();
                 DBG("Cancel");
             }
-            delete m_reader;
+            m_owner->setBuffer(m_audioBuffer);
         }
         
         void setOwner (TransportEditor* newOwner)
@@ -71,6 +78,7 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
         
         juce::AudioFormatReader* m_reader;
         juce::AudioBuffer<float> m_audioBuffer;
+        juce::AudioFormatManager m_formatManager;
         TransportEditor* m_owner;
     };
 
@@ -132,6 +140,8 @@ public:
     void prepSelectionBuffer();
     ///This function writes a new audio file from the m_selectionbuffer into the tempFiles folder. This function also deletes the previously written file to keep the folder a bit more tidy.
     void createFileFromSelection();
+    
+    void setBuffer(juce::AudioBuffer<float> newBuffer);
     ///CommandIDs for the keypresses
     enum KeyPressCommandIDs
     {
