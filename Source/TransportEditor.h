@@ -20,6 +20,60 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
     friend class TransportPlayer;
     friend class DragAndDropTable;
     
+    struct RenderAlertWindow : public juce::ThreadWithProgressWindow
+    {
+        RenderAlertWindow(juce::AudioFormatReader* reader, juce::AudioBuffer<float> buffer) :
+                          juce::ThreadWithProgressWindow("busy...", true, true),
+                          m_reader(reader),
+                          m_audioBuffer(buffer),
+                          m_owner(nullptr)
+        {
+            
+        }
+        
+        void run() override
+        {
+            int length = static_cast<int>(m_reader->lengthInSamples);
+            int blockSize = 512;
+            int numBlocks = length / blockSize;
+            
+            for(int i = 0; i < numBlocks; ++i)
+            {
+                if (threadShouldExit()) break;
+                
+                setProgress(i / (double) numBlocks);
+                int startPosition = blockSize * i;
+                
+                if(i != numBlocks - i)
+                {
+                    m_reader->read(&m_audioBuffer, startPosition, blockSize, 0, true, true);
+                } else
+                {
+                    m_reader->read(&m_audioBuffer, startPosition, length - blockSize * i, 0, true, true);
+                }
+            }
+        }
+        
+        void threadComplete (bool userPressedCancel) override
+        {
+            if (userPressedCancel)
+            {
+                m_owner->noFileSelected();
+                DBG("Cancel");
+            }
+            delete m_reader;
+        }
+        
+        void setOwner (TransportEditor* newOwner)
+        {
+            m_owner = newOwner;
+        }
+        
+        juce::AudioFormatReader* m_reader;
+        juce::AudioBuffer<float> m_audioBuffer;
+        TransportEditor* m_owner;
+    };
+
 public:
     ///The constructor, takes in references to the SoundTableModel, MainComponent and TransportPlayer.
     TransportEditor(class SoundTableModel& tableModel, class MainComponent& mainApp, class TransportPlayer& player);
@@ -93,6 +147,8 @@ private:
     class MainComponent& m_mainApp;
     ///Reference to the TransportPlayer.
     class TransportPlayer& m_player;
+    
+    std::unique_ptr<RenderAlertWindow> m_renderWindow;
     ///This member is need to initialize m_thumbnail and it is used to manage multiple audiothumbnail objects.
     juce::AudioThumbnailCache m_thumbnailCache;
     ///This member paints the waveform of the selected audiofile.
@@ -112,7 +168,7 @@ private:
     ///Various booleans used to control what is drawn by the paint function, prevent exported files to be dropped back into the application and control section play functionality
     bool m_fileSelected = false, m_fileIsValid = false, m_canDragFile = true, m_sectionSelected = false, m_sectionPlayActive = false, m_tempFileRendered = false;
     ///Various integers that represent the size of the audio buffer and which section of the sound file has been selected
-    int m_numBufferSamples, m_mouseDragStartPos, m_mouseDragDistance, m_mouseDragEndPos;
+    int m_numBufferSamples, m_mouseDragStartPos, m_mouseDragDistance, m_mouseDragEndPos, m_selectionStart, m_selectionEnd;
     ///File that has been selected for playback
     juce::File m_fileToPlay;
     ///Enumerator representing the different states of playback

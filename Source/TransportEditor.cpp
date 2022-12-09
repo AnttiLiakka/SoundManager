@@ -314,7 +314,8 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
 void TransportEditor::timerCallback()
 {
     repaint();
-    m_playheadPosition.setText(juce::String(m_player.m_playPosSeconds), juce::NotificationType::dontSendNotification);
+    //m_playheadPosition.setText(juce::String(m_player.m_playPosSeconds), juce::NotificationType::dontSendNotification);
+    m_playheadPosition.setText(juce::String(m_player.m_playPosition), juce::NotificationType::dontSendNotification);
 }
 
 void TransportEditor::mouseDown(const juce::MouseEvent& event)
@@ -388,7 +389,7 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
 
 void TransportEditor::mouseUp(const juce::MouseEvent &event)
 {
-    
+    if(m_sectionSelected) setSelectionPlay();
 }
 
 void TransportEditor::openAudioSettings()
@@ -403,13 +404,27 @@ void TransportEditor::openAudioSettings()
 void TransportEditor::loadAudioFile(juce::File file)
 {
     auto fileReader = m_formatManager.createReaderFor(file);
-    
     m_player.m_buffer.setSize(2, static_cast<int>(fileReader->lengthInSamples));
+    
+    auto duration = fileReader->lengthInSamples / fileReader->sampleRate;
+    
+    if (duration > 600)
+    {
+        m_renderWindow = std::make_unique<RenderAlertWindow>(fileReader, m_player.m_buffer);
+        m_renderWindow->setOwner(this);
+        m_renderWindow->launchThread();
+        m_thumbnail.setSource(new juce::FileInputSource(file));
+        m_numBufferSamples = m_player.m_buffer.getNumSamples();
+        m_player.setEndPosition(m_numBufferSamples);
+        
+    } else
+    {
     fileReader->read(&m_player.m_buffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, true);
     m_thumbnail.setSource(new juce::FileInputSource(file));
     m_numBufferSamples = m_player.m_buffer.getNumSamples();
     m_player.setEndPosition(m_numBufferSamples);
     delete fileReader;
+    }
 }
 
 void TransportEditor::playButtonClicked()
@@ -479,10 +494,17 @@ void TransportEditor::setSelectionPlay()
     {
         m_player.setPlayPosition(endPos);
         m_player.setEndPosition(startPos);
+        
+        m_selectionEnd = startPos;
+        m_selectionStart = endPos;
+        
     } else
     {
         m_player.setPlayPosition(startPos);
         m_player.setEndPosition(endPos);
+        
+        m_selectionEnd = endPos;
+        m_selectionStart = startPos;
     }
     m_sectionPlayActive = true;
 }
@@ -497,10 +519,15 @@ void TransportEditor::noFileSelected()
 void TransportEditor::prepSelectionBuffer()
 {
     auto buffer = m_player.m_buffer;
-    m_selectionBuffer.setSize(buffer.getNumChannels(), m_player.m_endPosition - m_player.m_playPosition);
-    m_selectionBuffer.copyFrom(0, 0, buffer, 0, m_player.m_playPosition, m_selectionBuffer.getNumSamples());
-    m_selectionBuffer.copyFrom(1, 0, buffer, 1, m_player.m_playPosition, m_selectionBuffer.getNumSamples());
+    m_selectionBuffer.setSize(buffer.getNumChannels(), m_selectionEnd - m_selectionStart);
+    m_selectionBuffer.copyFrom(0, 0, buffer, 0, m_selectionStart, m_selectionBuffer.getNumSamples());
+    m_selectionBuffer.copyFrom(1, 0, buffer, 1, m_selectionStart, m_selectionBuffer.getNumSamples());
     createFileFromSelection();
+    
+    DBG(".........................");
+    DBG("End Position = " + juce::String(m_selectionEnd));
+    DBG("Start Position = " + juce::String(m_selectionStart));
+    //DBG(m_selectionBuffer.getNumSamples());
 }
 
 void TransportEditor::createFileFromSelection()
@@ -551,7 +578,6 @@ void TransportEditor::getCommandInfo(juce::CommandID commandID, juce::Applicatio
         case KeyPressCommandIDs::Stop:
             result.setInfo("Stop", "Press Stop", "Transport", 0);
             result.addDefaultKeypress(juce::KeyPress::backspaceKey, 0);
-            result.addDefaultKeypress(juce::KeyPress::returnKey, 0);
             break;
         default:
             break;
@@ -567,6 +593,7 @@ bool TransportEditor::perform(const juce::ApplicationCommandTarget::InvocationIn
             break;
         case KeyPressCommandIDs::PlayPause:
             m_playButton.triggerClick();
+            if(!hasKeyboardFocus(false)) grabKeyboardFocus();
             break;
         case KeyPressCommandIDs::Stop:
             if(m_stopButton.isEnabled()) m_stopButton.triggerClick();

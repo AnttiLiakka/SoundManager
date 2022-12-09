@@ -23,21 +23,20 @@ class SoundTableModel : public juce::TableListBoxModel, public juce::ValueTree::
     ///A juce Label that can be put into a cell to keep the FileInfo description information
     struct CellLabel: public juce::Label
     {
-        ///The row this label is in. Important to make sure that the correct description is edited and displayed
-        int row;
-        
+        ///Default constructor
+        CellLabel()
+        {
+        }
         ///Sets the row member
         void setRow(const int rowNum)
         {
             row = rowNum;
         }
         
-        ///Default constructor
-        CellLabel()
-        {
-        }
+        ///The row this label is in. Important to make sure that the correct description is edited and displayed
+        int row;
     };
-    
+
 public:
     
     ///The constructor, takes in a reference to the main application and the SoundManager this class is a listener to
