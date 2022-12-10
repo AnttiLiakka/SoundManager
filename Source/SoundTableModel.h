@@ -70,7 +70,7 @@ public:
     ///This function is called when a file is being exported via dragging from the TransportEditor. It sets the DragAndDropTables m_acceptingFiles boolean to false and therefore prevents dragged files from being imported back into the application.
     void preventFileImport();
     ///This functoin is called when a drag export action from TransportEditor has finished. it sets the DragAndDropTables m_acceptingFiles boolean to true and making it possible to import files into the table via drag and drop.
-    void allowFIleImport();
+    void allowFileImport();
     
 private:
     ///Reference to the MainComponent

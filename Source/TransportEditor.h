@@ -23,12 +23,12 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
     struct BufferingAlertWindow : public juce::ThreadWithProgressWindow
     {
         BufferingAlertWindow(juce::AudioBuffer<float> buffer) :
-                          juce::ThreadWithProgressWindow("Reading file into a buffer.....", true, true),
+                          juce::ThreadWithProgressWindow(TRANS("Reading file into a buffer....."), true, true),
                           m_audioBuffer(buffer),
                           m_owner(nullptr)
         {
             m_formatManager.registerBasicFormats();
-            setStatusMessage("This is a very long audio file!");
+            setStatusMessage(TRANS("This is a very long audio file!"));
         }
         
         void run() override
@@ -59,7 +59,7 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
             }
             
             setProgress (-1.0);
-            setStatusMessage ("Phew, Almost there!");
+            setStatusMessage (TRANS("Phew, Almost there!"));
             wait (1500);
         }
         
@@ -83,7 +83,65 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
         TransportEditor* m_owner;
     };
     
-    //struct ExportAlertWindow : public juce::
+    struct ExportAlertWindow : public juce::ThreadWithProgressWindow
+    {
+      ExportAlertWindow(TransportEditor& owner)
+                                            : juce::ThreadWithProgressWindow(TRANS("Creating file...."), true, false),
+                                              m_owner(owner)
+        {
+            setStatusMessage(TRANS("Writing file from selection...."));
+        }
+        
+        void run() override
+        {
+            
+            auto buffer = m_owner.m_selectionBuffer;
+            auto file = m_owner.m_tempFile;
+            
+            writer.reset(format.createWriterFor(new juce::FileOutputStream(file), 44100, m_owner.m_selectionBuffer.getNumChannels(), 24, {}, 0));
+            
+            if(writer != nullptr)
+            {
+                int length = buffer.getNumSamples();
+                int blockSize = 512;
+                int numBlocks = length / blockSize;
+                
+                for (int i = 0; i < numBlocks; ++i)
+                {
+                    if (threadShouldExit()) break;
+                    setProgress(i / (double) numBlocks);
+                    int startPosition = blockSize * i;
+                    
+                    if(i != numBlocks - i)
+                    {
+                        if(!writer->writeFromAudioSampleBuffer(buffer, startPosition, blockSize)) jassertfalse;
+                    } else
+                    {
+                        writer->writeFromAudioSampleBuffer(buffer, startPosition, length - blockSize * i);
+                    }
+                }
+            } else jassertfalse;
+            
+            setProgress(-1.0);
+            setStatusMessage(TRANS("Finishing up..."));
+            wait (1500);
+        }
+        
+        void threadComplete (bool userPressedCancel) override
+        {
+            if (userPressedCancel)
+            {
+                juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,m_owner.m_tempFile.getFileName(), TRANS("Render Cancelled"));
+            }
+            m_owner.m_tempFileRendered = true;
+            m_owner.m_renderButton.setEnabled(false);
+            m_owner.m_renderButton.setTooltip(TRANS("Render complete, exporting now exports selected section"));
+        }
+        
+        juce::WavAudioFormat format;
+        std::unique_ptr<juce::AudioFormatWriter> writer;
+        TransportEditor& m_owner;
+    };
 
 public:
     ///The constructor, takes in references to the SoundTableModel, MainComponent and TransportPlayer.
@@ -162,6 +220,8 @@ private:
     class TransportPlayer& m_player;
     
     std::unique_ptr<BufferingAlertWindow> m_renderWindow;
+    
+    std::unique_ptr<ExportAlertWindow> m_exportWindow;
     ///This member is need to initialize m_thumbnail and it is used to manage multiple audiothumbnail objects.
     juce::AudioThumbnailCache m_thumbnailCache;
     ///This member paints the waveform of the selected audiofile.
@@ -181,7 +241,7 @@ private:
     ///Various booleans used to control what is drawn by the paint function, prevent exported files to be dropped back into the application and control section play functionality
     bool m_fileSelected = false, m_fileIsValid = false, m_canDragFile = true, m_sectionSelected = false, m_sectionPlayActive = false, m_tempFileRendered = false;
     ///Various integers that represent the size of the audio buffer and which section of the sound file has been selected
-    int m_numBufferSamples, m_mouseDragStartPos, m_mouseDragDistance, m_mouseDragEndPos, m_selectionStart, m_selectionEnd;
+    int m_numBufferSamples, m_mouseDragStartPos, m_mouseDragDistance, m_mouseDragEndPos, m_selectionStart, m_selectionEnd, m_filenameSuffix = 1;
     ///File that has been selected for playback
     juce::File m_fileToPlay;
     ///Enumerator representing the different states of playback

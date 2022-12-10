@@ -149,7 +149,13 @@ MainComponent::~MainComponent()
     m_table.setModel(nullptr);
     m_categories.setModel(nullptr);
     //Deleteing the tempFiles folder to clean up just incase audiofile were left there
-    if(m_tempAudioFiles.isDirectory()) m_tempAudioFiles.deleteRecursively();
+    if(m_tempAudioFiles.isDirectory())
+    {
+        m_tempAudioFiles.deleteRecursively();
+    } else
+    {
+        jassertfalse;
+    }
 }
 
 void MainComponent::paint (juce::Graphics& g)
@@ -600,7 +606,7 @@ void SoundTableModel::preventFileImport()
     m_mainApp.m_table.m_acceptingfiles = false;
 }
 
-void SoundTableModel::allowFIleImport()
+void SoundTableModel::allowFileImport()
 {
     m_mainApp.m_table.m_acceptingfiles = true;
 }

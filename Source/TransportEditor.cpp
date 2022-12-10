@@ -345,12 +345,14 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
         {
             if(m_sectionSelected && m_tempFileRendered)
             {
+                DBG(m_tempFile.getFullPathName());
                 m_canDragFile = false;
                 m_tableModel.preventFileImport();
-                juce::DragAndDropContainer::performExternalDragDropOfFiles(m_tempFile.getFullPathName(), false, this, [&]()
+                juce::DragAndDropContainer::performExternalDragDropOfFiles(m_tempFile.getFullPathName(), true, this, [&]()
                 {
                     m_canDragFile = true;
-                    m_tableModel.allowFIleImport();
+                    m_tableModel.allowFileImport();
+                    m_tempFileRendered = false;
                 });
             }
             
@@ -358,10 +360,11 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
             {
                 m_canDragFile = false;
                 m_tableModel.preventFileImport();
+                
                 juce::DragAndDropContainer::performExternalDragDropOfFiles(m_fileToPlay.getFullPathName(), false, this, [&]()
                 {
                     m_canDragFile = true;
-                    m_tableModel.allowFIleImport();
+                    m_tableModel.allowFileImport();
                 });
             }
         }
@@ -503,6 +506,7 @@ void TransportEditor::setSelectionPlay()
         
         m_selectionEnd = endPos;
         m_selectionStart = startPos;
+        
     }
     m_sectionPlayActive = true;
 }
@@ -516,19 +520,24 @@ void TransportEditor::noFileSelected()
 
 void TransportEditor::prepSelectionBuffer()
 {
-    auto buffer = m_player.m_buffer;
-    m_selectionBuffer.setSize(buffer.getNumChannels(), m_selectionEnd - m_selectionStart);
-    m_selectionBuffer.copyFrom(0, 0, buffer, 0, m_selectionStart, m_selectionBuffer.getNumSamples());
-    m_selectionBuffer.copyFrom(1, 0, buffer, 1, m_selectionStart, m_selectionBuffer.getNumSamples());
+    m_selectionBuffer.setSize(m_player.m_buffer.getNumChannels(), m_selectionEnd - m_selectionStart);
+    m_selectionBuffer.copyFrom(0, 0, m_player.m_buffer, 0, m_selectionStart, m_selectionBuffer.getNumSamples());
+    m_selectionBuffer.copyFrom(1, 0, m_player.m_buffer, 1, m_selectionStart, m_selectionBuffer.getNumSamples());
+    
     createFileFromSelection();
 }
 
 void TransportEditor::createFileFromSelection()
 {
-    if (m_tempFile.existsAsFile()) m_tempFile.deleteFile();
     m_tempFileRendered = false;
-    m_tempFile = m_mainApp.m_tempAudioFiles.getChildFile(m_fileToPlay.getFileName());
+    m_tempFile = m_mainApp.m_tempAudioFiles.getChildFile(m_fileToPlay.getFileNameWithoutExtension() + "(" + juce::String(m_filenameSuffix) + ")" + m_fileToPlay.getFileExtension());
+    ++m_filenameSuffix;
     
+    
+    //m_exportWindow = std::make_unique<ExportAlertWindow>(*this);
+    //m_exportWindow->launchThread();
+    
+    ///*
     juce::WavAudioFormat format;
     std::unique_ptr<juce::AudioFormatWriter> writer;
 
@@ -537,6 +546,7 @@ void TransportEditor::createFileFromSelection()
     if(writer != nullptr)
     {
         //writer->writeFromAudioSampleBuffer(m_selectionBuffer, 0, m_selectionBuffer.getNumSamples());
+        //DBG("Samples Written: " + juce::String(m_selectionBuffer.getNumSamples()));
         
         int length = m_selectionBuffer.getNumSamples();
         int blockSize = 512;
@@ -557,7 +567,7 @@ void TransportEditor::createFileFromSelection()
         m_tempFileRendered = true;
         m_renderButton.setEnabled(false);
         m_renderButton.setTooltip(TRANS("Render complete, exporting now exports selected section"));
-    }
+    } //*/
 }
 
 void TransportEditor::setBuffer(juce::AudioBuffer<float> newBuffer)
