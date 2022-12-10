@@ -402,20 +402,19 @@ void TransportEditor::openAudioSettings()
 
 void TransportEditor::loadAudioFile(juce::File file)
 {
-    auto fileReader = m_formatManager.createReaderFor(file);
+    std::unique_ptr<juce::AudioFormatReader> fileReader (m_formatManager.createReaderFor(file));
     m_player.m_buffer.setSize(2, static_cast<int>(fileReader->lengthInSamples));
     
     auto duration = fileReader->lengthInSamples / fileReader->sampleRate;
     
-    if (duration > 0)
+    if (duration > 600)
     {
-        m_renderWindow = std::make_unique<RenderAlertWindow>(m_player.m_buffer);
+        m_renderWindow = std::make_unique<BufferingAlertWindow>(m_player.m_buffer);
         m_renderWindow->setOwner(this);
         m_renderWindow->launchThread();
         m_thumbnail.setSource(new juce::FileInputSource(file));
         m_numBufferSamples = m_player.m_buffer.getNumSamples();
         m_player.setEndPosition(m_numBufferSamples);
-        delete fileReader;
         
     } else
     {
@@ -423,7 +422,6 @@ void TransportEditor::loadAudioFile(juce::File file)
         m_thumbnail.setSource(new juce::FileInputSource(file));
         m_numBufferSamples = m_player.m_buffer.getNumSamples();
         m_player.setEndPosition(m_numBufferSamples);
-        delete fileReader;
     }
 }
 
@@ -523,11 +521,6 @@ void TransportEditor::prepSelectionBuffer()
     m_selectionBuffer.copyFrom(0, 0, buffer, 0, m_selectionStart, m_selectionBuffer.getNumSamples());
     m_selectionBuffer.copyFrom(1, 0, buffer, 1, m_selectionStart, m_selectionBuffer.getNumSamples());
     createFileFromSelection();
-    
-    DBG(".........................");
-    DBG("End Position = " + juce::String(m_selectionEnd));
-    DBG("Start Position = " + juce::String(m_selectionStart));
-    //DBG(m_selectionBuffer.getNumSamples());
 }
 
 void TransportEditor::createFileFromSelection()
@@ -543,7 +536,24 @@ void TransportEditor::createFileFromSelection()
     
     if(writer != nullptr)
     {
-        writer->writeFromAudioSampleBuffer(m_selectionBuffer, 0, m_selectionBuffer.getNumSamples());
+        //writer->writeFromAudioSampleBuffer(m_selectionBuffer, 0, m_selectionBuffer.getNumSamples());
+        
+        int length = m_selectionBuffer.getNumSamples();
+        int blockSize = 512;
+        int numBlocks = length / blockSize;
+        
+        for (int i = 0; i < numBlocks; ++i)
+        {
+            int startPosition = blockSize * i;
+            
+            if(i != numBlocks - i)
+            {
+                writer->writeFromAudioSampleBuffer(m_selectionBuffer, startPosition, blockSize);
+            } else
+            {
+                writer->writeFromAudioSampleBuffer(m_selectionBuffer, startPosition, length - blockSize * i);
+            }
+        }
         m_tempFileRendered = true;
         m_renderButton.setEnabled(false);
         m_renderButton.setTooltip(TRANS("Render complete, exporting now exports selected section"));

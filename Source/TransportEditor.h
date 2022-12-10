@@ -20,29 +20,28 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
     friend class TransportPlayer;
     friend class DragAndDropTable;
     
-    struct RenderAlertWindow : public juce::ThreadWithProgressWindow
+    struct BufferingAlertWindow : public juce::ThreadWithProgressWindow
     {
-        RenderAlertWindow(juce::AudioBuffer<float> buffer) :
-                          juce::ThreadWithProgressWindow("busy...", true, true),
+        BufferingAlertWindow(juce::AudioBuffer<float> buffer) :
+                          juce::ThreadWithProgressWindow("Reading file into a buffer.....", true, true),
                           m_audioBuffer(buffer),
                           m_owner(nullptr)
         {
             m_formatManager.registerBasicFormats();
+            setStatusMessage("This is a very long audio file!");
         }
         
         void run() override
         {
             auto fileToRead = m_owner->m_fileToPlay;
-            auto m_reader = m_formatManager.createReaderFor(fileToRead);
-            jassert(m_reader != nullptr);
-            int length = static_cast<int>(m_reader->lengthInSamples);
+            std::unique_ptr<juce::AudioFormatReader> reader (m_formatManager.createReaderFor(fileToRead));
+            
+            int length = static_cast<int>(reader->lengthInSamples);
             int blockSize = 512;
             int numBlocks = length / blockSize;
             m_audioBuffer.clear();
             m_audioBuffer.setSize(2, length);
-            //if (!m_reader->read(&m_audioBuffer, 0, length, 0, true, true)) jassertfalse;
-            //m_owner->m_player.m_buffer = m_audioBuffer;
-            ///*
+         
             for(int i = 0; i < numBlocks; ++i)
             {
                 if (threadShouldExit()) break;
@@ -52,13 +51,16 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
                 
                 if(i != numBlocks - i)
                 {
-                    m_reader->read(&m_audioBuffer, startPosition, blockSize, startPosition, true, true);
+                    reader->read(&m_audioBuffer, startPosition, blockSize, startPosition, true, true);
                 } else
                 {
-                    m_reader->read(&m_audioBuffer, startPosition, length - blockSize * i, startPosition, true, true);
+                    reader->read(&m_audioBuffer, startPosition, length - blockSize * i, startPosition, true, true);
                 }
-            } //*/
-            delete m_reader;
+            }
+            
+            setProgress (-1.0);
+            setStatusMessage ("Phew, Almost there!");
+            wait (1500);
         }
         
         void threadComplete (bool userPressedCancel) override
@@ -66,7 +68,6 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
             if (userPressedCancel)
             {
                 m_owner->noFileSelected();
-                DBG("Cancel");
             }
             m_owner->setBuffer(m_audioBuffer);
         }
@@ -76,11 +77,13 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
             m_owner = newOwner;
         }
         
-        juce::AudioFormatReader* m_reader;
+        //juce::AudioFormatReader* m_reader;
         juce::AudioBuffer<float> m_audioBuffer;
         juce::AudioFormatManager m_formatManager;
         TransportEditor* m_owner;
     };
+    
+    //struct ExportAlertWindow : public juce::
 
 public:
     ///The constructor, takes in references to the SoundTableModel, MainComponent and TransportPlayer.
@@ -158,7 +161,7 @@ private:
     ///Reference to the TransportPlayer.
     class TransportPlayer& m_player;
     
-    std::unique_ptr<RenderAlertWindow> m_renderWindow;
+    std::unique_ptr<BufferingAlertWindow> m_renderWindow;
     ///This member is need to initialize m_thumbnail and it is used to manage multiple audiothumbnail objects.
     juce::AudioThumbnailCache m_thumbnailCache;
     ///This member paints the waveform of the selected audiofile.

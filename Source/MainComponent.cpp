@@ -360,8 +360,8 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                         throw TRANS("Cannot import duplicate files");
                     }
                 }
-                
-                auto fileReader = m_formatManager.createReaderFor(fileToTest);
+        
+                std::unique_ptr<juce::AudioFormatReader> fileReader (m_formatManager.createReaderFor(fileToTest));
                 if(fileReader == nullptr) throw TRANS("Error Loading the File");
                 auto sampleRate =fileReader->sampleRate;
                 double fileLength = std::round( fileReader->lengthInSamples / sampleRate);
@@ -378,8 +378,6 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                         newFile.create();
                     } else
                     {
-                        //Lets prevent a leak
-                        delete fileReader;
                         //And lets also prevent the creation of dublicate files
                         throw TRANS("This File Already Exists In Save Folder");
                     }
@@ -388,9 +386,7 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                 }
                 
                 m_mainApp.m_valueTree.addFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
-                delete fileReader;
 
-                
             } catch (juce::String message){
                 juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,fileToTest.getFileName() , message);
             }
