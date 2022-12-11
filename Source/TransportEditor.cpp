@@ -360,8 +360,10 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
             {
                 m_canDragFile = false;
                 m_tableModel.preventFileImport();
-                
-                juce::DragAndDropContainer::performExternalDragDropOfFiles(m_fileToPlay.getFullPathName(), false, this, [&]()
+                //Here we need to make a copy of the file we want to export because we want to move the file into its new location instead of copying it (see 'true' in the performExternalDragDropOfFiles()). The reason why we need to move it instead of copy, is because else, we cant drag it anywhere execpt into some external applications or where it originated from, so the file could not be copied to desktop for example (unless it was there already), which would be a shame.
+                juce::File m_fileToExport(m_mainApp.m_filesToBeExported.getChildFile(m_fileToPlay.getFileName()));
+                m_fileToPlay.copyFileTo(m_fileToExport.getFullPathName());
+                juce::DragAndDropContainer::performExternalDragDropOfFiles(m_fileToPlay.getFullPathName(), true, this, [&]()
                 {
                     m_canDragFile = true;
                     m_tableModel.allowFileImport();
@@ -410,7 +412,7 @@ void TransportEditor::loadAudioFile(juce::File file)
     
     auto duration = fileReader->lengthInSamples / fileReader->sampleRate;
     
-    if (duration > 600)
+    if (duration > 660)
     {
         m_renderWindow = std::make_unique<BufferingAlertWindow>(m_player.m_buffer);
         m_renderWindow->setOwner(this);
@@ -534,34 +536,37 @@ void TransportEditor::createFileFromSelection()
     ++m_filenameSuffix;
     
     
-    //m_exportWindow = std::make_unique<ExportAlertWindow>(*this);
+    //m_exportWindow = std::make_unique<ExportAlertWindow>(*this, m_player.m_sampleRate);
     //m_exportWindow->launchThread();
     
     ///*
     juce::WavAudioFormat format;
     std::unique_ptr<juce::AudioFormatWriter> writer;
 
-    writer.reset(format.createWriterFor(new juce::FileOutputStream(m_tempFile), 44100, m_selectionBuffer.getNumChannels(), 24, {}, 0));
+    writer.reset(format.createWriterFor(new juce::FileOutputStream(m_tempFile), m_player.m_sampleRate, m_selectionBuffer.getNumChannels(), 24, {}, 0));
     
     if(writer != nullptr)
     {
         //writer->writeFromAudioSampleBuffer(m_selectionBuffer, 0, m_selectionBuffer.getNumSamples());
         //DBG("Samples Written: " + juce::String(m_selectionBuffer.getNumSamples()));
+        //DBG("With Sample Rate of: " + juce::String(writer->getSampleRate()));
         
         int length = m_selectionBuffer.getNumSamples();
         int blockSize = 512;
         int numBlocks = length / blockSize;
+        int samplesWritten = 0;
         
         for (int i = 0; i < numBlocks; ++i)
         {
             int startPosition = blockSize * i;
             
-            if(i != numBlocks - i)
+            if(i != numBlocks - 1)
             {
                 writer->writeFromAudioSampleBuffer(m_selectionBuffer, startPosition, blockSize);
+                samplesWritten += blockSize;
             } else
             {
-                writer->writeFromAudioSampleBuffer(m_selectionBuffer, startPosition, length - blockSize * i);
+                writer->writeFromAudioSampleBuffer(m_selectionBuffer, startPosition, length - samplesWritten);
             }
         }
         m_tempFileRendered = true;

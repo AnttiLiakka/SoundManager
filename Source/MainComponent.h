@@ -103,6 +103,8 @@ private:
     juce::File m_savedAudioFiles;
     ///This folder contains all of the temporary audio files, it is deleted when the application closes to tidy up.
     juce::File m_tempAudioFiles;
+    ///This folder contains all audio files that are being exported somewhere else
+    juce::File m_filesToBeExported;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

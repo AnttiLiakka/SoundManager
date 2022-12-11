@@ -41,6 +41,7 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
             int numBlocks = length / blockSize;
             m_audioBuffer.clear();
             m_audioBuffer.setSize(2, length);
+            int samplesRead = 0;
          
             for(int i = 0; i < numBlocks; ++i)
             {
@@ -49,12 +50,13 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
                 setProgress(i / (double) numBlocks);
                 int startPosition = blockSize * i;
                 
-                if(i != numBlocks - i)
+                if(i != numBlocks - 1)
                 {
                     reader->read(&m_audioBuffer, startPosition, blockSize, startPosition, true, true);
+                    samplesRead += blockSize;
                 } else
                 {
-                    reader->read(&m_audioBuffer, startPosition, length - blockSize * i, startPosition, true, true);
+                    reader->read(&m_audioBuffer, startPosition, length - samplesRead, startPosition, true, true);
                 }
             }
             
@@ -85,9 +87,10 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
     
     struct ExportAlertWindow : public juce::ThreadWithProgressWindow
     {
-      ExportAlertWindow(TransportEditor& owner)
+      ExportAlertWindow(TransportEditor& owner, double sampleRate)
                                             : juce::ThreadWithProgressWindow(TRANS("Creating file...."), true, false),
-                                              m_owner(owner)
+                                              m_owner(owner),
+                                              m_sampleRate(sampleRate)
         {
             setStatusMessage(TRANS("Writing file from selection...."));
         }
@@ -98,13 +101,14 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
             auto buffer = m_owner.m_selectionBuffer;
             auto file = m_owner.m_tempFile;
             
-            writer.reset(format.createWriterFor(new juce::FileOutputStream(file), 44100, m_owner.m_selectionBuffer.getNumChannels(), 24, {}, 0));
+            writer.reset(format.createWriterFor(new juce::FileOutputStream(file), m_sampleRate, m_owner.m_selectionBuffer.getNumChannels(), 24, {}, 0));
             
             if(writer != nullptr)
             {
                 int length = buffer.getNumSamples();
                 int blockSize = 512;
                 int numBlocks = length / blockSize;
+                int samplesWritten = 0;
                 
                 for (int i = 0; i < numBlocks; ++i)
                 {
@@ -112,12 +116,13 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
                     setProgress(i / (double) numBlocks);
                     int startPosition = blockSize * i;
                     
-                    if(i != numBlocks - i)
+                    if(i != numBlocks - 1)
                     {
                         if(!writer->writeFromAudioSampleBuffer(buffer, startPosition, blockSize)) jassertfalse;
+                        samplesWritten += blockSize;
                     } else
                     {
-                        writer->writeFromAudioSampleBuffer(buffer, startPosition, length - blockSize * i);
+                        writer->writeFromAudioSampleBuffer(buffer, startPosition, length - samplesWritten);
                     }
                 }
             } else jassertfalse;
@@ -141,6 +146,7 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
         juce::WavAudioFormat format;
         std::unique_ptr<juce::AudioFormatWriter> writer;
         TransportEditor& m_owner;
+        double m_sampleRate;
     };
 
 public:

@@ -2,31 +2,17 @@
 
 This document explains some of the features of the application.
 
-                                        File Import
+                                        File import
 
-To import audio files into the application, simply drag and drop files into the file table.
-Alternatively, you can also use the manual file import located in the file menu.
-You can choose whether the application creates a copy of the audio file when it is imported
-from the options menu.
-Please note that this application only supports .wav and .aiff formats
-To delete a sound file, right click it on the table and select "Delete Item".
+To import audio files into the application, simply drag and drop files into the file table. Alternatively, you can also use the manual file import located in the file menu. You can choose whether the application creates a copy of the audio file when it is imported from the options menu. To delete a sound file, right click it on the table and select "Delete Item". Please note that this application only supports .wav and .aiff formats.
 
                                         Categories
 
-To add categories to a sound file, right click it on the table and select a category
-from the "Add category" submenu. You can create your own categories either by selecting
-"New category" from the same menu or from the category header menu.
-Please note that a category will not be saved until it is assigned to at least one sound.
-To remove a category from a sound file, command right click the file on the table and
-select the category to be removed.
+To add categories to a sound file, right click it on the table and select a category from the "Add category" submenu. You can create your own categories either by selecting "New category" from the same menu or from the category header menu. Please note that a category will not be saved until it is assigned to at least one sound. To remove a category from a sound file, command right click the file on the table and select the category to be removed. A category can also be deleted from the category list by right clicking it and selecting "Delete Category", this will remove that category from all sound files. Please keep in mind that the default categories cannot be removed from the list, they will come back when the application is restarted (though that category will be removed from all sound files).
 
-                                        Filtering
+                                    Filtering the table
 
-The table can be filtered by category or by name. To filter by category, select a category and only files assigned to that category are visible. To remove the filtering, command click
-the category.
-To filter by text, click the magnifying glass (shortcut F), type the text and press Enter.
-To remove the filtering, remove all text from the search bar.
-Please note that category and name filtering cannot be used at the same time.
+The table can be filtered by category or by name. To filter by category, select a category and only files assigned to that category are visible. To remove the filtering, command click the category. To filter by text, click the magnifying glass (shortcut F), type the text and press Enter. To remove the filtering, remove all text from the search bar. Please note that category and name filtering cannot be used at the same time.
 
                                         Transport
 
@@ -37,4 +23,10 @@ Loop 'L'
 
 To select a section of the audio file to playback, alt+left click the waveform and drag to select the section.
 
-Audio files can be exported directly from the application. To do this, command+left click and drag the waveform. You can also export a specific section of the audio file by clicking the render button (located next to the loop button) while having a section selected. After the icon turns red, the rendered audio file can be exported from the application while the section is selected by using the usual export functionality. These exported sections can be imported directly back into the application but they keep their original filename so if you want to change the name of the file it is better to export the section somewhere else (like desktop) first, change the name and then import it to the application.
+                                        Exporting
+    
+Audio files can be exported directly from the application. To do this, command+left click and drag the waveform.
+
+A section of an audio file can also be exported. To do this, select a section to export, press to render button (next to the loop button) and once it has gone red, simply command+left click and drag the waveform as usual.
+
+                        

@@ -48,17 +48,15 @@ MainComponent::MainComponent() :
     
     m_savedAudioFiles = m_saveFolder.getChildFile("SavedFiles");
     
-    if(!m_savedAudioFiles.exists())
-    {
-        m_savedAudioFiles.createDirectory();
-    }
-    
+    if(!m_savedAudioFiles.exists()) m_savedAudioFiles.createDirectory();
+
     m_tempAudioFiles = m_saveFolder.getChildFile("TempFiles");
     
-    if(!m_tempAudioFiles.exists())
-    {
-        m_tempAudioFiles.createDirectory();
-    }
+    if(!m_tempAudioFiles.exists()) m_tempAudioFiles.createDirectory();
+        
+    m_filesToBeExported = m_tempAudioFiles.getChildFile("Export");
+    
+    if(!m_filesToBeExported.exists()) m_filesToBeExported.createDirectory();
 
     m_table.m_formatManager.registerBasicFormats();
 
@@ -148,14 +146,9 @@ MainComponent::~MainComponent()
     
     m_table.setModel(nullptr);
     m_categories.setModel(nullptr);
-    //Deleteing the tempFiles folder to clean up just incase audiofile were left there
-    if(m_tempAudioFiles.isDirectory())
-    {
-        m_tempAudioFiles.deleteRecursively();
-    } else
-    {
-        jassertfalse;
-    }
+    //Deleteing the tempFiles folder to clean up
+    m_tempAudioFiles.deleteRecursively();
+  
 }
 
 void MainComponent::paint (juce::Graphics& g)
