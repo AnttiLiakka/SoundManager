@@ -20,8 +20,10 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
     friend class TransportPlayer;
     friend class DragAndDropTable;
     
+    ///This structure handles the reading long audio files in a seperate thread.
     struct BufferingAlertWindow : public juce::ThreadWithProgressWindow
     {
+        ///The constructor, the argument is the audiobuffer the file is read into.
         BufferingAlertWindow(juce::AudioBuffer<float> buffer) :
                           juce::ThreadWithProgressWindow(TRANS("Reading file into a buffer....."), true, true),
                           m_audioBuffer(buffer),
@@ -30,7 +32,7 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
             m_formatManager.registerBasicFormats();
             setStatusMessage(TRANS("This is a very long audio file!"));
         }
-        
+        ///Pure virtual function inherited from Juce TreadWithProgressWindow. This function performs the thread's code and it is overridden to read the file into the buffer.
         void run() override
         {
             auto fileToRead = m_owner->m_fileToPlay;
@@ -64,7 +66,7 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
             setStatusMessage (TRANS("Phew, Almost there!"));
             wait (1500);
         }
-        
+        ///Virtual function inherited from Juce ThreadWithProressWindow. This function is called when the thread has finished and it is overridden to set the TransportPlayers buffer to contain the file. However, if user pressed cancel and ended the thread prematurely it calles the noFileSelected function instead.
         void threadComplete (bool userPressedCancel) override
         {
             if (userPressedCancel)
@@ -73,28 +75,30 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
             }
             m_owner->setBuffer(m_audioBuffer);
         }
-        
+        ///This function is used to set the owner of this class.
         void setOwner (TransportEditor* newOwner)
         {
             m_owner = newOwner;
         }
         
-        //juce::AudioFormatReader* m_reader;
         juce::AudioBuffer<float> m_audioBuffer;
         juce::AudioFormatManager m_formatManager;
         TransportEditor* m_owner;
     };
     
+    
+    ///This structure handles the writing of an audio file in a seperate thread.
     struct ExportAlertWindow : public juce::ThreadWithProgressWindow
     {
+        ///The constructor, the arguments are the TransportEditor that this structure is a member of and the sample rate of the file.
       ExportAlertWindow(TransportEditor& owner, double sampleRate)
-                                            : juce::ThreadWithProgressWindow(TRANS("Creating file...."), true, false),
+                                            : juce::ThreadWithProgressWindow(TRANS("Creating file...."), true, true),
                                               m_owner(owner),
                                               m_sampleRate(sampleRate)
         {
             setStatusMessage(TRANS("Writing file from selection...."));
         }
-        
+        ///Pure virtual function inherited from Juce TreadWithProgressWindow. This function performs the thread's code and it is overridden to write the audio file from the buffer.
         void run() override
         {
             
@@ -118,25 +122,27 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
                     
                     if(i != numBlocks - 1)
                     {
-                        if(!writer->writeFromAudioSampleBuffer(buffer, startPosition, blockSize)) jassertfalse;
+                        (writer->writeFromAudioSampleBuffer(buffer, startPosition, blockSize));
                         samplesWritten += blockSize;
                     } else
                     {
                         writer->writeFromAudioSampleBuffer(buffer, startPosition, length - samplesWritten);
+                        writer.reset();
                     }
                 }
-            } else jassertfalse;
+            }
             
             setProgress(-1.0);
             setStatusMessage(TRANS("Finishing up..."));
             wait (1500);
         }
-        
+        ///Virtual function inherited from Juce ThreadWithProressWindow. This function is called when the thread has finished and it is overridden to set up the renderbutton to the "file ready to export" mode (that is mostly for user experience), also if user pressed cancel, this function will throw a window informing the user that the render has been cancelled.
         void threadComplete (bool userPressedCancel) override
         {
             if (userPressedCancel)
             {
                 juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,m_owner.m_tempFile.getFileName(), TRANS("Render Cancelled"));
+                return;
             }
             m_owner.m_tempFileRendered = true;
             m_owner.m_renderButton.setEnabled(false);
@@ -148,6 +154,7 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
         TransportEditor& m_owner;
         double m_sampleRate;
     };
+
 
 public:
     ///The constructor, takes in references to the SoundTableModel, MainComponent and TransportPlayer.
@@ -207,7 +214,7 @@ public:
     void prepSelectionBuffer();
     ///This function writes a new audio file from the m_selectionbuffer into the tempFiles folder. This function also deletes the previously written file to keep the folder a bit more tidy.
     void createFileFromSelection();
-    
+    ///This function sets the m_player's m_buffer member to a buffer. This function is only called by the m_renderWindow member as otherwise it will not have access to it.
     void setBuffer(juce::AudioBuffer<float> newBuffer);
     ///CommandIDs for the keypresses
     enum KeyPressCommandIDs
@@ -224,7 +231,7 @@ private:
     class MainComponent& m_mainApp;
     ///Reference to the TransportPlayer.
     class TransportPlayer& m_player;
-    
+    ///BufferingAlertWindow which handles the reading of large audio files in a different thread
     std::unique_ptr<BufferingAlertWindow> m_renderWindow;
     
     std::unique_ptr<ExportAlertWindow> m_exportWindow;

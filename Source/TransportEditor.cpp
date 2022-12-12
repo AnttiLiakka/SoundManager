@@ -136,11 +136,11 @@ void TransportEditor::resized()
 {
     auto bounds = getLocalBounds();
     auto controls = bounds.removeFromBottom(30);
-    auto buttonMargin = controls.removeFromBottom(4);
+    controls.removeFromBottom(4);
     auto sliders = controls.removeFromLeft(getWidth() / 2 - 52.5);
-    auto sliderMargin = sliders.removeFromRight(10);
-    auto relocateButtonBottonMargin = bounds.removeFromBottom(getLocalBounds().getHeight() / 3.5);
-    auto relocateButtonTopMargin = bounds.removeFromTop(getLocalBounds().getHeight() / 3.5);
+    sliders.removeFromRight(10);
+    bounds.removeFromBottom(getLocalBounds().getHeight() / 3.5);
+    bounds.removeFromTop(getLocalBounds().getHeight() / 3.5);
     m_relocateButton.setBounds(bounds.removeFromRight(bounds.getWidth() / 2.5));
     m_playButton.setBounds(controls.removeFromLeft(35));
     m_stopButton.setBounds(controls.removeFromLeft(35));
@@ -314,7 +314,6 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
 void TransportEditor::timerCallback()
 {
     repaint();
-    //m_playheadPosition.setText(juce::String(m_player.m_playPosSeconds), juce::NotificationType::dontSendNotification);
     m_playheadPosition.setText(juce::String(m_player.m_playPosition), juce::NotificationType::dontSendNotification);
 }
 
@@ -352,7 +351,7 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
                 {
                     m_canDragFile = true;
                     m_tableModel.allowFileImport();
-                    m_tempFileRendered = false;
+                    resetSelection();
                 });
             }
             
@@ -412,7 +411,7 @@ void TransportEditor::loadAudioFile(juce::File file)
     
     auto duration = fileReader->lengthInSamples / fileReader->sampleRate;
     
-    if (duration > 660)
+    if (duration > 600)
     {
         m_renderWindow = std::make_unique<BufferingAlertWindow>(m_player.m_buffer);
         m_renderWindow->setOwner(this);
@@ -536,43 +535,8 @@ void TransportEditor::createFileFromSelection()
     ++m_filenameSuffix;
     
     
-    //m_exportWindow = std::make_unique<ExportAlertWindow>(*this, m_player.m_sampleRate);
-    //m_exportWindow->launchThread();
-    
-    ///*
-    juce::WavAudioFormat format;
-    std::unique_ptr<juce::AudioFormatWriter> writer;
-
-    writer.reset(format.createWriterFor(new juce::FileOutputStream(m_tempFile), m_player.m_sampleRate, m_selectionBuffer.getNumChannels(), 24, {}, 0));
-    
-    if(writer != nullptr)
-    {
-        //writer->writeFromAudioSampleBuffer(m_selectionBuffer, 0, m_selectionBuffer.getNumSamples());
-        //DBG("Samples Written: " + juce::String(m_selectionBuffer.getNumSamples()));
-        //DBG("With Sample Rate of: " + juce::String(writer->getSampleRate()));
-        
-        int length = m_selectionBuffer.getNumSamples();
-        int blockSize = 512;
-        int numBlocks = length / blockSize;
-        int samplesWritten = 0;
-        
-        for (int i = 0; i < numBlocks; ++i)
-        {
-            int startPosition = blockSize * i;
-            
-            if(i != numBlocks - 1)
-            {
-                writer->writeFromAudioSampleBuffer(m_selectionBuffer, startPosition, blockSize);
-                samplesWritten += blockSize;
-            } else
-            {
-                writer->writeFromAudioSampleBuffer(m_selectionBuffer, startPosition, length - samplesWritten);
-            }
-        }
-        m_tempFileRendered = true;
-        m_renderButton.setEnabled(false);
-        m_renderButton.setTooltip(TRANS("Render complete, exporting now exports selected section"));
-    } //*/
+    m_exportWindow = std::make_unique<ExportAlertWindow>(*this, m_player.m_sampleRate);
+    m_exportWindow->launchThread();
 }
 
 void TransportEditor::setBuffer(juce::AudioBuffer<float> newBuffer)

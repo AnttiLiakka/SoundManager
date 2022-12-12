@@ -140,6 +140,7 @@ MainComponent::MainComponent() :
 
 MainComponent::~MainComponent()
 {
+    m_valueTree.saveTreeToXml();
 #if JUCE_MAC
    juce::MenuBarModel::setMacMainMenu(nullptr);
 #endif

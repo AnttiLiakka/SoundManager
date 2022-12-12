@@ -37,10 +37,8 @@ public:
     juce::String printValueTree();
     ///This function saves the tree into the m_mainApp's m_audioLibrary XmlElement
     void saveTreeToXml();
-    
     ///This function adds a new fileInfo into the ValueTree, note the default value to desciption is an emptry string because when a file is first imported into the application, it will not have a description. However, when a fileInfo is added via xml data, It can potentially have a description string
     void addFile(juce::File& file, double length,double sampleRate, int numChannels, juce::String filePath, juce::String description = "");
-    
     ///This function updates the description string of a juce ValueTree located in a row
     void updateDescription(juce::String newString, int rowNum);
     ///This functon removes a fileinfo from the tree based on the index proviced

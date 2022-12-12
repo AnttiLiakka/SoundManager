@@ -20,20 +20,14 @@ TransportPlayer::TransportPlayer(class TransportEditor& editor) : m_editor(edito
 
 TransportPlayer::~TransportPlayer()
 {
-    //Something Something, Shutdown Audio, Something
+    //Shutting down audio by clearing the buffer, removing the player and closing the audio device
+    m_buffer.clear();
     m_editor.m_audioDeviceManager.removeAudioCallback(&m_player);
     m_editor.m_audioDeviceManager.closeAudioDevice();
 }
 
 void TransportPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
-    // This function will be called when the audio device is started, or when
-    // its settings (i.e. sample rate, block size, etc) are changed.
-
-    // You can use this function to initialise any resources you might need,
-    // but be careful - it will be called on the audio thread, not the GUI thread.
-
-    // For more details, see the help for AudioProcessor::prepareToPlay()
     m_sampleRate = sampleRate;
 }
 
@@ -66,10 +60,7 @@ void TransportPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& buf
 
 void TransportPlayer::releaseResources()
 {
-    // This will be called when the audio device stops, or when it is being
-    // restarted due to a setting change.
-
-    // For more details, see the help for AudioProcessor::releaseResources()
+    
 }
 
 void TransportPlayer::prepForNewFile()
