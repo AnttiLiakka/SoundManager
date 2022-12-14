@@ -23,11 +23,11 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
     ///This structure handles the reading long audio files in a seperate thread.
     struct BufferingAlertWindow : public juce::ThreadWithProgressWindow
     {
-        ///The constructor, the argument is the audiobuffer the file is read into.
-        BufferingAlertWindow(juce::AudioBuffer<float> buffer) :
+        ///The constructor, the argument is the audiobuffer the file is read into and TransportEditor this struct is a member of.
+        BufferingAlertWindow(juce::AudioBuffer<float> buffer, TransportEditor& owner) :
                           juce::ThreadWithProgressWindow(TRANS("Reading file into a buffer....."), true, true),
                           m_audioBuffer(buffer),
-                          m_owner(nullptr)
+                          m_owner(owner)
         {
             m_formatManager.registerBasicFormats();
             setStatusMessage(TRANS("This is a very long audio file!"));
@@ -35,7 +35,7 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
         ///Pure virtual function inherited from Juce TreadWithProgressWindow. This function performs the thread's code and it is overridden to read the file into the buffer.
         void run() override
         {
-            auto fileToRead = m_owner->m_fileToPlay;
+            auto fileToRead = m_owner.m_fileToPlay;
             std::unique_ptr<juce::AudioFormatReader> reader (m_formatManager.createReaderFor(fileToRead));
             
             int length = static_cast<int>(reader->lengthInSamples);
@@ -71,19 +71,16 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
         {
             if (userPressedCancel)
             {
-                m_owner->noFileSelected();
+                m_owner.noFileSelected();
             }
-            m_owner->setBuffer(m_audioBuffer);
+            m_owner.setBuffer(m_audioBuffer);
         }
-        ///This function is used to set the owner of this class.
-        void setOwner (TransportEditor* newOwner)
-        {
-            m_owner = newOwner;
-        }
-        
+        ///The buffer the audio file is read into
         juce::AudioBuffer<float> m_audioBuffer;
+        ///The Format manager that creates the reader for the audio file
         juce::AudioFormatManager m_formatManager;
-        TransportEditor* m_owner;
+        ///Rererence to the TransportEditor this struct is a member of
+        TransportEditor& m_owner;
     };
     
     
@@ -105,9 +102,9 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
             auto buffer = m_owner.m_selectionBuffer;
             auto file = m_owner.m_tempFile;
             
-            writer.reset(format.createWriterFor(new juce::FileOutputStream(file), m_sampleRate, m_owner.m_selectionBuffer.getNumChannels(), 24, {}, 0));
+            m_writer.reset(m_format.createWriterFor(new juce::FileOutputStream(file), m_sampleRate, m_owner.m_selectionBuffer.getNumChannels(), 24, {}, 0));
             
-            if(writer != nullptr)
+            if(m_writer != nullptr)
             {
                 int length = buffer.getNumSamples();
                 int blockSize = 512;
@@ -122,12 +119,12 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
                     
                     if(i != numBlocks - 1)
                     {
-                        (writer->writeFromAudioSampleBuffer(buffer, startPosition, blockSize));
+                        (m_writer->writeFromAudioSampleBuffer(buffer, startPosition, blockSize));
                         samplesWritten += blockSize;
                     } else
                     {
-                        writer->writeFromAudioSampleBuffer(buffer, startPosition, length - samplesWritten);
-                        writer.reset();
+                        m_writer->writeFromAudioSampleBuffer(buffer, startPosition, length - samplesWritten);
+                        m_writer.reset();
                     }
                 }
             }
@@ -148,10 +145,13 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
             m_owner.m_renderButton.setEnabled(false);
             m_owner.m_renderButton.setTooltip(TRANS("Render complete, exporting now exports selected section"));
         }
-        
-        juce::WavAudioFormat format;
-        std::unique_ptr<juce::AudioFormatWriter> writer;
+        ///This Audioformat creates the writer for the audio file
+        juce::WavAudioFormat m_format;
+        ///Created by m_format, this writer writes the audio file
+        std::unique_ptr<juce::AudioFormatWriter> m_writer;
+        ///Reference to the TransportEditor this struct is a member of
         TransportEditor& m_owner;
+        ///Sample rate for the writer
         double m_sampleRate;
     };
 
@@ -233,7 +233,7 @@ private:
     class TransportPlayer& m_player;
     ///BufferingAlertWindow which handles the reading of large audio files in a different thread
     std::unique_ptr<BufferingAlertWindow> m_renderWindow;
-    
+    ///ExportAlertWindow which handles the writing of audio files in a different thread
     std::unique_ptr<ExportAlertWindow> m_exportWindow;
     ///This member is need to initialize m_thumbnail and it is used to manage multiple audiothumbnail objects.
     juce::AudioThumbnailCache m_thumbnailCache;
@@ -267,7 +267,7 @@ private:
         Paused,
         Stopping
     };
-        
+    ///Current PlayState
     PlayState playState;
     ///Temporary audio file written from m_selectionBuffer
     juce::File m_tempFile;

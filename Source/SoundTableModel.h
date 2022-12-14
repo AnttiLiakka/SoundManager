@@ -12,7 +12,7 @@
 #include <JuceHeader.h>
 #include "MainComponent.h"
 
-///This class is the model for DragAndDropTable. it listens to a juce ValueTree holding the database for the table and updates the model when the tree changes
+///This class is the model for DragAndDropTable. it listens to a juce ValueTree in SoundManager holding the database for the table and updates the model when the tree changes
 class SoundTableModel : public juce::TableListBoxModel, public juce::ValueTree::Listener
 {
     friend class MainComponent;
@@ -30,11 +30,11 @@ class SoundTableModel : public juce::TableListBoxModel, public juce::ValueTree::
         ///Sets the row member
         void setRow(const int rowNum)
         {
-            row = rowNum;
+            m_row = rowNum;
         }
         
         ///The row this label is in. Important to make sure that the correct description is edited and displayed
-        int row;
+        int m_row;
     };
 
 public:
@@ -56,7 +56,7 @@ public:
     ///Virtual function inherited from Juce TableListBoxModel. This function is called when rows are deselected or selected and it is overridden to update the m_lastRowSelected member to make sure correct row is targeted.
     void selectedRowsChanged(int lastRowSelected) override;
     ///Virtual function inherited from Juce TableListBoxModel. This function is used to create or update a component to go in a cell. It is overridden to create and update the description label on column five.
-    juce::Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component*                                             existingComponentToUpdate) override;
+    juce::Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component*                                              existingComponentToUpdate) override;
     ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the Listener when a child is added to m_valueTreeToListen. It is overridden to update the table when a child is added.
     void valueTreeChildAdded(juce::ValueTree& parentTree, juce::ValueTree& childWhichHasBeenAdded) override;
     ///Virtual function inherited from Juce ValueTree Listener. This function is used to update the Listener when a property is changed in m_valueTreeToListen. It is overridden to update the table when visibility or categories of the tree changes.

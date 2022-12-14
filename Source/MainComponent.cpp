@@ -14,35 +14,28 @@ MainComponent::MainComponent() :
                                  m_audioLibrary(std::make_unique<juce::XmlElement>("audiolibrary")),
                                  m_saveFolder(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userApplicationDataDirectory).getChildFile("SoundManager"))
 {
-    // Make sure you set the size of the component after
-    // you add any child components
-    
-    //Check whether application folder already exists in application data directory
     if(!m_saveFolder.exists())
     {
         {
-            //if not, create one
             m_saveFolder.createDirectory();
         }
     }
-    //check whether a save file already exists
     m_saveFile = m_saveFolder.getChildFile("audiolibrary.xml");
     
     if(!m_saveFile.exists())
     {
-        //if not create a save file
+
         m_saveFile.create();
-        //and save an empty xml file
+
         m_valueTree.saveTreeToXml();
     } else
     {
-        //if yes, load the save data from it
         m_audioLibrary = juce::XmlDocument::parse(m_saveFile);
-        //And import the data into the valueTree
+
         m_valueTree.getTreeFromXml(m_audioLibrary.get());
-        //Also need to add all the existing categories into the categoryListModel
+        
         m_valueTree.addExistingCategories();
-        //Finally, set everything visible
+
         m_valueTree.setAllVisible();
     }
     
@@ -176,16 +169,6 @@ void MainComponent::resized()
     
 }
 
-/*
- 
- 
- 
- THIS SECTION IS FOR COMMANDS
- 
- 
- 
- */
-
 juce::ApplicationCommandTarget* MainComponent::getNextCommandTarget()
 {
     return &m_transport;
@@ -245,7 +228,6 @@ void MainComponent::getCommandInfo(juce::CommandID commandID, juce::ApplicationC
             break;
             
         default:
-            DBG("Meh");
             break;
     }
 }
@@ -269,7 +251,6 @@ bool MainComponent::perform (const juce::ApplicationCommandTarget::InvocationInf
             
         case CommandIDs::SaveData:
             m_valueTree.saveTreeToXml();
-            DBG("Saved");
             break;
             
         case CommandIDs::AddCategory:
@@ -306,22 +287,9 @@ void MainComponent::openHelpFile()
     juce::DialogWindow::showDialog(TRANS("Features"), &m_helpText, this, juce::Colours::white, true);
 }
 
-/*
- 
- 
- 
- THIS SECTION IS FOR DRAG AND DROP IMPORT
- 
- 
- 
- */
-
-
-//Gets called everytime a file is dragged over the table
 bool DragAndDropTable::isInterestedInFileDrag(const juce::StringArray& files)
 {        
     if(!m_acceptingfiles) return false;
-    //Go through every file to see whether it is an wav or aiff file
     for (auto file : files)
     {
         if (file.contains(".wav") || file.contains(".aiff"))
@@ -333,7 +301,6 @@ bool DragAndDropTable::isInterestedInFileDrag(const juce::StringArray& files)
     return false;
 }
 
-//This is called when a files are dropped and we are interested in them
 void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y)
 {
     for (auto file : files)
@@ -378,7 +345,6 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
                         newFile.create();
                     } else
                     {
-                        //And lets also prevent the creation of dublicate files
                         throw TRANS("This File Already Exists In Save Folder");
                     }
                     if(!fileToTest.copyFileTo(newFile)) throw TRANS("Error Coping the File");
@@ -394,22 +360,8 @@ void DragAndDropTable::filesDropped(const juce::StringArray& files, int x, int y
     }
 }
 
-/*
- 
- 
- 
- THIS SECTION IS FOR THE TABLE
- 
- 
- 
- 
- 
- */
-
 int SoundTableModel::getNumRows()
-{
-    jassert(m_valueTreeToListen.m_audioLibraryTree.isValid());
-    
+{    
     int numRows = m_valueTreeToListen.getNumFileTrees();
     return numRows;
 }
@@ -432,21 +384,18 @@ void SoundTableModel::paintCell(juce::Graphics &g, int rowNumber, int columnId, 
         g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
     }else if (columnId == 2)
     {
-        //This column is Duration
         g.setColour(juce::Colours::white);
         g.drawText(m_valueTreeToListen.getInformationAtIndex(rowNumber, 2), 2, 0, width - 4, height, juce::Justification::centred);
         g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
                 
     } else if (columnId == 3)
     {
-        //This column is sample rate
         g.setColour(juce::Colours::white);
         g.drawText(m_valueTreeToListen.getInformationAtIndex(rowNumber, 4), 2, 0, width - 4, height, juce::Justification::centred);
         g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
                 
     } else if (columnId == 4)
     {
-        //This column is num channels
         g.setColour(juce::Colours::white);
         g.drawText(m_valueTreeToListen.getInformationAtIndex(rowNumber, 3), 2, 0, width - 4, height, juce::Justification::centred);
         g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
@@ -466,7 +415,6 @@ void SoundTableModel::cellClicked(int rowNumber, int columnId, const juce::Mouse
             
             deleteCategoryMenu.addSectionHeader(TRANS("Remove Category"));
             
-            //Need to add function to get number of categories
             auto categories = m_valueTreeToListen.getCategories(m_lastSelectedRow);
             
             for(int i = 0; i < categories.size(); ++i)
@@ -479,7 +427,6 @@ void SoundTableModel::cellClicked(int rowNumber, int columnId, const juce::Mouse
                                              {
                                                 auto categories = m_valueTreeToListen.getCategories(m_lastSelectedRow);
                                                 auto categoryToDelete = categories[selection - 1];
-                                                DBG(categoryToDelete);
                                                 m_valueTreeToListen.deleteCategory(categoryToDelete, m_lastSelectedRow);
                                              });
         } else
@@ -543,16 +490,14 @@ juce::Component* SoundTableModel::refreshComponentForCell(int rowNumber, int col
             label->onTextChange = [&,label]()
             {
                 juce::String newDescription = label->getText();
-                DBG(juce::String(label->row));
-                m_valueTreeToListen.updateDescription(newDescription, label->row);
+                m_valueTreeToListen.updateDescription(newDescription, label->m_row);
             };
         }
-        if(rowNumber != label->row)
+        if(rowNumber != label->m_row)
         {
             label->setRow(rowNumber);
         }
-        label->setText(m_valueTreeToListen.getInformationAtIndex(label->row, 5), juce::NotificationType::dontSendNotification);
-        //existingComponentToUpdate = label;
+        label->setText(m_valueTreeToListen.getInformationAtIndex(label->m_row, 5), juce::NotificationType::dontSendNotification);
         return label;
     }
     return nullptr;
@@ -605,17 +550,6 @@ void SoundTableModel::allowFileImport()
     m_mainApp.m_table.m_acceptingfiles = true;
 }
 
-/*
- 
- 
- 
- THIS SECTION IS FOR THE MENUS
- 
- 
- 
- 
- */
-
 juce::StringArray MainComponent::getMenuBarNames()
 {
     return {"File", "Category", "Options", "Help" };
@@ -627,15 +561,12 @@ juce::PopupMenu MainComponent::getMenuForIndex (int menuIndex, const juce::Strin
     
     if (menuIndex == 0)
     {
-        //menu.addItem(1,"Import Audio File");
         menu.addCommandItem(&m_commandManager, CommandIDs::ImportFile);
-        //menu.addItem(2, "Save Data");
         menu.addCommandItem(&m_commandManager, CommandIDs::SaveData);
     }
     
     if (menuIndex == 1)
     {
-        //menu.addItem (2, "Add New Category");
         menu.addCommandItem(&m_commandManager, CommandIDs::AddCategory);
     }
     else if (menuIndex == 2)
@@ -648,7 +579,6 @@ juce::PopupMenu MainComponent::getMenuForIndex (int menuIndex, const juce::Strin
     }
     else if (menuIndex == 3)
     {
-        //menu.addItem (3, "Readme");
         menu.addCommandItem(&m_commandManager, CommandIDs::Features);
     }
     return menu;
@@ -686,18 +616,15 @@ void DragAndDropTable::manualFileImport()
                     throw TRANS("Cannot import duplicate files");
                 }
             }
-            
-            auto fileReader = m_formatManager.createReaderFor(fileToTest);
+            std::unique_ptr<juce::AudioFormatReader> fileReader (m_formatManager.createReaderFor(fileToTest));
             if(fileReader == nullptr) throw TRANS("Error Loading the File");
             auto sampleRate =fileReader->sampleRate;
             double fileLength = std::round( fileReader->lengthInSamples / sampleRate);
             int numChannels = fileReader->numChannels;
             juce::String filePath = fileToTest.getFullPathName();
             
-            
             m_mainApp.m_valueTree.addFile(fileToTest, fileLength,sampleRate, numChannels, filePath);
-            delete fileReader;
-
+            
         } catch (juce::String message){
             juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon,fileToTest.getFileName() , message);
         }
@@ -706,12 +633,10 @@ void DragAndDropTable::manualFileImport()
 
 void DragAndDropTable::cellPopupAction(int selection, int rowNumber, int columnId)
 {
-   //Delete item
    if(selection == 1)
    {
        m_mainApp.m_valueTree.removeFileInfoTree(rowNumber);
    }
-   //New Category
    else if(selection == 2)
    {
        auto categoryTextEditor = std::make_unique<juce::Label>(TRANS("Category Name"));
@@ -724,7 +649,6 @@ void DragAndDropTable::cellPopupAction(int selection, int rowNumber, int columnI
        
        juce::CallOutBox::launchAsynchronously(std::move(categoryTextEditor), textEditorPos, &m_mainApp);
    }
-   //This checks the selection and selects a category to add to the item
    else
    {
        for (int i = 0; i < m_mainApp.m_categoryModel.numCategories(); ++i )
@@ -746,19 +670,6 @@ void CategoryListModel::listPopupAction()
     m_uniqueCategories.erase(m_uniqueCategories.begin() + m_selectedRow);
     m_mainApp.m_categories.updateContent();
 }
-
-
-/*
- 
- 
- 
- THIS SECTION IS FOR THE CATEGORIES
- 
- 
- 
- 
- */
-
 
 int CategoryListModel::getNumRows()
 {

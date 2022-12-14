@@ -108,7 +108,7 @@ TransportEditor::~TransportEditor()
 void TransportEditor::paint(juce::Graphics &g)
 {
     auto waveformBounds = getLocalBounds();
-    auto controls = waveformBounds.removeFromBottom(30);
+    waveformBounds.removeFromBottom(30);
     g.setColour(getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
     g.fillRect(waveformBounds);
     g.setFont(juce::Font(25));
@@ -152,13 +152,10 @@ void TransportEditor::resized()
 
 void TransportEditor::setFileToPlay(juce::File file)
 {
-    //Stops audio playback and clears the buffer
     m_player.prepForNewFile();
     m_fileSelected = true;
     m_fileToPlay = file;
-    //Removes the selected section drawing
     resetSelection();
-    //Changes playState to correct state if needed
     if (playState != Stopped)
     {
         changePlayState(Stopping);
@@ -254,7 +251,6 @@ void TransportEditor::changePlayState(PlayState newPlayState)
                 break;
                 
             default:
-                jassertfalse;
                 break;
                 
         }
@@ -344,7 +340,6 @@ void TransportEditor::mouseDrag(const juce::MouseEvent& event)
         {
             if(m_sectionSelected && m_tempFileRendered)
             {
-                DBG(m_tempFile.getFullPathName());
                 m_canDragFile = false;
                 m_tableModel.preventFileImport();
                 juce::DragAndDropContainer::performExternalDragDropOfFiles(m_tempFile.getFullPathName(), true, this, [&]()
@@ -413,8 +408,7 @@ void TransportEditor::loadAudioFile(juce::File file)
     
     if (duration > 600)
     {
-        m_renderWindow = std::make_unique<BufferingAlertWindow>(m_player.m_buffer);
-        m_renderWindow->setOwner(this);
+        m_renderWindow = std::make_unique<BufferingAlertWindow>(m_player.m_buffer, *this);
         m_renderWindow->launchThread();
         m_thumbnail.setSource(new juce::FileInputSource(file));
         m_numBufferSamples = m_player.m_buffer.getNumSamples();

@@ -144,32 +144,34 @@ void SoundManager::addFile(juce::File& file, double length,double sampleRate, in
 
 void SoundManager::updateDescription(juce::String newString, int rowNum)
 {
-    auto fileInfo = m_audioLibraryTree.getChild(rowNum);
-    auto information = fileInfo.getChildWithName(m_information);
-    information.setProperty(m_description, newString, nullptr);
+    auto fileInfo = m_currentTable[rowNum];
+    if(fileInfo.isValid())
+    {
+        auto information = fileInfo.getChildWithName(m_information);
+        if(information.isValid()) information.setProperty(m_description, newString, nullptr);
+    }
 }
 
 void SoundManager::removeFileInfoTree(int index)
 {
-    m_audioLibraryTree.removeChild(index, nullptr);
+    auto treeToRemove = m_currentTable[index];
+    if(treeToRemove.isValid()) m_audioLibraryTree.removeChild(treeToRemove, nullptr);
 }
 
 void SoundManager::addCategory(juce::String name, int rowNumber)
 {
-    //set up a new category valuetree to add to the categories of the correct tree
     juce::ValueTree newCategory(m_category);
-    newCategory.setProperty(m_id, name, nullptr);
     
-    //get the filepath of the tree that was clicked
+    newCategory.setProperty(m_id, name, nullptr);
+
     juce::ValueTree child = m_currentTable[rowNumber];
+    
     juce::String filepath = child.getProperty(m_filePath);
     
-    //get a child from m_audioLibrarytree with the same filepath. This is the tree the category needs to be added
     auto correctFileInfo = m_audioLibraryTree.getChildWithProperty(m_filePath, filepath);
     
-    //get the categories child of the tree
     auto categories = correctFileInfo.getChildWithName(m_categories);
-   //add new category as a child
+    
     categories.appendChild(newCategory, nullptr);
 }
 
@@ -379,10 +381,9 @@ void SoundManager::setNewFilepath(juce::File fileToRelocate)
         try {
             if(fileToTest.isDirectory())throw TRANS("You've seleced a directory, please pick an audio file");
             if(!fileToTest.existsAsFile())throw TRANS("No file selected");
-            auto fileReader = m_mainApp.m_table.m_formatManager.createReaderFor(fileToTest);
+            std::unique_ptr<juce::AudioFormatReader> fileReader (m_mainApp.m_table.m_formatManager.createReaderFor(fileToTest));
             if(fileReader == nullptr) throw TRANS("Error loading the File");
             juce::String newFilepath = fileToTest.getFullPathName();
-            delete fileReader;
             
             changeFilepath(newFilepath, m_oldFilepath);
             

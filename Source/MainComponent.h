@@ -21,14 +21,18 @@ class MainComponent  : public juce::Component, public juce::MenuBarModel, public
     
 public:
     //==============================================================================
+    ///The constructor
     MainComponent();
+    ///The destructor. Saves data. deletes the temporary audio file folder and sets the table, category and menubar models to nullptr to avoid issues on showdown.
     ~MainComponent() override;
 
     //==============================================================================
    
 
     //==============================================================================
+    ///Virtual function inherited from Juce Component. This function is overridden to paint the backround of the component
     void paint (juce::Graphics& g) override;
+    ///Virtual funcion inherited from Juce Component. This function is overridden to layout all of the child components into their correct position.
     void resized() override;
     ///Pure virtual function inherited from Juce MenuBarModel and is overridden to return the names for the different bars in the menu.
     juce::StringArray getMenuBarNames() override;
