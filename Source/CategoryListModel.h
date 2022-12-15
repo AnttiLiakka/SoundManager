@@ -45,7 +45,7 @@ public:
     ///This function returns the number of categories in the list.
     int numCategories();
     ///This function is used to delete a category(row) from the list.
-    void listPopupAction();
+    void listPopupAction(int selection);
     ///Pure virtual function inherited from Juce Label Listener. This function responds to changes in Labels this class is listening to and it is overridden to add categories to the list.
     void labelTextChanged(juce::Label* labelThatHasChanged) override;
     ///This function opens a calloutbox to which a new category name can be written. The calloutbox contains a label that this class listens.

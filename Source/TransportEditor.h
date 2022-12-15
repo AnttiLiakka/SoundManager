@@ -162,7 +162,7 @@ public:
     ~TransportEditor();
     ///Virtual function inherited from Juce Component and it is overridden to paint the waveform and the playhead or any error texts.
     void paint(juce::Graphics& g) override;
-    ///Virtual functon inherted from Juce Component and it is overridden to place all buttons, sliders etc. onto the component.
+    ///Virtual function inherted from Juce Component and it is overridden to place all buttons, sliders etc. onto the component.
     void resized() override;
     ///Pure virtual function inherited from Juce changeListener and it is overriden to listen when the TransportPlayer has reached the end of the playback and when that happens, this class tells it to stop playback.
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;

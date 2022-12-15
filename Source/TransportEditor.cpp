@@ -310,7 +310,7 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
 void TransportEditor::timerCallback()
 {
     repaint();
-    m_playheadPosition.setText(juce::String(m_player.m_playPosition), juce::NotificationType::dontSendNotification);
+    m_playheadPosition.setText(juce::String(m_player.m_playPosSeconds), juce::NotificationType::dontSendNotification);
 }
 
 void TransportEditor::mouseDown(const juce::MouseEvent& event)

@@ -663,12 +663,15 @@ void DragAndDropTable::cellPopupAction(int selection, int rowNumber, int columnI
    }
 }
 
-void CategoryListModel::listPopupAction()
+void CategoryListModel::listPopupAction(int selection)
 {
-    juce::String categoryToDelete = m_uniqueCategories[m_selectedRow];
-    m_valueTreeToListen.categoryDeleted(categoryToDelete);
-    m_uniqueCategories.erase(m_uniqueCategories.begin() + m_selectedRow);
-    m_mainApp.m_categories.updateContent();
+    if(selection == 1)
+    {
+        juce::String categoryToDelete = m_uniqueCategories[m_selectedRow];
+        m_valueTreeToListen.categoryDeleted(categoryToDelete);
+        m_uniqueCategories.erase(m_uniqueCategories.begin() + m_selectedRow);
+        m_mainApp.m_categories.updateContent();
+    }
 }
 
 int CategoryListModel::getNumRows()
@@ -706,7 +709,7 @@ void CategoryListModel::listBoxItemClicked(int row, const juce::MouseEvent& mous
         
         listMenu.showMenuAsync(juce::PopupMenu::Options() ,  [&](int selection)
                            {
-                            listPopupAction();
+                            listPopupAction(selection);
                             });
     }
     
