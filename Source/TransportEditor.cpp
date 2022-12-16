@@ -29,7 +29,8 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     
     m_audioDeviceManager.initialise(0, 2, nullptr, true);
 
-    m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, true);
+    m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, false);
+    m_audioSettings->setSize(400, 600);
     
     m_thumbnail.addChangeListener(this);
     
@@ -392,11 +393,7 @@ void TransportEditor::mouseUp(const juce::MouseEvent &event)
 
 void TransportEditor::openAudioSettings()
 {
-    
-    m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, false);
-    m_audioSettings->setSize(400, 600);
     juce::DialogWindow::showDialog(TRANS("Audio settings"),m_audioSettings.get() , &m_mainApp, juce::Colours::black, true);
-
 }
 
 void TransportEditor::loadAudioFile(juce::File file)

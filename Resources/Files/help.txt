@@ -4,7 +4,7 @@ This document explains some of the features of the application.
 
                                         File import
 
-To import audio files into the application, simply drag and drop files into the file table. Alternatively, you can also use the manual file import located in the file menu. You can choose whether the application creates a copy of the audio file when it is imported from the options menu. To delete a sound file, right click it on the table and select "Delete Item". Please note that this application only supports .wav and .aiff formats.
+To import audio files into the application, simply drag and drop files into the file table. Alternatively, you can also use the manual file import located in the file menu. You can choose whether the application creates a copy of the audio file when it is imported or not from the options menu. To delete a sound file, right click it on the table and select "Delete Item". Please note that this application only supports .wav and .aiff formats.
 
                                         Categories
 
@@ -22,6 +22,8 @@ Stop 'Backspace' or 'Enter'
 Loop 'L'
 
 To select a section of the audio file to playback, alt+left click the waveform and drag to select the section.
+
+You can change audio settings from the Options menu. This is useful if you have a lot of files with different sample rates or if you want to change the output device.
 
                                         Exporting
     
