@@ -689,7 +689,10 @@ void CategoryListModel::paintListBoxItem(int rowNumber, juce::Graphics &g, int w
         g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
     
     g.setColour(juce::Colours::white);
-    g.drawText(m_uniqueCategories[rowNumber], 2, 0, width - 4, height, juce::Justification::centredLeft);
+    if (rowNumber < m_uniqueCategories.size())
+    {
+        g.drawText(m_uniqueCategories[rowNumber], 2, 0, width - 4, height, juce::Justification::centredLeft);
+    }
     g.setColour(m_mainApp.getLookAndFeel().findColour(juce::ListBox::backgroundColourId));
 }
 

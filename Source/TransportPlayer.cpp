@@ -35,19 +35,25 @@ void TransportPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleR
 void TransportPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
 {
     bufferToFill.clearActiveBufferRegion();
+
     if(!m_playing) return;
-    
+
+
+
     auto numSamples = bufferToFill.numSamples;
     float* leftChannel = bufferToFill.buffer->getWritePointer(0);
     float* rightChannel = bufferToFill.buffer->getWritePointer(1);
     
     for(int i = 0; i < numSamples; ++i)
     {
-        leftChannel[i] = m_buffer.getSample(0, m_playPosition) * m_volume;
-        rightChannel[i] = m_buffer.getSample(1, m_playPosition) * m_volume;
+        auto leftSample = m_gainModule.processSample(m_buffer.getSample(0, m_playPosition));
+        auto RightSample = m_gainModule.processSample(m_buffer.getSample(1, m_playPosition));
+
+        leftChannel[i] = leftSample;
+        rightChannel[i] = RightSample;
         
         ++m_playPosition;
-        m_playPosSeconds = m_playPosition / m_sampleRate;
+        m_playPosSeconds.store((float)m_playPosition / m_sampleRate);
         
         if(m_playPosition >= m_endPosition.load() || m_playPosition >= m_buffer.getNumSamples())
         {
@@ -95,8 +101,9 @@ void TransportPlayer::sliderValueChanged(juce::Slider* slider)
        auto volume = slider->getValue();
         if(volume <= 1)
         {
-            m_volume = volume;
+            m_gainModule.SetGain(volume);
         }
+        m_editor.refreshThumbnail(true);
     }
 }
 

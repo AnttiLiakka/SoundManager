@@ -11,10 +11,11 @@
 #pragma once
 #include <JuceHeader.h>
 #include "TransportPlayer.h"
+#include "GainModule.h"
 
 class SoundTableModel;
 ///This class is the component user interacts with to control the TransportPlayer.
-class TransportEditor : public juce::Component, public juce::ChangeListener, private juce::Timer,                       public juce::ApplicationCommandTarget
+class TransportEditor : public juce::Component, public juce::ChangeListener, private juce::Timer, public juce::ApplicationCommandTarget
 {
     friend class MainComponent;
     friend class TransportPlayer;
@@ -154,7 +155,54 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
         ///Sample rate for the writer
         double m_sampleRate;
     };
+    
+    struct ThumbnailRender : public juce::Thread, public juce::ChangeBroadcaster
+    {
+        ThumbnailRender(juce::AudioThumbnail& thumbnailToUse, GainModule& gainToUse, const juce::AudioBuffer<float>& bufferToCopy, juce::AudioBuffer<float>& bufferToSet, juce::ChangeListener* listener) :
+            juce::Thread("ThumbnailRender"),
+            m_thumbnail(thumbnailToUse),
+            m_gainModule(gainToUse),
+            m_bufferToCopy(bufferToCopy),
+            m_bufferToSet(bufferToSet),
+            m_changeListener(listener)
+        {
+            addChangeListener(listener);
+        }
 
+        ~ThumbnailRender()
+        {
+            removeAllChangeListeners();
+        }
+                        
+        void run() override
+        {
+            std::lock_guard<std::mutex> lock{ m_mutex };
+
+            m_bufferToSet.setSize(m_bufferToCopy.getNumChannels(), m_bufferToCopy.getNumSamples());
+
+            for (int c = 0; c < m_bufferToSet.getNumChannels(); ++c)
+            {
+                for (int n = 0; n < m_bufferToSet.getNumSamples(); ++n)
+                {
+                    if (threadShouldExit())
+                        return;
+
+                    auto sample = m_bufferToCopy.getSample(c, n);
+                    auto gainSample = m_gainModule.processSample(sample);
+                   m_bufferToSet.setSample(c, n, gainSample);
+                }
+
+            }
+            sendChangeMessage();
+        }
+
+        juce::AudioThumbnail& m_thumbnail;
+        GainModule& m_gainModule;
+        const juce::AudioBuffer<float>& m_bufferToCopy;
+        juce::AudioBuffer<float>& m_bufferToSet;
+        juce::ChangeListener* m_changeListener;
+        std::mutex m_mutex{};
+    };
 
 public:
     ///The constructor, takes in references to the SoundTableModel, MainComponent and TransportPlayer.
@@ -164,7 +212,7 @@ public:
     void paint(juce::Graphics& g) override;
     ///Virtual function inherted from Juce Component and it is overridden to place all buttons, sliders etc. onto the component.
     void resized() override;
-    ///Pure virtual function inherited from Juce changeListener and it is overriden to listen when the TransportPlayer has reached the end of the playback and when that happens, this class tells it to stop playback.
+    ///Pure virtual function inherited from Juce changeListener and it is overridden to listen when the TransportPlayer has reached the end of the playback and when that happens, this class tells it to stop playback.
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
     ///Pure virtual function inherited from Juce ApplicationCommandTarget and it is overridden to return m_mainApp.
     juce::ApplicationCommandTarget* getNextCommandTarget() override;
@@ -216,6 +264,9 @@ public:
     void createFileFromSelection();
     ///This function sets the m_player's m_buffer member to a buffer. This function is only called by the m_renderWindow member as otherwise it will not have access to it.
     void setBuffer(juce::AudioBuffer<float> newBuffer);
+
+    void refreshThumbnail(bool reRender);
+
     ///CommandIDs for the keypresses
     enum KeyPressCommandIDs
     {
@@ -273,9 +324,15 @@ private:
     juce::File m_tempFile;
     ///Audiobuffer containing the samples in current selection area
     juce::AudioBuffer<float> m_selectionBuffer;
+
+    juce::AudioBuffer<float> m_thumbnailBuffer;
     ///This funtion is used to change the state of playback
     void changePlayState (TransportEditor::PlayState newPlayState);
     ///This virtual function is inherited from Juce Timer and it is overridden to repaint the component at regular intervals. This makes sure that the playhead is drawn into a correct position.
     void timerCallback() override;
+
+    ThumbnailRender m_thumbnailRender;
+
+    int m_hash = 0;
     
 };
