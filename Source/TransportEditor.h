@@ -334,5 +334,7 @@ private:
     ThumbnailRender m_thumbnailRender;
 
     int m_hash = 0;
+
+    double m_sampleRate = 44000;
     
 };

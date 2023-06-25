@@ -43,25 +43,48 @@ void TransportPlayer::getNextAudioBlock (const juce::AudioSourceChannelInfo& buf
     auto numSamples = bufferToFill.numSamples;
     float* leftChannel = bufferToFill.buffer->getWritePointer(0);
     float* rightChannel = bufferToFill.buffer->getWritePointer(1);
-    
-    for(int i = 0; i < numSamples; ++i)
-    {
-        auto leftSample = m_gainModule.processSample(m_buffer.getSample(0, m_playPosition));
-        auto RightSample = m_gainModule.processSample(m_buffer.getSample(1, m_playPosition));
 
-        leftChannel[i] = leftSample;
-        rightChannel[i] = RightSample;
-        
-        ++m_playPosition;
-        m_playPosSeconds.store((float)m_playPosition / m_sampleRate);
-        
-        if(m_playPosition >= m_endPosition.load() || m_playPosition >= m_buffer.getNumSamples())
+    if (m_buffer.getNumChannels() == 2)
+    {
+
+        for (int i = 0; i < numSamples; ++i)
         {
-            m_playPosition = 0;
-            sendChangeMessage();
+            auto leftSample = m_gainModule.processSample(m_buffer.getSample(0, m_playPosition));
+
+            auto RightSample = m_gainModule.processSample(m_buffer.getSample(1, m_playPosition));
+
+            leftChannel[i] = leftSample;
+            rightChannel[i] = RightSample;
+
+            ++m_playPosition;
+            m_playPosSeconds.store((float)m_playPosition / m_sampleRate);
+
+            if (m_playPosition >= m_endPosition.load() || m_playPosition >= m_buffer.getNumSamples())
+            {
+                m_playPosition = 0;
+                sendChangeMessage();
+            }
         }
     }
+    else if (m_buffer.getNumChannels() == 1)
+    {
+        for (int i = 0; i < numSamples; ++i)
+        {
+            auto leftSample = m_gainModule.processSample(m_buffer.getSample(0, m_playPosition));
 
+            leftChannel[i] = leftSample;
+            rightChannel[i] = leftSample;
+
+            ++m_playPosition;
+            m_playPosSeconds.store((float)m_playPosition / m_sampleRate);
+
+            if (m_playPosition >= m_endPosition.load() || m_playPosition >= m_buffer.getNumSamples())
+            {
+                m_playPosition = 0;
+                sendChangeMessage();
+            }
+        }
+    }
 }
 
 void TransportPlayer::releaseResources()

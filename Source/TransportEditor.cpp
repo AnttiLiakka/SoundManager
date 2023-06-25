@@ -413,8 +413,10 @@ void TransportEditor::loadAudioFile(juce::File file)
     m_thumbnailBuffer.clear();
     m_thumbnail.clear();
 
-    m_player.m_buffer.setSize(2, static_cast<int>(fileReader->lengthInSamples));
-    m_thumbnailBuffer.setSize(2, static_cast<int>(fileReader->lengthInSamples));
+    m_sampleRate = fileReader->sampleRate;
+
+    m_player.m_buffer.setSize(fileReader->numChannels, static_cast<int>(fileReader->lengthInSamples));
+    m_thumbnailBuffer.setSize(fileReader->numChannels, static_cast<int>(fileReader->lengthInSamples));
     
     auto duration = fileReader->lengthInSamples / fileReader->sampleRate;
     
@@ -423,7 +425,7 @@ void TransportEditor::loadAudioFile(juce::File file)
         m_renderWindow = std::make_unique<BufferingAlertWindow>(m_player.m_buffer, *this);
         m_renderWindow->launchThread();
         m_hash++;
-        m_thumbnail.setSource(&m_thumbnailBuffer, m_player.m_sampleRate, m_hash);
+        m_thumbnail.setSource(&m_thumbnailBuffer, m_sampleRate, m_hash);
         m_numBufferSamples = m_player.m_buffer.getNumSamples();
         m_player.setEndPosition(m_numBufferSamples);
         
@@ -432,7 +434,7 @@ void TransportEditor::loadAudioFile(juce::File file)
         fileReader->read(&m_player.m_buffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, true);
         fileReader->read(&m_thumbnailBuffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, true);
         m_hash++;
-        m_thumbnail.setSource(&m_thumbnailBuffer, m_player.m_sampleRate, m_hash);
+        m_thumbnail.setSource(&m_thumbnailBuffer, m_sampleRate, m_hash);
         m_numBufferSamples = m_player.m_buffer.getNumSamples();
         m_player.setEndPosition(m_numBufferSamples);
         m_thumbnailRender.startThread();
@@ -545,7 +547,7 @@ void TransportEditor::createFileFromSelection()
     ++m_filenameSuffix;
     
     
-    m_exportWindow = std::make_unique<ExportAlertWindow>(*this, m_player.m_sampleRate);
+    m_exportWindow = std::make_unique<ExportAlertWindow>(*this, m_sampleRate);
     m_exportWindow->launchThread();
 }
 
@@ -562,7 +564,7 @@ void TransportEditor::refreshThumbnail(bool reRender)
     }
     else
     {
-        m_thumbnail.setSource(&m_thumbnailBuffer, m_player.m_sampleRate, m_hash);
+        m_thumbnail.setSource(&m_thumbnailBuffer, m_sampleRate, m_hash);
         repaint();
     }
 }
