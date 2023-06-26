@@ -125,8 +125,8 @@ void TransportPlayer::sliderValueChanged(juce::Slider* slider)
         if(volume <= 1)
         {
             m_gainModule.SetGain(volume);
+            m_editor.repaint();
         }
-        m_editor.refreshThumbnail(true);
     }
 }
 

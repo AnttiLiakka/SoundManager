@@ -512,3 +512,6 @@ fastlane/*.env
 
 iOSInjectionProject/
 .DS_Store
+Builds/VisualStudio2022/SoundManager_App.vcxproj.filters
+Builds/VisualStudio2022/SoundManager_App.vcxproj
+Builds/MacOSX/SoundManager.xcodeproj/project.pbxproj

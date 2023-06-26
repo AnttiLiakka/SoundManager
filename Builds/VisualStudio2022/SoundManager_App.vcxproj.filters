@@ -574,6 +574,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\AudioThumbnailRenderer.cpp">
+      <Filter>SoundManager\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\GainModule.cpp">
       <Filter>SoundManager\Source</Filter>
     </ClCompile>
@@ -2898,6 +2901,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\AudioThumbnailRenderer.h">
+      <Filter>SoundManager\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\GainModule.h">
       <Filter>SoundManager\Source</Filter>
     </ClInclude>

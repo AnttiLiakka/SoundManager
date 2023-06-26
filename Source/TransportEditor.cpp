@@ -14,8 +14,6 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
                  m_tableModel(tableModel),
                  m_mainApp(mainApp),
                  m_player(player),
-                 m_thumbnailCache(5), 
-                 m_thumbnail(512, m_formatManager, m_thumbnailCache),
                  m_playButton("Play", juce::DrawableButton::ButtonStyle::ImageFitted),
                  m_stopButton("Stop", juce::DrawableButton::ButtonStyle::ImageFitted),
                  m_loopButton("Loop", juce::DrawableButton::ButtonStyle::ImageFitted),
@@ -24,7 +22,7 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
                  m_playheadPosition("PlayheadPosition"),
                  m_volumeSlider(juce::Slider::SliderStyle::LinearHorizontal, juce::Slider::NoTextBox),
                  playState(Stopped),
-                 m_thumbnailRender(m_thumbnail, m_player.m_gainModule, m_player.m_buffer, m_thumbnailBuffer, this)
+                 m_audioThumbnail(m_player.m_buffer, m_player.m_gainModule)
 {
     
     m_formatManager.registerBasicFormats();
@@ -34,9 +32,6 @@ TransportEditor::TransportEditor(class SoundTableModel& tableModel, class MainCo
     m_audioSettings = std::make_unique<juce::AudioDeviceSelectorComponent>(m_audioDeviceManager, 0, 0, 0, 2, false, false, false, false);
     m_audioSettings->setSize(400, 600);
     
-   m_thumbnail.addChangeListener(this);
-    
-
     m_playButton.setImages(juce::Drawable::createFromImageData(BinaryData::playInactive_svg, BinaryData::playInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playHover_svg, BinaryData::playHover_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::playActive_svg, BinaryData::playActive_svgSize).get());
     
     m_stopButton.setImages(juce::Drawable::createFromImageData(BinaryData::stopInactive_svg, BinaryData::stopInactive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::stopHover_svg, BinaryData::stopHover_svgSize).get(),juce::Drawable::createFromImageData(BinaryData::stopActive_svg, BinaryData::stopActive_svgSize).get(), juce::Drawable::createFromImageData(BinaryData::stopActive_svg, BinaryData::stopActive_svgSize).get());
@@ -169,7 +164,6 @@ void TransportEditor::setFileToPlay(juce::File file)
         m_relocateButton.setEnabled(true);
         m_relocateButton.setAlpha(1);
         m_fileIsValid = false;
-        m_thumbnail.clear();
     } else
     {
         m_relocateButton.setEnabled(false);
@@ -188,7 +182,8 @@ void TransportEditor::paintLoadedFile(juce::Graphics& g, const juce::Rectangle<i
         return;
     }
     auto audioPosition = (float) m_player.m_playPosition;
-    m_thumbnail.drawChannels(g, bounds, 0, m_thumbnail.getTotalLength(), 1.0f);
+   // m_thumbnail.drawChannels(g, bounds, 0, m_thumbnail.getTotalLength(), 1.0f);
+    m_audioThumbnail.drawBuffer(g, bounds);
     g.setColour(juce::Colours::darkred);
     auto drawPosition = (audioPosition / audioLenght) * (float) bounds.getWidth() + (float) bounds.getX();
     g.drawLine(drawPosition, (float) bounds.getY(), drawPosition, (float) bounds.getBottom(), 2.0f);
@@ -290,11 +285,7 @@ bool TransportEditor::isFileValid(juce::File fileToTest)
 
 void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
 {
-    if(source == &m_thumbnail)
-    {
-        repaint();
-    }
-    else if(source == &m_player)
+    if(source == &m_player)
     {
         if (!m_player.m_isLooping)
         {
@@ -311,11 +302,6 @@ void TransportEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
             setSelectionPlay();
         }
     }
-    else if (source == &m_thumbnailRender)
-    {
-        refreshThumbnail(false);
-    }
-    
 }
 
 void TransportEditor::timerCallback()
@@ -410,13 +396,11 @@ void TransportEditor::loadAudioFile(juce::File file)
 {
     std::unique_ptr<juce::AudioFormatReader> fileReader (m_formatManager.createReaderFor(file));
 
-    m_thumbnailBuffer.clear();
-    m_thumbnail.clear();
-
     m_sampleRate = fileReader->sampleRate;
 
+    m_audioThumbnail.setSampleRate(m_sampleRate);
+
     m_player.m_buffer.setSize(fileReader->numChannels, static_cast<int>(fileReader->lengthInSamples));
-    m_thumbnailBuffer.setSize(fileReader->numChannels, static_cast<int>(fileReader->lengthInSamples));
     
     auto duration = fileReader->lengthInSamples / fileReader->sampleRate;
     
@@ -424,20 +408,14 @@ void TransportEditor::loadAudioFile(juce::File file)
     {
         m_renderWindow = std::make_unique<BufferingAlertWindow>(m_player.m_buffer, *this);
         m_renderWindow->launchThread();
-        m_hash++;
-        m_thumbnail.setSource(&m_thumbnailBuffer, m_sampleRate, m_hash);
         m_numBufferSamples = m_player.m_buffer.getNumSamples();
         m_player.setEndPosition(m_numBufferSamples);
         
     } else
     {
         fileReader->read(&m_player.m_buffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, true);
-        fileReader->read(&m_thumbnailBuffer, 0, static_cast<int>(fileReader->lengthInSamples), 0, true, true);
-        m_hash++;
-        m_thumbnail.setSource(&m_thumbnailBuffer, m_sampleRate, m_hash);
         m_numBufferSamples = m_player.m_buffer.getNumSamples();
         m_player.setEndPosition(m_numBufferSamples);
-        m_thumbnailRender.startThread();
     }
 }
 
@@ -528,7 +506,6 @@ void TransportEditor::noFileSelected()
 {
     m_fileSelected = false;
     m_relocateButton.setAlpha(0);
-    m_thumbnail.clear();
 }
 
 void TransportEditor::prepSelectionBuffer()
@@ -554,19 +531,6 @@ void TransportEditor::createFileFromSelection()
 void TransportEditor::setBuffer(juce::AudioBuffer<float> newBuffer)
 {
     m_player.m_buffer = newBuffer;
-}
-
-void TransportEditor::refreshThumbnail(bool reRender)
-{   
-    if (reRender)
-    {
-        m_thumbnailRender.startThread();
-    }
-    else
-    {
-        m_thumbnail.setSource(&m_thumbnailBuffer, m_sampleRate, m_hash);
-        repaint();
-    }
 }
 
 juce::ApplicationCommandTarget* TransportEditor::getNextCommandTarget()

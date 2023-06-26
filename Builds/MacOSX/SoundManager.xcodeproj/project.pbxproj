@@ -26,6 +26,7 @@
 		7C4DB4EEFC7DE80E9FACBB57 /* RecentFilesMenuTemplate.nib */ = {isa = PBXBuildFile; fileRef = 8F64DC7379A207E9F349CEF4; };
 		8CA300CAE5DD5154359F04A0 /* Icon.icns */ = {isa = PBXBuildFile; fileRef = 4DE9DFD8FAB2A4DC7C4845E6; };
 		930533EC5744762057ABE97B /* Foundation.framework */ = {isa = PBXBuildFile; fileRef = E44F4ADE8BD88A74C5ED4FF2; };
+		A585CBB41D3F4AA6E14AE9D6 /* AudioThumbnailRenderer.cpp */ = {isa = PBXBuildFile; fileRef = 0F5EF4035C4B058805354072; };
 		AD5303B1EB17563D74A69126 /* TransportEditor.cpp */ = {isa = PBXBuildFile; fileRef = E23ACD521B130491EE9DC4B2; };
 		B06E4BF1376363A7562F2D2E /* GainModule.cpp */ = {isa = PBXBuildFile; fileRef = 0B1B442F16CE35051FB1A2C9; };
 		B6FDB3AC52D95C65509A70F9 /* include_juce_audio_devices.mm */ = {isa = PBXBuildFile; fileRef = C6DE27E7967D31E82ED4A9F1; };
@@ -53,6 +54,7 @@
 		0E03A33F076FEAF7EFE136D6 /* SoundManager.h */ /* SoundManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SoundManager.h; path = ../../Source/SoundManager.h; sourceTree = SOURCE_ROOT; };
 		0EC68BF0A71D401B711062BB /* Cocoa.framework */ /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		0EF7D135A77D5BDCC69D4B84 /* stopHover.svg */ /* stopHover.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = stopHover.svg; path = ../../Resources/Icons/stopHover.svg; sourceTree = SOURCE_ROOT; };
+		0F5EF4035C4B058805354072 /* AudioThumbnailRenderer.cpp */ /* AudioThumbnailRenderer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AudioThumbnailRenderer.cpp; path = ../../Source/AudioThumbnailRenderer.cpp; sourceTree = SOURCE_ROOT; };
 		11D3EBB2A8AF66153655B0B0 /* LoopInactive.svg */ /* LoopInactive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = LoopInactive.svg; path = ../../Resources/Icons/LoopInactive.svg; sourceTree = SOURCE_ROOT; };
 		1488F8190E401D19140599CC /* TransportEditor.h */ /* TransportEditor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = TransportEditor.h; path = ../../Source/TransportEditor.h; sourceTree = SOURCE_ROOT; };
 		1A490FF83A3EB1D50591509D /* juce_graphics */ /* juce_graphics */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_graphics; path = "~/JUCE/modules/juce_graphics"; sourceTree = "<absolute>"; };
@@ -119,6 +121,7 @@
 		E319ECEE399F42A1014B93C4 /* JuceHeader.h */ /* JuceHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = JuceHeader.h; path = ../../JuceLibraryCode/JuceHeader.h; sourceTree = SOURCE_ROOT; };
 		E4089103F91263108EBE65A6 /* AudioToolbox.framework */ /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		E44F4ADE8BD88A74C5ED4FF2 /* Foundation.framework */ /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		E48ACB3E6751815FDB128FCB /* AudioThumbnailRenderer.h */ /* AudioThumbnailRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AudioThumbnailRenderer.h; path = ../../Source/AudioThumbnailRenderer.h; sourceTree = SOURCE_ROOT; };
 		EA8B6E39E798287B18770923 /* App */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SoundManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB4E016873DB71024A7D5F2A /* Main.cpp */ /* Main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Main.cpp; path = ../../Source/Main.cpp; sourceTree = SOURCE_ROOT; };
 		EE6D4FD652FB855CF77CF299 /* pauseInactive.svg */ /* pauseInactive.svg */ = {isa = PBXFileReference; lastKnownFileType = file.svg; name = pauseInactive.svg; path = ../../Resources/Icons/pauseInactive.svg; sourceTree = SOURCE_ROOT; };
@@ -150,6 +153,8 @@
 		11701249D1E49875029BCF82 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				0F5EF4035C4B058805354072,
+				E48ACB3E6751815FDB128FCB,
 				0B1B442F16CE35051FB1A2C9,
 				C26933E4ECDF661AF611338C,
 				26A6882895CC804FB205042E,
@@ -391,6 +396,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A585CBB41D3F4AA6E14AE9D6,
 				B06E4BF1376363A7562F2D2E,
 				2E696BB9C8D5B12E0D0EE6D9,
 				AD5303B1EB17563D74A69126,

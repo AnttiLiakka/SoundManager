@@ -12,6 +12,7 @@
 #include <JuceHeader.h>
 #include "TransportPlayer.h"
 #include "GainModule.h"
+#include "AudioThumbnailRenderer.h"
 
 class SoundTableModel;
 ///This class is the component user interacts with to control the TransportPlayer.
@@ -155,54 +156,6 @@ class TransportEditor : public juce::Component, public juce::ChangeListener, pri
         ///Sample rate for the writer
         double m_sampleRate;
     };
-    
-    struct ThumbnailRender : public juce::Thread, public juce::ChangeBroadcaster
-    {
-        ThumbnailRender(juce::AudioThumbnail& thumbnailToUse, GainModule& gainToUse, const juce::AudioBuffer<float>& bufferToCopy, juce::AudioBuffer<float>& bufferToSet, juce::ChangeListener* listener) :
-            juce::Thread("ThumbnailRender"),
-            m_thumbnail(thumbnailToUse),
-            m_gainModule(gainToUse),
-            m_bufferToCopy(bufferToCopy),
-            m_bufferToSet(bufferToSet),
-            m_changeListener(listener)
-        {
-            addChangeListener(listener);
-        }
-
-        ~ThumbnailRender()
-        {
-            removeAllChangeListeners();
-        }
-                        
-        void run() override
-        {
-            std::lock_guard<std::mutex> lock{ m_mutex };
-
-            m_bufferToSet.setSize(m_bufferToCopy.getNumChannels(), m_bufferToCopy.getNumSamples());
-
-            for (int c = 0; c < m_bufferToSet.getNumChannels(); ++c)
-            {
-                for (int n = 0; n < m_bufferToSet.getNumSamples(); ++n)
-                {
-                    if (threadShouldExit())
-                        return;
-
-                    auto sample = m_bufferToCopy.getSample(c, n);
-                    auto gainSample = m_gainModule.processSample(sample);
-                   m_bufferToSet.setSample(c, n, gainSample);
-                }
-
-            }
-            sendChangeMessage();
-        }
-
-        juce::AudioThumbnail& m_thumbnail;
-        GainModule& m_gainModule;
-        const juce::AudioBuffer<float>& m_bufferToCopy;
-        juce::AudioBuffer<float>& m_bufferToSet;
-        juce::ChangeListener* m_changeListener;
-        std::mutex m_mutex{};
-    };
 
 public:
     ///The constructor, takes in references to the SoundTableModel, MainComponent and TransportPlayer.
@@ -265,8 +218,6 @@ public:
     ///This function sets the m_player's m_buffer member to a buffer. This function is only called by the m_renderWindow member as otherwise it will not have access to it.
     void setBuffer(juce::AudioBuffer<float> newBuffer);
 
-    void refreshThumbnail(bool reRender);
-
     ///CommandIDs for the keypresses
     enum KeyPressCommandIDs
     {
@@ -286,10 +237,6 @@ private:
     std::unique_ptr<BufferingAlertWindow> m_renderWindow;
     ///ExportAlertWindow which handles the writing of audio files in a different thread
     std::unique_ptr<ExportAlertWindow> m_exportWindow;
-    ///This member is need to initialize m_thumbnail and it is used to manage multiple audiothumbnail objects.
-    juce::AudioThumbnailCache m_thumbnailCache;
-    ///This member paints the waveform of the selected audiofile.
-    juce::AudioThumbnail m_thumbnail;
     ///The  audio format manager.
     juce::AudioFormatManager m_formatManager;
     ///The audio device manager.
@@ -324,16 +271,11 @@ private:
     juce::File m_tempFile;
     ///Audiobuffer containing the samples in current selection area
     juce::AudioBuffer<float> m_selectionBuffer;
-
-    juce::AudioBuffer<float> m_thumbnailBuffer;
     ///This funtion is used to change the state of playback
     void changePlayState (TransportEditor::PlayState newPlayState);
     ///This virtual function is inherited from Juce Timer and it is overridden to repaint the component at regular intervals. This makes sure that the playhead is drawn into a correct position.
     void timerCallback() override;
-
-    ThumbnailRender m_thumbnailRender;
-
-    int m_hash = 0;
+    AudioThumbnailRenderer m_audioThumbnail;
 
     double m_sampleRate = 44000;
     

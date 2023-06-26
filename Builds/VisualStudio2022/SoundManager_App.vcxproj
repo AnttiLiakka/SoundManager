@@ -141,6 +141,7 @@
     <Lib/>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\AudioThumbnailRenderer.cpp"/>
     <ClCompile Include="..\..\Source\GainModule.cpp"/>
     <ClCompile Include="..\..\Source\TransportPlayer.cpp"/>
     <ClCompile Include="..\..\Source\TransportEditor.cpp"/>
@@ -2306,6 +2307,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\AudioThumbnailRenderer.h"/>
     <ClInclude Include="..\..\Source\GainModule.h"/>
     <ClInclude Include="..\..\Source\TransportPlayer.h"/>
     <ClInclude Include="..\..\Source\TransportEditor.h"/>
