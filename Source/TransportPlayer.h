@@ -42,6 +42,8 @@ public:
     void setPlayPosition(int newPosition);
     ///This function is used to set new value to m_endPosition.
     void setEndPosition(int newEndPosition);
+
+    void sumToMono();
 private:
     ///Reference to the TransportEditor controlling this class.
     class TransportEditor& m_editor;

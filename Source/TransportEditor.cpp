@@ -314,7 +314,15 @@ void TransportEditor::mouseDown(const juce::MouseEvent& event)
 {
     auto controlBounds = getLocalBounds().removeFromBottom(30);
     if(controlBounds.contains(event.getPosition()) || !m_fileIsValid) return;
-    if(!event.mods.isCommandDown())
+
+    if (event.mods.isRightButtonDown())
+    {
+        juce::PopupMenu m_menu;
+        m_menu.addItem(1, "Sum To Mono");
+
+        m_menu.showMenuAsync(juce::PopupMenu::Options(), [&](int result) {if (result == 1) m_player.sumToMono(); });
+    }
+    else if(!event.mods.isCommandDown())
     {
         resetSelection();
         auto ratio = m_numBufferSamples / getLocalBounds().getWidth();
@@ -512,7 +520,10 @@ void TransportEditor::prepSelectionBuffer()
 {
     m_selectionBuffer.setSize(m_player.m_buffer.getNumChannels(), m_selectionEnd - m_selectionStart);
     m_selectionBuffer.copyFrom(0, 0, m_player.m_buffer, 0, m_selectionStart, m_selectionBuffer.getNumSamples());
-    m_selectionBuffer.copyFrom(1, 0, m_player.m_buffer, 1, m_selectionStart, m_selectionBuffer.getNumSamples());
+    if (m_player.m_buffer.getNumChannels() == 2)
+    {
+        m_selectionBuffer.copyFrom(1, 0, m_player.m_buffer, 1, m_selectionStart, m_selectionBuffer.getNumSamples());
+    }
     
     createFileFromSelection();
 }

@@ -139,3 +139,27 @@ void TransportPlayer::setEndPosition(int newEndPosition)
 {
     m_endPosition = newEndPosition;
 }
+
+void TransportPlayer::sumToMono()
+{
+    if (m_buffer.getNumChannels() == 2)
+    {
+        stopPlayback();
+
+        const int numSamples = m_buffer.getNumSamples();
+
+        juce::AudioBuffer<float> monoBuffer(1, numSamples);
+
+        const float* leftChannel = m_buffer.getReadPointer(0);
+        const float* rightChannel = m_buffer.getReadPointer(1);
+        float* monoChannel = monoBuffer.getWritePointer(0);
+
+        for (int n = 0; n < numSamples; ++n)
+        {
+            monoChannel[n] = (leftChannel[n] + rightChannel[n]) * 0.5f;
+        }
+
+        m_buffer = std::move(monoBuffer);
+        m_editor.repaint();
+    }
+}
